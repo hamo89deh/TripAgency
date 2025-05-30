@@ -1,6 +1,9 @@
 
 using Microsoft.EntityFrameworkCore;
 using TripAgency.Infrastructure.Context;
+using TripAgency.Infrastructure;
+using TripAgency.Service;
+
 
 namespace TripAgency
 {
@@ -17,8 +20,9 @@ namespace TripAgency
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<TripAgencyDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddServicesDependencies()
+                            .AddInfrastructureDependencies();
 
-            
 
             var app = builder.Build();
 
