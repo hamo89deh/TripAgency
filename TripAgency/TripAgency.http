@@ -1,0 +1,6 @@
+@TripAgency_HostAddress = http://localhost:5116
+
+GET {{TripAgency_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
