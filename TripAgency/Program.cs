@@ -1,4 +1,7 @@
 
+using Microsoft.EntityFrameworkCore;
+using TripAgency.Infrastructure.Context;
+
 namespace TripAgency
 {
     public class Program
@@ -13,6 +16,9 @@ namespace TripAgency
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddDbContext<TripAgencyDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            
 
             var app = builder.Build();
 
