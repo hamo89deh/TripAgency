@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using TripAgency.Data.Entities;
 
 namespace TripAgency.Infrastructure.Context
 {
@@ -13,6 +15,14 @@ namespace TripAgency.Infrastructure.Context
         {
             
         }
+        
+        public DbSet<City> Cities { get; set; }
 
+        public DbSet<Destination> Destinations { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        }
     }
 }
