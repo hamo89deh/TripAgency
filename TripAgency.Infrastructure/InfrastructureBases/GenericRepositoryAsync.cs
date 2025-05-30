@@ -13,7 +13,7 @@ namespace TripAgency.Infrastructure.InfrastructureBases
     {
 
         #region Vars / Props
-        private TripAgencyDbContext _dbContext { get; set; }
+        protected TripAgencyDbContext _dbContext { get; set; }
         #endregion
 
         #region Constructor(s)
