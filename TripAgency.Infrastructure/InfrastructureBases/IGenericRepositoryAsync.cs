@@ -8,7 +8,7 @@ namespace TripAgency.Infrastructure.InfrastructureBases
         IQueryable<T> GetTableAsTracking();
         Task<T?> GetByIdAsync(int id);
         Task DeleteRangeAsync(ICollection<T> entities);
-        Task AddAsync(T entity);
+        Task<T> AddAsync(T entity);
         Task AddRangeAsync(ICollection<T> entities);
         Task UpdateAsync(T entity);
         Task UpdateRangeAsync(ICollection<T> entities);
