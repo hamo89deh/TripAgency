@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TripAgency.Data", "TripAgen
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TripAgency.Infrastructure", "TripAgency.Infrastructure\TripAgency.Infrastructure.csproj", "{49E1BD54-3175-4655-932C-CB372F22CCF7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TripAgency.Service", "TripAgency.Service\TripAgency.Service.csproj", "{DD4D2497-4D06-4353-BE72-BC15EBDB6DFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{49E1BD54-3175-4655-932C-CB372F22CCF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49E1BD54-3175-4655-932C-CB372F22CCF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49E1BD54-3175-4655-932C-CB372F22CCF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD4D2497-4D06-4353-BE72-BC15EBDB6DFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD4D2497-4D06-4353-BE72-BC15EBDB6DFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD4D2497-4D06-4353-BE72-BC15EBDB6DFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD4D2497-4D06-4353-BE72-BC15EBDB6DFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
