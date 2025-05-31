@@ -4,6 +4,7 @@ using TripAgency.Infrastructure.Context;
 using TripAgency.Infrastructure;
 using TripAgency.Service;
 using System.Reflection;
+using TripAgency.Middleware;
 
 
 namespace TripAgency
@@ -27,7 +28,7 @@ namespace TripAgency
             builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
             var app = builder.Build();
-
+            app.UseMiddleware<ErrorHandlerExceptionMiddleware>();
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
