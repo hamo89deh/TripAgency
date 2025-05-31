@@ -18,4 +18,8 @@
     <ProjectReference Include="..\TripAgency.Service\TripAgency.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Feature\City\Result\" />
+  </ItemGroup>
+
 </Project>

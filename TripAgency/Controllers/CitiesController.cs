@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TripAgency.Data.Entities;
-using TripAgency.Dtos.City;
+using TripAgency.Feature.City;
+using TripAgency.Feature.City.Command;
+using TripAgency.Feature.City.Queries;
 using TripAgency.Service.Abstracts;
 
 namespace TripAgency.Controllers
@@ -19,7 +21,7 @@ namespace TripAgency.Controllers
         public ICityService _cityService { get; }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<City>>> GetCities()
+        public async Task<ActionResult<IEnumerable<GetCitiesDto>>> GetCities()
         {
             var Cities = await _cityService.GetAll().ToListAsync();
             if (Cities.Count == 0)
@@ -27,24 +29,28 @@ namespace TripAgency.Controllers
             return Ok(Cities);
         }
         [HttpGet("{id}")]
-        public async Task<ActionResult<City>> GetCityById(int id)
+        public async Task<ActionResult<GetCityByIdDto>> GetCityById(int id)
         {
             var City = await _cityService.GetByIdAsync(id);
             if (City is null)
                 return NotFound();
-            return Ok(City);
+
+            return Ok(new GetCityByIdDto(id)
+            {
+                Name = City.Name
+            });
         }
         [HttpPost]
-        public async Task<ActionResult<City>> AddCity(AddCityDto city)
+        public async Task<ActionResult<string>> AddCity(AddCityDto city)
         {
             var ResultCity= await _cityService.AddAsync(new City
             {
                 Name = city.Name
             });
-            return Ok(ResultCity);
+            return Ok($"id : {ResultCity.Id}");
         }
         [HttpPut]
-        public async Task<ActionResult<City>> UpdateCity(EditCityDto city)
+        public async Task<ActionResult<string>> UpdateCity(EditCityDto city)
         {
             var cityResult = await _cityService.GetAll().FirstOrDefaultAsync(x => x.Id == city.Id);
             if (cityResult is null)
@@ -54,18 +60,18 @@ namespace TripAgency.Controllers
                 Id = city.Id,
                 Name = city.Name
             });
-            return Ok();
+            return Ok("Success Updated");
 
         }
         [HttpDelete]
-        public async Task<ActionResult<City>> DeleteCity(int id)
+        public async Task<ActionResult<string>> DeleteCity(int id)
         {
             var city = await _cityService.GetAll().FirstOrDefaultAsync(x=>x.Id==id);
             if (city is null)
                 return NotFound();
 
             await _cityService.DeleteAsync(city);
-            return Ok();
+            return Ok("Success Deleted");
         }
     }
 }
