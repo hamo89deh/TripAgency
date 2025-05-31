@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using TripAgency.Bases;
 using TripAgency.Data.Entities;
 using TripAgency.Feature.City;
 using TripAgency.Feature.City.Command;
@@ -24,50 +26,50 @@ namespace TripAgency.Controllers
         public IMapper _mapper { get; }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<GetCitiesDto>>> GetCities()
+        public async Task<ApiResult<IEnumerable<GetCitiesDto>>> GetCities()
         {
             var Cities = await _cityService.GetAll().ToListAsync();
             if (Cities.Count == 0)
-                return NotFound();
+                return ApiResult <IEnumerable<GetCitiesDto>>.NotFound();
             var citiesResult = _mapper.Map<List<GetCitiesDto>>(Cities);
-            return Ok(citiesResult);
+            return ApiResult < IEnumerable < GetCitiesDto >>.Ok(citiesResult);
         }
         [HttpGet("{id}")]
-        public async Task<ActionResult<GetCityByIdDto>> GetCityById(int id)
+        public async Task<ApiResult<GetCityByIdDto>> GetCityById(int id)
         {
             var city = await _cityService.GetByIdAsync(id);
             if (city is null)
-                return NotFound();
+                return ApiResult<GetCityByIdDto>.NotFound();
 
-            var citYResult = _mapper.Map<GetCityByIdDto>(city);
+            var cityResult = _mapper.Map<GetCityByIdDto>(city);
 
-            return Ok(citYResult);
+            return ApiResult<GetCityByIdDto>.Ok(cityResult);
         }
         [HttpPost]
-        public async Task<ActionResult<string>> AddCity(AddCityDto city)
+        public async Task<ApiResult<string>> AddCity(AddCityDto city)
         {
             var ResultCity= await _cityService.AddAsync(_mapper.Map<City>(city));
-            return Ok($"id : {ResultCity.Id}");
+            return ApiResult<string>.Ok($"CityId : {ResultCity.Id}");
         }
         [HttpPut]
-        public async Task<ActionResult<string>> UpdateCity(EditCityDto city)
+        public async Task<ApiResult<string>> UpdateCity(EditCityDto city)
         {
             var cityResult = await _cityService.GetAll().FirstOrDefaultAsync(x => x.Id == city.Id);
             if (cityResult is null)
-                return NotFound();
+                return ApiResult<string>.NotFound();
             await _cityService.UpdateAsync(_mapper.Map<City>(city));
-            return Ok("Success Updated");
+            return ApiResult<string>.Ok("","Success Updated");
 
         }
         [HttpDelete]
-        public async Task<ActionResult<string>> DeleteCity(int id)
+        public async Task<ApiResult<string>> DeleteCity(int id)
         {
             var city = await _cityService.GetAll().FirstOrDefaultAsync(x=>x.Id==id);
             if (city is null)
-                return NotFound();
+                return ApiResult<string>.NotFound();
 
             await _cityService.DeleteAsync(city);
-            return Ok("Success Deleted");
+            return ApiResult<string>.Ok("","Success Deleted");
         }
     }
 }
