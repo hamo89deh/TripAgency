@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TripAgency.Infrastructure.Context;
 using TripAgency.Infrastructure;
 using TripAgency.Service;
+using System.Reflection;
 
 
 namespace TripAgency
@@ -23,6 +24,7 @@ namespace TripAgency
             builder.Services.AddServicesDependencies()
                             .AddInfrastructureDependencies();
 
+            builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
             var app = builder.Build();
 

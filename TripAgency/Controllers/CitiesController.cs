@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TripAgency.Data.Entities;
@@ -13,12 +14,14 @@ namespace TripAgency.Controllers
     [ApiController]
     public class CitiesController : ControllerBase
     {
-        public CitiesController(ICityService cityService)
+        public CitiesController(ICityService cityService , IMapper mapper)
         {
             _cityService = cityService;
+            _mapper = mapper;
         }
 
         public ICityService _cityService { get; }
+        public IMapper _mapper { get; }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<GetCitiesDto>>> GetCities()
@@ -26,27 +29,24 @@ namespace TripAgency.Controllers
             var Cities = await _cityService.GetAll().ToListAsync();
             if (Cities.Count == 0)
                 return NotFound();
-            return Ok(Cities);
+            var citiesResult = _mapper.Map<List<GetCitiesDto>>(Cities);
+            return Ok(citiesResult);
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<GetCityByIdDto>> GetCityById(int id)
         {
-            var City = await _cityService.GetByIdAsync(id);
-            if (City is null)
+            var city = await _cityService.GetByIdAsync(id);
+            if (city is null)
                 return NotFound();
 
-            return Ok(new GetCityByIdDto(id)
-            {
-                Name = City.Name
-            });
+            var citYResult = _mapper.Map<GetCityByIdDto>(city);
+
+            return Ok(citYResult);
         }
         [HttpPost]
         public async Task<ActionResult<string>> AddCity(AddCityDto city)
         {
-            var ResultCity= await _cityService.AddAsync(new City
-            {
-                Name = city.Name
-            });
+            var ResultCity= await _cityService.AddAsync(_mapper.Map<City>(city));
             return Ok($"id : {ResultCity.Id}");
         }
         [HttpPut]
@@ -55,11 +55,7 @@ namespace TripAgency.Controllers
             var cityResult = await _cityService.GetAll().FirstOrDefaultAsync(x => x.Id == city.Id);
             if (cityResult is null)
                 return NotFound();
-            await _cityService.UpdateAsync(new City
-            {
-                Id = city.Id,
-                Name = city.Name
-            });
+            await _cityService.UpdateAsync(_mapper.Map<City>(city));
             return Ok("Success Updated");
 
         }
