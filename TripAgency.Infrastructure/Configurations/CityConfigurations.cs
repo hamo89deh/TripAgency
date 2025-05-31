@@ -19,6 +19,7 @@ namespace TripAgency.Infrastructure.Configurations
                    .HasColumnType("nvarchar")
                    .HasMaxLength(50)
                    .IsRequired(true);
+
             builder.ToTable("Cities");
 
         }
