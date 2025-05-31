@@ -54,8 +54,7 @@ namespace TripAgency.Controllers
         [HttpPut]
         public async Task<ApiResult<string>> UpdateCity(EditCityDto city)
         {
-            //var cityResult = await _cityService.GetAll().FirstOrDefaultAsync(x => x.Id == city.Id);
-            var cityResult = await _cityService.GetByIdAsync(city.Id);
+            var cityResult = await _cityService.GetAll().FirstOrDefaultAsync(x => x.Id == city.Id);
             if (cityResult is null)
                 return ApiResult<string>.NotFound();
             await _cityService.UpdateAsync(_mapper.Map<City>(city));

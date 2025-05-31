@@ -1,0 +1,18 @@
+﻿using TripAgency.Data.Entities;
+using TripAgency.Feature.Destination.Commands;
+
+namespace TripAgency.Mapping.Destination_Entity
+{
+    public partial class DestinationProfile 
+    {
+        public void EditDestinationMapping()
+        {
+            CreateMap<EditDestinationDto, Destination>()
+                .ForMember(d => d.Id, op => op.MapFrom(s => s.Id))
+                .ForMember(d => d.Name, op => op.MapFrom(s => s.Name))
+                .ForMember(d => d.Description, op => op.MapFrom(s => s.Description))
+                .ForMember(d => d.Location, op => op.MapFrom(s => s.Location))
+                .ForMember(d => d.CityId, op => op.MapFrom(s => s.CityId));
+        }
+    }
+}

@@ -79,7 +79,7 @@ namespace TripAgency.Middleware
             {
                 statusCode = (int)HttpStatusCode.InternalServerError;
                 message = "internal service error.";
-                errors.Add(exception.InnerException ==null ? " \n" : exception.InnerException.Message);
+                errors.Add(exception.InnerException is null ? exception.Message : exception.InnerException.Message);
             }
             // 4. بناء استجابة ApiResponse
             var apiResponse = ApiResponse<object>.ErrorResponse(statusCode, message, errors);
