@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <Folder Include="Feature\City\Result\" />
-    <Folder Include="Feature\Destionation\Commands\Validators\" />
   </ItemGroup>
 
 </Project>
