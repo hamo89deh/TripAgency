@@ -5,6 +5,11 @@ using TripAgency.Infrastructure;
 using TripAgency.Service;
 using System.Reflection;
 using TripAgency.Middleware;
+using TripAgency.Api.Behavior;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.Data.SqlClient;
+using TripAgency.Api.Feature.City.Command.Validaters;
 
 
 namespace TripAgency
@@ -17,7 +22,9 @@ namespace TripAgency
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers( op=> op.Filters.Add(typeof(ValidationFilter)))
+                .ConfigureApiBehaviorOptions(options =>options.InvalidModelStateResponseFactory = context => null!)
+                              ;
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -26,6 +33,8 @@ namespace TripAgency
                             .AddInfrastructureDependencies();
 
             builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+            builder.Services.AddFluentValidationAutoValidation()
+                            .AddValidatorsFromAssembly(typeof(AddCityDtoValidation).Assembly);
 
             var app = builder.Build();
             app.UseMiddleware<ErrorHandlerExceptionMiddleware>();
