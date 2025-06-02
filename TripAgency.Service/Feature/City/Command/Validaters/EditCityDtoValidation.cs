@@ -3,7 +3,7 @@ using TripAgency.Service.Feature.City.Command;
 
 namespace TripAgency.Service.Feature.City.Command.Validaters
 {
-    public class EditCityDtoValidation : AbstractValidator<EditCityDto>
+    public class EditCityDtoValidation : AbstractValidator<UpdateCityDto>
     {
         public EditCityDtoValidation()
         {

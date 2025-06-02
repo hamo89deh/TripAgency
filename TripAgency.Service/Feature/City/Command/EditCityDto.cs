@@ -1,7 +1,7 @@
 ﻿namespace TripAgency.Service.Feature.City.Command
 
 {
-    public class EditCityDto
+    public class UpdateCityDto
     {
 
         public int Id { get; set; }

@@ -32,24 +32,7 @@ namespace TripAgency.Service.Implemetations
 
 
 
-        public async Task<Result> CreateCityAsync(AddCityDto addCityDto)
-        {
-            var mapCity = _mapper.Map<City>(addCityDto);
-            await _cityRepository.AddAsync(mapCity);
-            return Result.Success($"Success cityID with id : {mapCity.Id}");
-        }
-
-        public async Task<Result> UpdateCityAsync(EditCityDto updateCityDto)
-        {
-            var city = await _cityRepository.GetTableNoTracking().FirstOrDefaultAsync(c => c.Id == updateCityDto.Id);
-            if (city is null)
-                return Result.NotFound($"Not Found City with Id : {updateCityDto.Id}");
-            var mapCity = _mapper.Map<City>(updateCityDto);
-            await _cityRepository.UpdateAsync(mapCity);
-            return Result.Success();
-        }
-
-
+       
         public async Task<Result<GetCityByIdDto>> GetCityByNameAsync(string name)
         {
             var city = await _cityRepository.GetCityByName(name);
@@ -60,6 +43,21 @@ namespace TripAgency.Service.Implemetations
 
         }
 
-       
+        public async Task<Result> UpdateAsync(UpdateCityDto updateCityDto)
+        {
+            var city = await _cityRepository.GetTableNoTracking().FirstOrDefaultAsync(c => c.Id == updateCityDto.Id);
+            if (city is null)
+                return Result.NotFound($"Not Found City with Id : {updateCityDto.Id}");
+            var mapCity = _mapper.Map<City>(updateCityDto);
+            await _cityRepository.UpdateAsync(mapCity);
+            return Result.Success();
+        }
+
+        public async Task<Result> CreateAsync(AddCityDto addCityDto)
+        {
+            var mapCity = _mapper.Map<City>(addCityDto);
+            await _cityRepository.AddAsync(mapCity);
+            return Result.Success($"Success cityID with id : {mapCity.Id}");
+        }
     }
 }

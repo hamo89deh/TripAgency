@@ -13,19 +13,12 @@ using TripAgency.Service.Generic;
 
 namespace TripAgency.Service.Abstracts
 {
-    public interface ICityService : IReadAndDeleteService<City ,GetCityByIdDto , GetCitiesDto>
+    public interface ICityService : IReadAndDeleteService<City ,GetCityByIdDto , GetCitiesDto> ,
+                                    IUpdateService<City, UpdateCityDto > , 
+                                    IAddService<City , AddCityDto>
     {
         Task<Result<GetCityByIdDto>> GetCityByNameAsync(string name);      
-        Task<Result> CreateCityAsync(AddCityDto addCityDto);
-        Task<Result> UpdateCityAsync(EditCityDto updateCityDto);    
-    }
-    public interface IHotelService
-    {
-        //Task<Result<IEnumerable<GetHotelsDto>>> GetAllHotelsAsync();
-        //Task<Result<HotelDto>> GetHotelByIdAsync(int id);
-        //Task<Result<HotelDto>> CreateHotelAsync(CreateHotelDto createHotelDto);
-        //Task<Result> UpdateHotelAsync(int id, UpdateHotelDto updateHotelDto);
-        //Task<Result> DeleteHotelAsync(int id);
-        //public Task<City> GetCityByNameAsync(string name);
+       
+        
     }
 }

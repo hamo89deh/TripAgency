@@ -3,7 +3,7 @@ using TripAgency.Service.Feature.Destination.Commands;
 namespace TripAgency.Service.Feature.Destionation.Commands.Validators
 
 {
-    public class EditDestinationDtoValidation : AbstractValidator<EditDestinationDto>
+    public class EditDestinationDtoValidation : AbstractValidator<UpdateDestinationDto>
     {
         public EditDestinationDtoValidation()
         {

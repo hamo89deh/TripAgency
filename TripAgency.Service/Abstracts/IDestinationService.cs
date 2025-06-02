@@ -8,11 +8,13 @@ using TripAgency.Service.Generic;
 
 namespace TripAgency.Service.Abstracts
 {
-    public interface IDestinationService : IReadAndDeleteService<Destination, GetDestinationByIdDto , GetDestinationsDto>
+    public interface IDestinationService : IReadAndDeleteService<Destination, GetDestinationByIdDto , GetDestinationsDto> ,
+                                           IAddService<Destination ,AddDestinationDto>,
+                                           IUpdateService<Destination ,UpdateDestinationDto>
+                                          
     {
         Task<Result<IEnumerable<GetDestinationsByCityNameDto>>> GetDestinationsByCityName(string cityName);
 
-        Task<Result> CreateDestinationAsync(AddDestinationDto addDestinationDto);
-        Task<Result> UpdateDestinationAsync(EditDestinationDto updateDestinationDto);
+       
     }
 }

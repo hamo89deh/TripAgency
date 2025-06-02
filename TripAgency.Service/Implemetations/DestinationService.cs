@@ -47,20 +47,21 @@ namespace TripAgency.Service.Implemetations
         }
        
         
-        public async Task<Result> CreateDestinationAsync(AddDestinationDto addDestinationDto)
+       
+        public async Task<Result> CreateAsync(AddDestinationDto addDestinationDto)
         {
             var city = await _cityRepository.GetTableNoTracking().FirstOrDefaultAsync(c => c.Id == addDestinationDto.CityId);
             if (city is null)
                 return Result.NotFound($"Not Found City with Id : {addDestinationDto.CityId}");
 
-            var mapDestination= _mapper.Map<Destination>(addDestinationDto);
+            var mapDestination = _mapper.Map<Destination>(addDestinationDto);
             await _destinationRepository.AddAsync(mapDestination);
             return Result.Success($"Success Add Destination with id : {mapDestination.Id}");
-
         }
-        public async Task<Result> UpdateDestinationAsync(EditDestinationDto updateDestinationDto)
+
+        public async Task<Result> UpdateAsync(UpdateDestinationDto updateDestinationDto)
         {
-            var destination = await _destinationRepository.GetTableNoTracking().FirstOrDefaultAsync(d=>d.Id== updateDestinationDto.Id);
+            var destination = await _destinationRepository.GetTableNoTracking().FirstOrDefaultAsync(d => d.Id == updateDestinationDto.Id);
             if (destination is null)
                 return Result.NotFound($"Not Found Destination with Id : {updateDestinationDto.Id}");
 
@@ -68,12 +69,10 @@ namespace TripAgency.Service.Implemetations
             if (city is null)
                 return Result.NotFound($"Not Found City with Id : {updateDestinationDto.CityId}");
 
-           
+
             var destinationsResult = _mapper.Map<Destination>(updateDestinationDto);
             await _destinationRepository.UpdateAsync(destinationsResult);
             return Result.Success();
-
         }
-        
     }
 }

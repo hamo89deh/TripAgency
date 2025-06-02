@@ -1,6 +1,6 @@
 ﻿namespace TripAgency.Service.Feature.Destination.Commands
 {
-    public class EditDestinationDto
+    public class UpdateDestinationDto
     {
         public int Id { get; set; }
         public string Name { get; set; }

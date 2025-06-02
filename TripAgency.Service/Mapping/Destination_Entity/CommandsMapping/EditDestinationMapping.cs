@@ -7,7 +7,7 @@ namespace TripAgency.Service.Mapping.Destination_Entity
     {
         public void EditDestinationMapping()
         {
-            CreateMap<EditDestinationDto, Destination>()
+            CreateMap<UpdateDestinationDto, Destination>()
                 .ForMember(d => d.Id, op => op.MapFrom(s => s.Id))
                 .ForMember(d => d.Name, op => op.MapFrom(s => s.Name))
                 .ForMember(d => d.Description, op => op.MapFrom(s => s.Description))

@@ -53,15 +53,15 @@ namespace TripAgency.Controllers
         [HttpPost]
         public async Task<ApiResult<string>> AddCity(AddCityDto city)
         {
-            var cityResult= await _cityService.CreateCityAsync(city);
+            var cityResult= await _cityService.CreateAsync(city);
             if (!cityResult.IsSuccess)
                 return this.ToApiResult<string>(cityResult);
             return ApiResult<string>.Created(cityResult.Message);
         }
         [HttpPut]
-        public async Task<ApiResult<string>> UpdateCity(EditCityDto updateCity)
+        public async Task<ApiResult<string>> UpdateCity(UpdateCityDto updateCity)
         {
-            var cityResult = await _cityService.UpdateCityAsync(updateCity);
+            var cityResult = await _cityService.UpdateAsync(updateCity);
             if (!cityResult.IsSuccess)
                 return this.ToApiResult<string>(cityResult);
             return ApiResult<string>.NoContent("Success Updated");

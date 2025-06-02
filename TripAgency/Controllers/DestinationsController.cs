@@ -59,7 +59,7 @@ namespace TripAgency.Controllers
         [HttpPost]
         public async Task<ApiResult<string>> AddDestination(AddDestinationDto destinationDto)
         {
-            var result = await _destinationService.CreateDestinationAsync(destinationDto);
+            var result = await _destinationService.CreateAsync(destinationDto);
             if (!result.IsSuccess)
             {
                 return this.ToApiResult<string>(result);
@@ -67,9 +67,9 @@ namespace TripAgency.Controllers
             return ApiResult<string>.Ok(result.Message);
         }
         [HttpPut]
-        public async Task<ApiResult<string>> UpdateDestination(EditDestinationDto destinationDto)
+        public async Task<ApiResult<string>> UpdateDestination(UpdateDestinationDto destinationDto)
         {
-            var result = await _destinationService.UpdateDestinationAsync(destinationDto);
+            var result = await _destinationService.UpdateAsync(destinationDto);
             if (!result.IsSuccess)
             {
                 return this.ToApiResult<string>(result);
