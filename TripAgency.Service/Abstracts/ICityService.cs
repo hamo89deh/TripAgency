@@ -8,18 +8,16 @@ using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Service.Feature.City.Command;
 using TripAgency.Service.Feature.City.Queries;
 using TripAgency.Infrastructure.Configurations;
+using TripAgency.Service.Generic;
 
 
 namespace TripAgency.Service.Abstracts
 {
-    public interface ICityService 
+    public interface ICityService : IReadAndDeleteService<City ,GetCityByIdDto , GetCitiesDto>
     {
-        Task<Result<IEnumerable<GetCitiesDto>>> GetCitiesAsync();    
-        Task<Result<GetCityByIdDto>> GetCityByIdAsync(int id);
         Task<Result<GetCityByIdDto>> GetCityByNameAsync(string name);      
         Task<Result> CreateCityAsync(AddCityDto addCityDto);
         Task<Result> UpdateCityAsync(EditCityDto updateCityDto);    
-        Task<Result> DeleteCityAsync(int id);     
     }
     public interface IHotelService
     {

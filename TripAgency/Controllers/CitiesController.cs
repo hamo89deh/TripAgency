@@ -28,7 +28,7 @@ namespace TripAgency.Controllers
         [HttpGet]
         public async Task<ApiResult<IEnumerable<GetCitiesDto>>> GetCities()
         { 
-            var citiesResult = await _cityService.GetCitiesAsync();
+            var citiesResult = await _cityService.GetAllAsync();
             if (!citiesResult.IsSuccess)
                return this.ToApiResult(citiesResult);         
             return ApiResult<IEnumerable<GetCitiesDto>>.Ok(citiesResult.Value!);
@@ -36,7 +36,7 @@ namespace TripAgency.Controllers
         [HttpGet("{id}")]
         public async Task<ApiResult<GetCityByIdDto>> GetCityById(int id)
         {
-            var cityResult = await _cityService.GetCityByIdAsync(id);
+            var cityResult = await _cityService.GetByIdAsync(id);
             if (!cityResult.IsSuccess)
                 return this.ToApiResult(cityResult);
             return ApiResult<GetCityByIdDto>.Ok(cityResult.Value!);
@@ -70,7 +70,7 @@ namespace TripAgency.Controllers
         [HttpDelete]
         public async Task<ApiResult<string>> DeleteCity(int id)
         {
-            var cityResult = await _cityService.DeleteCityAsync(id);
+            var cityResult = await _cityService.DeleteAsync(id);
             if (!cityResult.IsSuccess)
                 return this.ToApiResult<string>(cityResult);
             return ApiResult<string>.Ok("Success Delete");

@@ -19,7 +19,7 @@ namespace TripAgency.Infrastructure.Repositories
 
         public  async Task<City?> GetCityByName(string Name)
         {
-           return await _dbContext.Set<City>().FirstOrDefaultAsync(x => x.Name == Name);
+           return await _dbContext.Set<City>().FirstOrDefaultAsync(x => x.Name .Contains(Name));
         }
     }
 }

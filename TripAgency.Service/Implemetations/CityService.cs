@@ -12,17 +12,18 @@ using TripAgency.Infrastructure.InfrastructureBases;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.City.Command;
 using TripAgency.Service.Feature.City.Queries;
+using TripAgency.Service.Generic;
 
 namespace TripAgency.Service.Implemetations
 {
-    public class CityService : ICityService
+    public class CityService :ReadAndDeleteService<City , GetCityByIdDto,GetCitiesDto> , ICityService
     {
         private ICityRepositoryAsync _cityRepository {  get; set; }
         public IMapper _mapper { get; }
 
         public CityService(ICityRepositoryAsync cityRepository,
                            IMapper mapper
-                           )
+                           ):base(cityRepository, mapper) 
         {
             _cityRepository = cityRepository;
             _mapper = mapper;
@@ -30,24 +31,6 @@ namespace TripAgency.Service.Implemetations
 
 
 
-        public async Task<Result<IEnumerable<GetCitiesDto>>> GetCitiesAsync()
-        {
-            var cities= await _cityRepository.GetTableNoTracking().ToListAsync();
-            if (cities.Count == 0)
-                return Result<IEnumerable<GetCitiesDto>>.NotFound(" not");
-            var citiesResult = _mapper.Map<List<GetCitiesDto>>(cities);
-            return Result<IEnumerable<GetCitiesDto>>.Success(citiesResult);
-
-        }
-
-        public async Task<Result<GetCityByIdDto>> GetCityByIdAsync(int id)
-        {
-            var city= await _cityRepository.GetTableNoTracking().FirstOrDefaultAsync(c=>c.Id==id);
-            if (city is null)
-                return Result<GetCityByIdDto>.NotFound($"Not Found City with Id : {id}");
-            var cityResult = _mapper.Map<GetCityByIdDto>(city);
-            return Result<GetCityByIdDto>.Success(cityResult);
-        }
 
         public async Task<Result> CreateCityAsync(AddCityDto addCityDto)
         {
@@ -66,23 +49,17 @@ namespace TripAgency.Service.Implemetations
             return Result.Success();
         }
 
-        public async Task<Result> DeleteCityAsync(int id)
-        {
-            var city = await _cityRepository.GetTableNoTracking().FirstOrDefaultAsync(c => c.Id == id);
-            if (city is null)
-                return Result.NotFound($"Not Found City with Id : {id}");           
-            await _cityRepository.DeleteAsync(city);
-            return Result.Success();
-        }
 
         public async Task<Result<GetCityByIdDto>> GetCityByNameAsync(string name)
         {
-            var city = await _cityRepository.GetTableNoTracking().FirstOrDefaultAsync(c => c.Name == name);
+            var city = await _cityRepository.GetCityByName(name);
             if (city is null)
                 return Result<GetCityByIdDto>.NotFound($"Not Found City with Name : {name}");
             var cityResult = _mapper.Map<GetCityByIdDto>(city);
             return Result<GetCityByIdDto>.Success(cityResult);
 
         }
+
+       
     }
 }

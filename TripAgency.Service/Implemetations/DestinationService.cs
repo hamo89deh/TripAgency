@@ -9,14 +9,15 @@ using TripAgency.Service.Feature.City.Command;
 using TripAgency.Service.Feature.City.Queries;
 using TripAgency.Service.Feature.Destination.Commands;
 using TripAgency.Service.Feature.Destination.Queries;
+using TripAgency.Service.Generic;
 
 namespace TripAgency.Service.Implemetations
 {
-    public class DestinationService : IDestinationService
+    public class DestinationService :ReadAndDeleteService<Destination,GetDestinationByIdDto , GetDestinationsDto> ,  IDestinationService
     {
         public DestinationService(IDestinationRepositoryAsync destinationRepository ,
                                   ICityRepositoryAsync cityRepository,
-                                  IMapper mapper) 
+                                  IMapper mapper):base(destinationRepository , mapper) 
         {
             _destinationRepository = destinationRepository;
             _cityRepository = cityRepository;
@@ -44,23 +45,8 @@ namespace TripAgency.Service.Implemetations
             return Result<IEnumerable<GetDestinationsByCityNameDto>>.Success(destinationsResult);
 
         }
-        public async Task<Result<GetDestinationByIdDto>> GetDestinationByIdAsync(int id)
-        {
-            var destination = await _destinationRepository.GetTableNoTracking().FirstOrDefaultAsync(d => d.Id == id);
-            if (destination is null)
-                return Result<GetDestinationByIdDto>.NotFound("Not Found Destination with Id : {id}");
-            var destinationResult = _mapper.Map<GetDestinationByIdDto>(destination);
-            return Result<GetDestinationByIdDto>.Success(destinationResult);
-
-        }
-        public async Task<Result<IEnumerable<GetDestinationsDto>>> GetDestinationsAsync()
-        {
-            var destinations = await _destinationRepository.GetTableNoTracking().ToListAsync();
-            if (destinations.Count == 0)
-                return Result<IEnumerable<GetDestinationsDto>>.NotFound(" not");
-            var destinationsResult = _mapper.Map<List<GetDestinationsDto>>(destinations);
-            return Result<IEnumerable<GetDestinationsDto>>.Success(destinationsResult);
-        }
+       
+        
         public async Task<Result> CreateDestinationAsync(AddDestinationDto addDestinationDto)
         {
             var city = await _cityRepository.GetTableNoTracking().FirstOrDefaultAsync(c => c.Id == addDestinationDto.CityId);
@@ -88,13 +74,6 @@ namespace TripAgency.Service.Implemetations
             return Result.Success();
 
         }
-        public async Task<Result> DeleteDestinationAsync(int id)
-        {
-            var destination = await _destinationRepository.GetTableNoTracking().FirstOrDefaultAsync(c => c.Id == id);
-            if (destination is null)
-                return Result.NotFound($"Not Found destination with Id : {id}");
-            await _destinationRepository.DeleteAsync(destination);
-            return Result.Success();
-        }
+        
     }
 }

@@ -12,8 +12,6 @@ namespace TripAgency.Controllers
     [ApiController]
     public class DestinationsController : ControllerBase
     {
-        private object cityResult;
-
         public DestinationsController(IDestinationService destinationService,
                                       ICityService cityService,
                                       IMapper mapper)
@@ -26,11 +24,10 @@ namespace TripAgency.Controllers
         public IDestinationService _destinationService { get; }
         public ICityService _cityService { get; }
         public IMapper _mapper { get; }
-
         [HttpGet]
         public async Task<ApiResult<IEnumerable<GetDestinationsDto>>> GetDestinations()
         {
-            var result = await _destinationService.GetDestinationsAsync();
+            var result = await _destinationService.GetAllAsync();
             if (!result.IsSuccess)
             {
                 return this.ToApiResult(result);
@@ -41,7 +38,7 @@ namespace TripAgency.Controllers
 
         public async Task<ApiResult<GetDestinationByIdDto>> GetDestinationById(int id)
         {
-            var result = await _destinationService.GetDestinationByIdAsync(id);
+            var result = await _destinationService.GetByIdAsync(id);
             if (!result.IsSuccess)
             {
                 return this.ToApiResult(result);
@@ -82,7 +79,7 @@ namespace TripAgency.Controllers
         [HttpDelete("{id}")]
         public async Task<ApiResult<string>> DeleteDestination(int id)
         {
-            var result = await _destinationService.DeleteDestinationAsync(id);
+            var result = await _destinationService.DeleteAsync(id);
             if (!result.IsSuccess)
             {
                 return this.ToApiResult<string>(result);
