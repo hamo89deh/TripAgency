@@ -57,19 +57,19 @@ namespace TripAgency.Controllers
             return ApiResult<IEnumerable<GetDestinationsByCityNameDto>>.Ok(result.Value!);
         }
         [HttpPost]
-        public async Task<ApiResult<string>> AddDestination(AddDestinationDto destinationDto)
+        public async Task<ApiResult<GetDestinationByIdDto>> AddDestination(AddDestinationDto destinationDto)
         {
             var result = await _destinationService.CreateAsync(destinationDto);
             if (!result.IsSuccess)
             {
-                return this.ToApiResult<string>(result);
+                return this.ToApiResult<GetDestinationByIdDto>(result);
             }
-            return ApiResult<string>.Ok(result.Message);
+            return ApiResult<GetDestinationByIdDto>.Created(result.Value!);
         }
         [HttpPut]
         public async Task<ApiResult<string>> UpdateDestination(UpdateDestinationDto destinationDto)
         {
-            var result = await _destinationService.UpdateAsync(destinationDto);
+            var result = await _destinationService.UpdateAsync(destinationDto.Id,destinationDto);
             if (!result.IsSuccess)
             {
                 return this.ToApiResult<string>(result);

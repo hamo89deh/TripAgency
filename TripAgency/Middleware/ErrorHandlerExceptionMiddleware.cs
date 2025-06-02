@@ -1,10 +1,9 @@
-﻿using Azure;
+﻿
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
 using TripAgency.Bases;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TripAgency.Middleware
 {

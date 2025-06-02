@@ -1,22 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TripAgency.Data.Entities;
 using TripAgency.Data.Result.TripAgency.Core.Results;
-using TripAgency.Infrastructure.Context;
 using TripAgency.Infrastructure.InfrastructureBases;
-using TripAgency.Service.Feature.City.Command;
-using TripAgency.Service.Feature.City.Queries;
 
 namespace TripAgency.Service.Generic
 {
-    public class ReadAndDeleteService<T, GetByIdDto, GetALlDto> : IReadService<T, GetByIdDto, GetALlDto> , IDeleteService<T>
+    public class GenericService<T, GetByIdDto, GetALlDto, AddDto, UpdateDto> : IGenericService<T, GetByIdDto, GetALlDto,AddDto , UpdateDto >
     {
-        public ReadAndDeleteService( IGenericRepositoryAsync<T> repositoryAsync , IMapper mapper)
+        public GenericService(IGenericRepositoryAsync<T> repositoryAsync, IMapper mapper)
         {
             _repoAsync = repositoryAsync;
             _mapper = mapper;
@@ -24,6 +15,24 @@ namespace TripAgency.Service.Generic
 
         private IGenericRepositoryAsync<T> _repoAsync { get; }
         private IMapper _mapper { get; }
+
+        public virtual async Task<Result> UpdateAsync(int id , UpdateDto UpdateDto)
+        {
+            var entity = await _repoAsync.GetByIdAsync(id);
+            if (entity is null)
+                return Result.NotFound($"Not Found {typeof(T).Name} with Id : {id}");
+            var mapeEntity = _mapper.Map(UpdateDto , entity);
+            await _repoAsync.UpdateAsync(entity);
+            return Result.Success();
+        }
+
+        public virtual async Task<Result<GetByIdDto>> CreateAsync(AddDto AddDto)
+        {
+            var mapAddEntity = _mapper.Map<T>(AddDto);
+            await _repoAsync.AddAsync(mapAddEntity);
+            var resultEntity = _mapper.Map<GetByIdDto>(mapAddEntity);
+            return Result<GetByIdDto>.Success(resultEntity) ;
+        }
 
         public async Task<Result> DeleteAsync(int id)
         {
@@ -51,6 +60,8 @@ namespace TripAgency.Service.Generic
             var entityResult = _mapper.Map<GetByIdDto>(entity);
             return Result<GetByIdDto>.Success(entityResult);
         }
+
+       
     }
 
 

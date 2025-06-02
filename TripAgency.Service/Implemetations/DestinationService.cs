@@ -13,7 +13,7 @@ using TripAgency.Service.Generic;
 
 namespace TripAgency.Service.Implemetations
 {
-    public class DestinationService :ReadAndDeleteService<Destination,GetDestinationByIdDto , GetDestinationsDto> ,  IDestinationService
+    public class DestinationService :GenericService<Destination,GetDestinationByIdDto , GetDestinationsDto,AddDestinationDto ,UpdateDestinationDto> ,  IDestinationService
     {
         public DestinationService(IDestinationRepositoryAsync destinationRepository ,
                                   ICityRepositoryAsync cityRepository,
@@ -48,22 +48,26 @@ namespace TripAgency.Service.Implemetations
        
         
        
-        public async Task<Result> CreateAsync(AddDestinationDto addDestinationDto)
+        public override async Task<Result<GetDestinationByIdDto>> CreateAsync(AddDestinationDto addDestinationDto)
         {
             var city = await _cityRepository.GetTableNoTracking().FirstOrDefaultAsync(c => c.Id == addDestinationDto.CityId);
             if (city is null)
-                return Result.NotFound($"Not Found City with Id : {addDestinationDto.CityId}");
+                return Result<GetDestinationByIdDto>.NotFound($"Not Found City with Id : {addDestinationDto.CityId}");
 
             var mapDestination = _mapper.Map<Destination>(addDestinationDto);
+
             await _destinationRepository.AddAsync(mapDestination);
-            return Result.Success($"Success Add Destination with id : {mapDestination.Id}");
+
+            var resultDestination = _mapper.Map<GetDestinationByIdDto>(mapDestination);
+
+            return Result<GetDestinationByIdDto>.Success(resultDestination);
         }
 
-        public async Task<Result> UpdateAsync(UpdateDestinationDto updateDestinationDto)
+        public override async Task<Result> UpdateAsync(int id, UpdateDestinationDto updateDestinationDto)
         {
-            var destination = await _destinationRepository.GetTableNoTracking().FirstOrDefaultAsync(d => d.Id == updateDestinationDto.Id);
+            var destination = await _destinationRepository.GetTableNoTracking().FirstOrDefaultAsync(d => d.Id == id);
             if (destination is null)
-                return Result.NotFound($"Not Found Destination with Id : {updateDestinationDto.Id}");
+                return Result.NotFound($"Not Found Destination with Id : {id}");
 
             var city = await _cityRepository.GetTableNoTracking().FirstOrDefaultAsync(c => c.Id == updateDestinationDto.CityId);
             if (city is null)

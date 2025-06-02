@@ -2,9 +2,9 @@
 
 namespace TripAgency.Service.Generic
 {
-    public interface IAddService<T, AddDto>
+    public interface IAddService<T, AddDto,GetByIdDto>
     {
-        Task<Result> CreateAsync(AddDto addCityDto);
+        Task<Result<GetByIdDto>> CreateAsync(AddDto addDto);
     }
 
 

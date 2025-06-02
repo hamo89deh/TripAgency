@@ -16,7 +16,7 @@ using TripAgency.Service.Generic;
 
 namespace TripAgency.Service.Implemetations
 {
-    public class CityService :ReadAndDeleteService<City , GetCityByIdDto,GetCitiesDto> , ICityService
+    public class CityService :GenericService<City , GetCityByIdDto,GetCitiesDto,AddCityDto,UpdateCityDto> , ICityService
     {
         private ICityRepositoryAsync _cityRepository {  get; set; }
         public IMapper _mapper { get; }
@@ -28,11 +28,6 @@ namespace TripAgency.Service.Implemetations
             _cityRepository = cityRepository;
             _mapper = mapper;
         }
-
-
-
-
-       
         public async Task<Result<GetCityByIdDto>> GetCityByNameAsync(string name)
         {
             var city = await _cityRepository.GetCityByName(name);
@@ -43,21 +38,5 @@ namespace TripAgency.Service.Implemetations
 
         }
 
-        public async Task<Result> UpdateAsync(UpdateCityDto updateCityDto)
-        {
-            var city = await _cityRepository.GetTableNoTracking().FirstOrDefaultAsync(c => c.Id == updateCityDto.Id);
-            if (city is null)
-                return Result.NotFound($"Not Found City with Id : {updateCityDto.Id}");
-            var mapCity = _mapper.Map<City>(updateCityDto);
-            await _cityRepository.UpdateAsync(mapCity);
-            return Result.Success();
-        }
-
-        public async Task<Result> CreateAsync(AddCityDto addCityDto)
-        {
-            var mapCity = _mapper.Map<City>(addCityDto);
-            await _cityRepository.AddAsync(mapCity);
-            return Result.Success($"Success cityID with id : {mapCity.Id}");
-        }
     }
 }
