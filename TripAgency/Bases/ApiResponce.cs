@@ -45,7 +45,14 @@ namespace TripAgency.Bases
         {
             return ErrorResponse((int)HttpStatusCode.NotFound, message);
         }
+        public static ApiResponse<T> ConflictResponse(string message = "Conflict.")
+        {
+            return ErrorResponse((int)HttpStatusCode.Conflict, message);
+        }
 
-
+        public static ApiResponse<T> InternalServerErrorResponse(string message = "Internal Server Error.")
+        {
+            return ErrorResponse((int)HttpStatusCode.InternalServerError, message);
+        }
     }
 }

@@ -9,7 +9,9 @@ using TripAgency.Api.Behavior;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.Data.SqlClient;
-using TripAgency.Api.Feature.City.Command.Validaters;
+using TripAgency.Service.Feature.City.Command.Validaters;
+using TripAgency.Service.Feature.City.Command;
+using TripAgency.Service.Mapping.City_Entity;
 
 
 namespace TripAgency
@@ -28,11 +30,13 @@ namespace TripAgency
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
             builder.Services.AddDbContext<TripAgencyDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
             builder.Services.AddServicesDependencies()
                             .AddInfrastructureDependencies();
+            builder.Services.AddAutoMapper(typeof(CityProfile).Assembly);
 
-            builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
             builder.Services.AddFluentValidationAutoValidation()
                             .AddValidatorsFromAssembly(typeof(AddCityDtoValidation).Assembly);
 

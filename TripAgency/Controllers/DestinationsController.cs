@@ -1,13 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Net;
+using TripAgency.Api.Extention;
 using TripAgency.Bases;
-using TripAgency.Data.Entities;
-using TripAgency.Feature.Destination.Commands;
-using TripAgency.Feature.Destination.Queries;
 using TripAgency.Service.Abstracts;
+using TripAgency.Service.Feature.Destination.Commands;
+using TripAgency.Service.Feature.Destination.Queries;
 
 namespace TripAgency.Controllers
 {
@@ -33,56 +30,64 @@ namespace TripAgency.Controllers
         [HttpGet]
         public async Task<ApiResult<IEnumerable<GetDestinationsDto>>> GetDestinations()
         {
-            var Destinations = await _destinationService.GetAll().ToListAsync();
-            if (Destinations.Count == 0)
-                return ApiResult<IEnumerable<GetDestinationsDto>>.NotFound();
-            var DestinationssResult = _mapper.Map<List<GetDestinationsDto>>(Destinations);
-            return ApiResult<IEnumerable<GetDestinationsDto>>.Ok(DestinationssResult);
+            var result = await _destinationService.GetDestinationsAsync();
+            if (!result.IsSuccess)
+            {
+                return this.ToApiResult(result);
+            }
+            return ApiResult<IEnumerable<GetDestinationsDto>>.Ok(result.Value!);
         }
         [HttpGet("{id}")]
-     
+
         public async Task<ApiResult<GetDestinationByIdDto>> GetDestinationById(int id)
         {
-            var destination = await _destinationService.GetByIdAsync(id);
-            if (destination is null)
-                return ApiResult<GetDestinationByIdDto>.NotFound();
+            var result = await _destinationService.GetDestinationByIdAsync(id);
+            if (!result.IsSuccess)
+            {
+                return this.ToApiResult(result);
+            }
+            return ApiResult<GetDestinationByIdDto>.Ok(result.Value!);
+        }
+        [HttpGet("City/{cityName}")]
 
-            var destinationResult = _mapper.Map<GetDestinationByIdDto>(destination);
-
-            return ApiResult<GetDestinationByIdDto>.Ok(destinationResult);
+        public async Task<ApiResult<IEnumerable<GetDestinationsByCityNameDto>>> GetDestinationByCityName(string cityName)
+        {
+            var result = await _destinationService.GetDestinationsByCityName(cityName);
+            if (!result.IsSuccess)
+            {
+                return this.ToApiResult(result);
+            }
+            return ApiResult<IEnumerable<GetDestinationsByCityNameDto>>.Ok(result.Value!);
         }
         [HttpPost]
-        public async Task<ApiResult<string>> AddDestination(AddDestinationDto destination)
+        public async Task<ApiResult<string>> AddDestination(AddDestinationDto destinationDto)
         {
-            var city = _cityService.GetAll().FirstOrDefault(c => c.Id == destination.CityId);
-            if (city is null)
-                return ApiResult<string>.NotFound($"Not Found City with id : {destination.CityId}");
-
-            var resultDestination = await _destinationService.AddAsync(_mapper.Map<Destination>(destination));
-            return ApiResult<string>.Ok($"DestinationId : {resultDestination.Id}");
+            var result = await _destinationService.CreateDestinationAsync(destinationDto);
+            if (!result.IsSuccess)
+            {
+                return this.ToApiResult<string>(result);
+            }
+            return ApiResult<string>.Ok(result.Message);
         }
         [HttpPut]
-        public async Task<ApiResult<string>> UpdateDestination(EditDestinationDto destination)
+        public async Task<ApiResult<string>> UpdateDestination(EditDestinationDto destinationDto)
         {
-            var city = _cityService.GetAll().FirstOrDefault(c => c.Id == destination.CityId);
-            if (city is null)
-                return ApiResult<string>.NotFound($"Not Found City with id : {destination.CityId}");
-            var destinationResult = await _destinationService.GetAll().FirstOrDefaultAsync(x => x.Id == destination.Id);
-            if (destinationResult is null)
-                return ApiResult<string>.NotFound();
-            await _destinationService.UpdateAsync(_mapper.Map<Destination>(destination));
-            return ApiResult<string>.Ok("", "Success Updated");
-
+            var result = await _destinationService.UpdateDestinationAsync(destinationDto);
+            if (!result.IsSuccess)
+            {
+                return this.ToApiResult<string>(result);
+            }
+            return ApiResult<string>.Ok("Success Updated");
         }
         [HttpDelete("{id}")]
         public async Task<ApiResult<string>> DeleteDestination(int id)
         {
-            var destinationResult = await _destinationService.GetAll().FirstOrDefaultAsync(x => x.Id == id);
-            if (destinationResult is null)
-                return ApiResult<string>.NotFound();
-
-            await _destinationService.DeleteAsync(destinationResult);
-            return ApiResult<string>.Ok("", "Success Deleted");
+            var result = await _destinationService.DeleteDestinationAsync(id);
+            if (!result.IsSuccess)
+            {
+                return this.ToApiResult<string>(result);
+            }
+            return ApiResult<string>.Ok("Success Deleted");
         }
     }
 }

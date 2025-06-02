@@ -16,7 +16,9 @@ namespace TripAgency.Bases
         {
             var objectResult = new ObjectResult(_apiResponse)
             {
-                StatusCode = _apiResponse.StatusCode
+                StatusCode = _apiResponse.StatusCode 
+                
+
             };
 
             await objectResult.ExecuteResultAsync(context);
@@ -47,7 +49,14 @@ namespace TripAgency.Bases
         {
             return new ApiResult<T>(ApiResponse<T>.NotFoundResponse(message));
         }
+        public static ApiResult<T> Conflict(string message = "Confilct.")
+        {
+            return new ApiResult<T>(ApiResponse<T>.ConflictResponse(message));
+        }
+        public static ApiResult<T> InternalServerError(string message = "Internal Server Error.")
+        {
+            return new ApiResult<T>(ApiResponse<T>.InternalServerErrorResponse(message));
+        }
 
-    
     }
 }

@@ -6,17 +6,17 @@ using System.Text;
 using System.Threading.Tasks;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Implemetations;
-using TripAgency.Service.ServiceBases;
 
 namespace TripAgency.Service
 {
     public static class ModuleServicesDependencies
     {
         public static IServiceCollection AddServicesDependencies(this IServiceCollection services)
-        {
-            services.AddTransient(typeof(IGenericServices<>), typeof(GenericServices<>));
+        {          
+
             services.AddTransient<ICityService,CityService>();
             services.AddTransient<IDestinationService,DestinationService>();
+
             return services;
         }
     }

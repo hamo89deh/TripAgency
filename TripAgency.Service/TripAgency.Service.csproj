@@ -9,4 +9,13 @@
   <ItemGroup>
     <ProjectReference Include="..\TripAgency.Infrastructure\TripAgency.Infrastructure.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Feature\City\Result\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="FluentValidation" Version="11.5.1" />
+  </ItemGroup>
 </Project>

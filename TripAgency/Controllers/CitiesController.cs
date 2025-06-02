@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using TripAgency.Api.Extention;
 using TripAgency.Bases;
 using TripAgency.Data.Entities;
-using TripAgency.Feature.City;
-using TripAgency.Feature.City.Command;
-using TripAgency.Feature.City.Queries;
 using TripAgency.Service.Abstracts;
+using TripAgency.Service.Feature.City.Command;
+using TripAgency.Service.Feature.City.Queries;
 
 namespace TripAgency.Controllers
 {
@@ -27,49 +27,53 @@ namespace TripAgency.Controllers
 
         [HttpGet]
         public async Task<ApiResult<IEnumerable<GetCitiesDto>>> GetCities()
-        {
-            var Cities = await _cityService.GetAll().ToListAsync();
-            if (Cities.Count == 0)
-                return ApiResult <IEnumerable<GetCitiesDto>>.NotFound();
-            var citiesResult = _mapper.Map<List<GetCitiesDto>>(Cities);
-            return ApiResult < IEnumerable < GetCitiesDto >>.Ok(citiesResult);
+        { 
+            var citiesResult = await _cityService.GetCitiesAsync();
+            if (!citiesResult.IsSuccess)
+               return this.ToApiResult(citiesResult);         
+            return ApiResult<IEnumerable<GetCitiesDto>>.Ok(citiesResult.Value!);
         }
         [HttpGet("{id}")]
         public async Task<ApiResult<GetCityByIdDto>> GetCityById(int id)
         {
-            var city = await _cityService.GetByIdAsync(id);
-            if (city is null)
-                return ApiResult<GetCityByIdDto>.NotFound();
+            var cityResult = await _cityService.GetCityByIdAsync(id);
+            if (!cityResult.IsSuccess)
+                return this.ToApiResult(cityResult);
+            return ApiResult<GetCityByIdDto>.Ok(cityResult.Value!);
+        }
 
-            var cityResult = _mapper.Map<GetCityByIdDto>(city);
-
-            return ApiResult<GetCityByIdDto>.Ok(cityResult);
+        [HttpGet("Name/{name}")]
+        public async Task<ApiResult<GetCityByIdDto>> GetCityByName(string name)
+        {
+            var cityResult = await _cityService.GetCityByNameAsync(name);
+            if (!cityResult.IsSuccess)
+                return this.ToApiResult(cityResult);
+            return ApiResult<GetCityByIdDto>.Ok(cityResult.Value!);
         }
         [HttpPost]
         public async Task<ApiResult<string>> AddCity(AddCityDto city)
         {
-            var ResultCity= await _cityService.AddAsync(_mapper.Map<City>(city));
-            return ApiResult<string>.Ok($"CityId : {ResultCity.Id}");
+            var cityResult= await _cityService.CreateCityAsync(city);
+            if (!cityResult.IsSuccess)
+                return this.ToApiResult<string>(cityResult);
+            return ApiResult<string>.Created(cityResult.Message);
         }
         [HttpPut]
-        public async Task<ApiResult<string>> UpdateCity(EditCityDto city)
+        public async Task<ApiResult<string>> UpdateCity(EditCityDto updateCity)
         {
-            var cityResult = await _cityService.GetAll().FirstOrDefaultAsync(x => x.Id == city.Id);
-            if (cityResult is null)
-                return ApiResult<string>.NotFound();
-            await _cityService.UpdateAsync(_mapper.Map<City>(city));
-            return ApiResult<string>.Ok("","Success Updated");
+            var cityResult = await _cityService.UpdateCityAsync(updateCity);
+            if (!cityResult.IsSuccess)
+                return this.ToApiResult<string>(cityResult);
+            return ApiResult<string>.NoContent("Success Updated");
 
         }
         [HttpDelete]
         public async Task<ApiResult<string>> DeleteCity(int id)
         {
-            var city = await _cityService.GetAll().FirstOrDefaultAsync(x=>x.Id==id);
-            if (city is null)
-                return ApiResult<string>.NotFound();
-
-            await _cityService.DeleteAsync(city);
-            return ApiResult<string>.Ok("","Success Deleted");
+            var cityResult = await _cityService.DeleteCityAsync(id);
+            if (!cityResult.IsSuccess)
+                return this.ToApiResult<string>(cityResult);
+            return ApiResult<string>.Ok("Success Delete");
         }
     }
 }
