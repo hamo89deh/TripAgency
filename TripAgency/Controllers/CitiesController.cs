@@ -66,7 +66,7 @@ namespace TripAgency.Controllers
             var cityResult = await _cityService.UpdateAsync(updateCity.Id,updateCity);
             if (!cityResult.IsSuccess)
                 return this.ToApiResult<string>(cityResult);
-            return ApiResult<string>.NoContent("Success Updated");
+            return ApiResult<string>.Ok("Success Updated");
 
         }
         [HttpDelete]
