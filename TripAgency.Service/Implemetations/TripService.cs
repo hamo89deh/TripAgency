@@ -12,14 +12,16 @@ namespace TripAgency.Service.Implemetations
     public class TripService : GenericService<Trip, GetTripByIdDto, GetTripsDto, AddTripDto, UpdateTripDto>, ITripService
     {
         private ITripRepositoryAsync _tripRepository { get; set; }
+        private ITypeTripRepositoryAsync _typeTripRepository { get; set; }
         public IMapper _mapper { get; }
 
         public TripService(ITripRepositoryAsync tripRepository,
-                           IMapper mapper
-                           ) : base(tripRepository, mapper)
+                           IMapper mapper,
+                           ITypeTripRepositoryAsync typeTripRepository) : base(tripRepository, mapper)
         {
             _tripRepository = tripRepository;
             _mapper = mapper;
+            _typeTripRepository = typeTripRepository;
         }
         public async Task<Result<GetTripByIdDto>> GetTripByNameAsync(string name)
         {
@@ -29,6 +31,21 @@ namespace TripAgency.Service.Implemetations
             var tripResult = _mapper.Map<GetTripByIdDto>(trip);
             return Result<GetTripByIdDto>.Success(tripResult);
 
+        }
+        public override async Task<Result<GetTripByIdDto>> CreateAsync(AddTripDto AddDto)
+        {
+            var typeTrip = await _typeTripRepository.GetByIdAsync(AddDto.TypeTripId);
+            if (typeTrip is null)
+                return Result<GetTripByIdDto>.NotFound($"Not Found Type Trip with Id : {AddDto.TypeTripId}");
+            return  await base.CreateAsync(AddDto);
+
+        }
+        public override async Task<Result> UpdateAsync(int id, UpdateTripDto UpdateDto)
+        {
+            var typeTrip = await _typeTripRepository.GetByIdAsync(UpdateDto.TypeTripId);
+            if (typeTrip is null)
+                return Result.NotFound($"Not Found Type Trip with Id : {UpdateDto.TypeTripId}");
+            return await base.UpdateAsync(id, UpdateDto);
         }
 
     }

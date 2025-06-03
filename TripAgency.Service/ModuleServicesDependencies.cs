@@ -17,6 +17,8 @@ namespace TripAgency.Service
             services.AddTransient<ICityService,CityService>();
             services.AddTransient<IDestinationService,DestinationService>();
             services.AddTransient<IHotelService,HotelService>();
+            services.AddTransient<ITripService, TripService>();
+            services.AddTransient<ITypeTripService, TypeTripService>();
 
             return services;
         }
