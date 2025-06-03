@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TripAgency.Data.Entities;
 using TripAgency.Infrastructure.Abstracts;
 using TripAgency.Infrastructure.InfrastructureBases;
 using TripAgency.Infrastructure.Repositories;
@@ -20,6 +21,7 @@ namespace TripAgency.Infrastructure
             services.AddTransient < IHotelRepositoryAsync, HotelRepositoryAsync>();
             services.AddTransient < ITripRepositoryAsync, TripRepositoryAsync>();
             services.AddTransient < ITypeTripRepositoryAsync, TypeTripRepositoryAsync>();
+            services.AddTransient < IPackageTripRepositoryAsync, PackageTripRepositoryAsync>();
             
 
             return services;
