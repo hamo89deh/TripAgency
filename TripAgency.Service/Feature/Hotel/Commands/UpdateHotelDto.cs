@@ -1,6 +1,6 @@
 ﻿namespace TripAgency.Service.Feature.Hotel.Commands
 {
-    public class EditHotelDto
+    public class UpdateHotelDto
     {
         public int Id { get; set; }
         public string Name { get; set; }
