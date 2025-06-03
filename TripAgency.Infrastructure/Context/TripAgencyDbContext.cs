@@ -20,6 +20,8 @@ namespace TripAgency.Infrastructure.Context
 
         public DbSet<Destination> Destinations { get; set; }
         public DbSet<Hotel> Hotels { get; set; }
+        public DbSet<Trip> Trips { get; set; }
+        public DbSet<TypeTrip> TypeTrips { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
