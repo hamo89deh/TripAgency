@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TripAgency.Service.Feature.PackageTrip.Commands
 {
-    public class AddPackagaTripDto
+    public class AddPackageTripDto
     {
         public string Name { get; set; }
         public string Description { get; set; }

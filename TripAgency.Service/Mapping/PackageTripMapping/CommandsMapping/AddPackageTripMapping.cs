@@ -13,7 +13,7 @@ namespace TripAgency.Service.Mapping.PackageTripMapping
     {
         public void AddPackageTripMpping()
         {
-            CreateMap<AddPackagaTripDto, PackageTrip>()
+            CreateMap<AddPackageTripDto, PackageTrip>()
                 .ForMember(s => s.Name, op => op.MapFrom(s => s.Name))
                 .ForMember(s => s.Description, op => op.MapFrom(s => s.Description))
                 .ForMember(s => s.TripId, op => op.MapFrom(s => s.TripId))

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using TripAgency.Data.Entities;
 using TripAgency.Service.Feature.TypeTrip_Entity.Commands;
 
-namespace TripAgency.Service.Mapping.TypTrip_Entity
+namespace TripAgency.Service.Mapping.TypeTrip_Entity
 {
     public partial class TypeTripProfile
     {

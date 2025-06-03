@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TripAgency.Service.Mapping.TypTrip_Entity
+namespace TripAgency.Service.Mapping.TypeTrip_Entity
 {
     public partial class TypeTripProfile : Profile
     {

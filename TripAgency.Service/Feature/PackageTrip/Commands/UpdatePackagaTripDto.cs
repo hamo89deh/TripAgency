@@ -1,6 +1,6 @@
 ﻿namespace TripAgency.Service.Feature.PackageTrip.Commands
 {
-    public class UpdatePackagaTripDto
+    public class UpdatePackageTripDto
     {
         public int Id { get; set; }
         public string Name { get; set; }
