@@ -17,6 +17,7 @@ namespace TripAgency.Infrastructure
             services.AddTransient(typeof(IGenericRepositoryAsync<>), typeof(GenericRepositoryAsync<>));
             services.AddTransient<ICityRepositoryAsync, CityRepositoryAsync>();
             services.AddTransient<IDestinationRepositoryAsync, DestinationRepositoryAsync>();
+            services.AddTransient < IHotelRepositoryAsync, HotelRepositoryAsync>();
             
 
             return services;

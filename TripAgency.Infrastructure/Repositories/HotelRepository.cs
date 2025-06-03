@@ -6,9 +6,9 @@ using TripAgency.Infrastructure.InfrastructureBases;
 
 namespace TripAgency.Infrastructure.Repositories
 {
-    public class HotelRepository : GenericRepositoryAsync<Hotel>, IHotelRepositoryAsync
+    public class HotelRepositoryAsync : GenericRepositoryAsync<Hotel>, IHotelRepositoryAsync
     {
-        public HotelRepository(TripAgencyDbContext context) : base(context)
+        public HotelRepositoryAsync(TripAgencyDbContext context) : base(context)
         {
            
         }
