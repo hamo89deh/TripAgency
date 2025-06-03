@@ -14,5 +14,7 @@ namespace TripAgency.Data.Entities
         public TypeTrip TypeTrip { get; set; }  
         public int TypeTripId { get; set; }  
 
+        public IEnumerable<PackageTrip> TripList { get; set; }
+
     }
 }
