@@ -18,8 +18,8 @@ namespace TripAgency.Service.Abstracts
                                     IAddService<City , AddCityDto , GetCityByIdDto>,
                                     IDeleteService<City>
     {
-        Task<Result<GetCityByIdDto>> GetCityByNameAsync(string name);      
-       
-        
+        Task<Result<GetCityByIdDto>> GetCityByNameAsync(string name);
+
+
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace TripAgency.Service.Feature.Activity.Queries
 {
-    public class GetAcivitiesDto
+    public class GetActivitiesDto
     {
         public int Id { get; set; }
         public string Name { get; set; }

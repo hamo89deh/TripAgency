@@ -69,7 +69,7 @@ namespace TripAgency.Api.Controllers
 
         }
         [HttpDelete]
-        public async Task<ApiResult<string>> DeleteCity(int id)
+        public async Task<ApiResult<string>> DeleteHotel(int id)
         {
             var hotelResult = await _hotelService.DeleteAsync(id);
             if (!hotelResult.IsSuccess)
