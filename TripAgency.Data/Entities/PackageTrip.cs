@@ -14,6 +14,7 @@
         public Trip Trip { get; set; }
         public int TripId { get; set; }
         public IEnumerable<PackageTripType> PackageTripTypes { get; set; }
+        public IEnumerable<PackageTripDestination> PackageTripDestinations { get; set; }
 
 
 

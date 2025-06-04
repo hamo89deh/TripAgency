@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -24,6 +25,9 @@ namespace TripAgency.Infrastructure.Context
         public DbSet<TypeTrip> TypeTrips { get; set; }
         public DbSet<PackageTrip> PackageTrips { get; set; }
         public DbSet<PackageTripType> PackageTripTypes { get; set; }
+        public DbSet<PackageTripDestination> PackageTripDestinations { get; set; }
+        public DbSet<PackageTripDestinationActivity> PackageTripDestinationActivities { get; set; }
+        public DbSet<Data.Entities.Activity> Activities { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
