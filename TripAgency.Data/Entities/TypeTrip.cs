@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public string Name { get; set; }
 
-        public IEnumerable<Trip> Trip { get; set;}
+        public IEnumerable<PackageTripType> PackageTripTypes { get; set;}
     }
+
 }

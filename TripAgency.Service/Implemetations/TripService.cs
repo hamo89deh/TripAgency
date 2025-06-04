@@ -32,21 +32,5 @@ namespace TripAgency.Service.Implemetations
             return Result<GetTripByIdDto>.Success(tripResult);
 
         }
-        public override async Task<Result<GetTripByIdDto>> CreateAsync(AddTripDto AddDto)
-        {
-            var typeTrip = await _typeTripRepository.GetByIdAsync(AddDto.TypeTripId);
-            if (typeTrip is null)
-                return Result<GetTripByIdDto>.NotFound($"Not Found Type Trip with Id : {AddDto.TypeTripId}");
-            return  await base.CreateAsync(AddDto);
-
-        }
-        public override async Task<Result> UpdateAsync(int id, UpdateTripDto UpdateDto)
-        {
-            var typeTrip = await _typeTripRepository.GetByIdAsync(UpdateDto.TypeTripId);
-            if (typeTrip is null)
-                return Result.NotFound($"Not Found Type Trip with Id : {UpdateDto.TypeTripId}");
-            return await base.UpdateAsync(id, UpdateDto);
-        }
-
     }
 }

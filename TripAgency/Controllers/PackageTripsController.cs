@@ -12,7 +12,8 @@ namespace TripAgency.Api.Controllers
     [ApiController]
     public class PackageTripsController : ControllerBase
     {
-        public PackageTripsController(IPackageTripService hotelService, IMapper mapper)
+        public PackageTripsController(IPackageTripService hotelService,
+                                      IMapper mapper)
         {
             _hotelService = hotelService;
             _mapper = mapper;
