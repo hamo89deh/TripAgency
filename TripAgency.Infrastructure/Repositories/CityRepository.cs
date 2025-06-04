@@ -22,4 +22,5 @@ namespace TripAgency.Infrastructure.Repositories
            return await _dbContext.Set<City>().FirstOrDefaultAsync(x => x.Name .Contains(Name));
         }
     }
+
 }

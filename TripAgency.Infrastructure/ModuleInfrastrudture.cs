@@ -21,7 +21,11 @@ namespace TripAgency.Infrastructure
             services.AddTransient < IHotelRepositoryAsync, HotelRepositoryAsync>();
             services.AddTransient < ITripRepositoryAsync, TripRepositoryAsync>();
             services.AddTransient < ITypeTripRepositoryAsync, TypeTripRepositoryAsync>();
+            services.AddTransient < IActivityRepositoryAsync, ActivityRepositoryAsync>();
             services.AddTransient < IPackageTripRepositoryAsync, PackageTripRepositoryAsync>();
+            services.AddTransient < IPackageTripDestinationActivityRepositoryAsync, PackageTripDestinationActivityRepositoryAsync>();
+            services.AddTransient < IPackageTripDestinationRepositoryAsync, PackageTripDestinationRepositoryAsync>();
+            services.AddTransient < IPackageTripTypeRepositoryAsync, PackageTripTypeRepositoryAsync>();
             
 
             return services;
