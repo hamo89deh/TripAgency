@@ -16,8 +16,8 @@ namespace TripAgency.Infrastructure
         public static IServiceCollection AddInfrastructureDependencies(this IServiceCollection services)
         {
             services.AddTransient(typeof(IGenericRepositoryAsync<>), typeof(GenericRepositoryAsync<>));
-            services.AddTransient<ICityRepositoryAsync, CityRepositoryAsync>();
-            services.AddTransient<IDestinationRepositoryAsync, DestinationRepositoryAsync>();
+            services.AddTransient< ICityRepositoryAsync, CityRepositoryAsync>();
+            services.AddTransient< IDestinationRepositoryAsync, DestinationRepositoryAsync>();
             services.AddTransient < IHotelRepositoryAsync, HotelRepositoryAsync>();
             services.AddTransient < ITripRepositoryAsync, TripRepositoryAsync>();
             services.AddTransient < ITypeTripRepositoryAsync, TypeTripRepositoryAsync>();
@@ -26,7 +26,7 @@ namespace TripAgency.Infrastructure
             services.AddTransient < IPackageTripDestinationActivityRepositoryAsync, PackageTripDestinationActivityRepositoryAsync>();
             services.AddTransient < IPackageTripDestinationRepositoryAsync, PackageTripDestinationRepositoryAsync>();
             services.AddTransient < IPackageTripTypeRepositoryAsync, PackageTripTypeRepositoryAsync>();
-            services.AddTransient <ITripDateRepositoryAsync, TripDateRepositoryAsync>();
+            services.AddTransient < ITripDateRepositoryAsync, TripDateRepositoryAsync>();
             
 
             return services;

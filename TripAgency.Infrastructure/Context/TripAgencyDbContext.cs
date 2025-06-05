@@ -24,11 +24,11 @@ namespace TripAgency.Infrastructure.Context
         public DbSet<Trip> Trips { get; set; }
         public DbSet<TypeTrip> TypeTrips { get; set; }
         public DbSet<PackageTrip> PackageTrips { get; set; }
-        public DbSet<TripDate> TripDates { get; set; }
         public DbSet<PackageTripType> PackageTripTypes { get; set; }
         public DbSet<PackageTripDestination> PackageTripDestinations { get; set; }
         public DbSet<PackageTripDestinationActivity> PackageTripDestinationActivities { get; set; }
         public DbSet<Data.Entities.Activity> Activities { get; set; }
+        public DbSet<TripDate> TripDates { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
