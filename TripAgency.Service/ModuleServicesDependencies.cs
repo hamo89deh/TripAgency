@@ -21,6 +21,7 @@ namespace TripAgency.Service
             services.AddTransient<ITypeTripService, TypeTripService>();
             services.AddTransient<IPackageTripService, PackageTripService>();
             services.AddTransient<IActivityService, ActivityService>();
+            services.AddTransient<ITripDateService, TripDateService>();
 
             return services;
         }

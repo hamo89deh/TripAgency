@@ -6,13 +6,10 @@ using System.Threading.Tasks;
 
 namespace TripAgency.Data
 {
-    public enum TripStatus
+    public enum TripDataStatus
     {
-        Pendin=0,
         Available,
-        Ongoing ,
         Completed ,
-        Cancelled,
-        Planned 
+        Cancelled
     }
 }
