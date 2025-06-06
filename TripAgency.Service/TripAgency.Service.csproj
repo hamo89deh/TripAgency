@@ -14,6 +14,7 @@
     <Folder Include="Feature\City\Result\" />
     <Folder Include="Feature\Hotel\Commands\Validation\" />
     <Folder Include="Feature\PackageTripDestination\Queries\" />
+    <Folder Include="Mapping\PackageTripDestination_Entity\QueriesMapping\" />
   </ItemGroup>
 
   <ItemGroup>
