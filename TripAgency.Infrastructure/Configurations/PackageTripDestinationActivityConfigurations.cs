@@ -37,9 +37,9 @@ namespace TripAgency.Infrastructure.Configurations
                    .HasForeignKey(x => x.PackageTripDestinationId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(x => x.Activity)
+            builder.HasOne(x => x.DestinationActivity)
                   .WithMany(x => x.PackageTripDestinationActivities)
-                  .HasForeignKey(x => x.ActivityId)
+                  .HasForeignKey(x => x.DestinationActivityId)
                   .OnDelete(DeleteBehavior.Restrict);
 
         }

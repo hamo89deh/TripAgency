@@ -29,6 +29,8 @@ namespace TripAgency.Infrastructure.Context
         public DbSet<PackageTripDestinationActivity> PackageTripDestinationActivities { get; set; }
         public DbSet<Data.Entities.Activity> Activities { get; set; }
         public DbSet<TripDate> TripDates { get; set; }
+        public DbSet<TripDestination> TripDestinations { get; set; }
+        public DbSet<DestinationActivity> DestinationActivities { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
