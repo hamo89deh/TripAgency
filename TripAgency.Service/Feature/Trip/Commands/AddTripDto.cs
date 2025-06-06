@@ -1,4 +1,6 @@
-﻿namespace TripAgency.Service.Feature.Trip.Commands
+﻿using TripAgency.Service.Feature.Destination.Commands;
+
+namespace TripAgency.Service.Feature.Trip.Commands
 {
     public class AddTripDto
     {

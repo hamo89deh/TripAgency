@@ -13,6 +13,8 @@ namespace TripAgency.Service.Abstracts
                                    IDeleteService<Trip>
     {
         Task<Result<GetTripByIdDto>> GetTripByNameAsync(string name);
+        Task<Result<GetTripDestinationsDto>> AddTripDestinations(AddTripDestinationsDto addTripDestinationsDto);
+        Task<Result<GetTripDestinationsDto>> GetTripDestinationsById(int TripId);
 
 
     }

@@ -37,6 +37,14 @@ namespace TripAgency.Controllers
                 return this.ToApiResult(tripResult);
             return ApiResult<GetTripByIdDto>.Ok(tripResult.Value!);
         }
+        [HttpGet("{id}/Destinations")]
+        public async Task<ApiResult<GetTripDestinationsDto>> GetTripDestinationsById(int id)
+        {
+            var tripResult = await _tripService.GetTripDestinationsById(id);
+            if (!tripResult.IsSuccess)
+                return this.ToApiResult(tripResult);
+            return ApiResult<GetTripDestinationsDto>.Ok(tripResult.Value!);
+        }
 
         [HttpGet("Name/{name}")]
         public async Task<ApiResult<GetTripByIdDto>> GetTripByName(string name)
@@ -55,6 +63,16 @@ namespace TripAgency.Controllers
                 return this.ToApiResult(tripResult);
             }
             return ApiResult<GetTripByIdDto>.Created(tripResult.Value!);
+        }
+        [HttpPost("Destination")]
+        public async Task<ApiResult<GetTripDestinationsDto>> AddTripDestination(AddTripDestinationsDto addTripDestinationsDto)
+        {
+            var tripResult = await _tripService.AddTripDestinations(addTripDestinationsDto);
+            if (!tripResult.IsSuccess)
+            {
+                return this.ToApiResult(tripResult);
+            }
+            return ApiResult<GetTripDestinationsDto>.Created(tripResult.Value!);
         }
         [HttpPut]
         public async Task<ApiResult<string>> UpdateTrip(UpdateTripDto updateTrip)

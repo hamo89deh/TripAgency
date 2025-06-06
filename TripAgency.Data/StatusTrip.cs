@@ -8,8 +8,9 @@ namespace TripAgency.Data
 {
     public enum TripDataStatus
     {
-        Available,
+        Available=0,
         Completed ,
-        Cancelled
+        Cancelled,
+        Planned
     }
 }

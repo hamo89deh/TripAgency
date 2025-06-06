@@ -8,6 +8,8 @@ using TripAgency.Service.Feature.PackageTripDestination.Queries;
 
 namespace TripAgency.Api.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class PackageTripDestinationsController : ControllerBase
     {
         public PackageTripDestinationsController(IPackageTripDestinationService packageTripDestinationService, IMapper mapper)
@@ -18,6 +20,7 @@ namespace TripAgency.Api.Controllers
 
         public IPackageTripDestinationService _packageTripDestinationService { get; }
         public IMapper _mapper { get; }
+        [HttpPost]
         public async Task<ApiResult<GetPackageTripDestinationByIdDto>> AddPackageTripDestination(AddPackageTripDestinationDto packageTripDestination)
         {
             var packageTripDestinationResult = await _packageTripDestinationService.CreateAsync(packageTripDestination);

@@ -38,7 +38,7 @@ namespace TripAgency.Infrastructure.Configurations
             builder.ToTable("PackageTrips");
 
             builder.HasOne(c => c.Trip)
-                   .WithMany(h => h.TripList)
+                   .WithMany(h => h.PackageTrips)
                    .HasForeignKey(h => h.TripId)
                    .OnDelete(DeleteBehavior.Restrict);
 

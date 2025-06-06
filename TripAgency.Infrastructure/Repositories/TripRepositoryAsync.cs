@@ -11,7 +11,7 @@ namespace TripAgency.Infrastructure.Repositories
         public TripRepositoryAsync(TripAgencyDbContext dbContext) : base(dbContext)
         {
         }
-
+      
         public async Task<Trip?> GetTripByName(string Name)
         {
             return await _dbContext.Set<Trip>().FirstOrDefaultAsync(x => x.Name.Contains(Name));
