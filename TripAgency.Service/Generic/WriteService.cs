@@ -33,7 +33,7 @@ namespace TripAgency.Service.Generic
             return Result<GetByIdDto>.Success(resultEntity);
         }
 
-        public async Task<Result> DeleteAsync(int id)
+        public virtual async Task<Result> DeleteAsync(int id)
         {
             var entity = await _repoAsync.GetByIdAsync(id);
             if (entity is null)
