@@ -7,9 +7,6 @@
         public int DestinationId { get; set; }
         public Trip Trip { get; set; }
         public Destination Destination { get; set; }
-        public IEnumerable<PackageTripDestination> PackageTripDestinations { get; set; }
-
-
     }
 
 }

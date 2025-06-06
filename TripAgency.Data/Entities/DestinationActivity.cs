@@ -8,7 +8,6 @@
         public Destination Destination { get; set; }
         public Activity Activity { get; set; }
 
-        public IEnumerable<PackageTripDestinationActivity> PackageTripDestinationActivities { get; set; }
 
     }
 

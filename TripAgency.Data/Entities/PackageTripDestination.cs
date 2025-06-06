@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public int PackageTripId { get; set; }
-        public int TripDestinationId { get; set; }
+        public int DestinationId { get; set; }
         public int DayNumber { get; set; }
         public int OrderDestination { get; set; }
         public TimeSpan StartTime { get; set; }
@@ -14,7 +14,7 @@
         
 
         public PackageTrip PackageTrip { get; set; }
-        public TripDestination TripDestination { get; set; }
+        public Destination Destination { get; set; }
         public IEnumerable<PackageTripDestinationActivity> PackageTripDestinationActivities { get; set; }
 
 
