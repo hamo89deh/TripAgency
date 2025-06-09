@@ -12,6 +12,7 @@ using TripAgency.Infrastructure.InfrastructureBases;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.PackageTripDestination.Commands;
 using TripAgency.Service.Feature.PackageTripDestination.Queries;
+using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
 using TripAgency.Service.Generic;
 
 namespace TripAgency.Service.Implemetations
@@ -71,21 +72,30 @@ namespace TripAgency.Service.Implemetations
             {
                 return Result.NotFound($"Not Found PackageTrip With Id : {UpdateDto.PackageTripId}");
             }
+            if (PackageTrip.Id != PackageTripDestination.PackageTripId)
+            {
+                return Result.BadRequest($"The PackageTripDestination With Id {PackageTripDestination.Id} Not Have PackgeTripId : {UpdateDto.PackageTripId}");
+            }
             var Destination = await _destinationRepositoryAsync.GetByIdAsync(UpdateDto.DestinationId);
             if (Destination is null)
             {
                 return Result.NotFound($"Not Found Destination With Id : {UpdateDto.PackageTripId}");
             }
-            var TripDestination = await _tripDestinationRepositoryAsync.GetTableNoTracking().FirstOrDefaultAsync(x => x.TripId == PackageTrip.TripId && x.DestinationId == Destination.Id);
+
+            var TripDestination = await _tripDestinationRepositoryAsync.GetTableNoTracking()
+                                                                       .FirstOrDefaultAsync(x => x.TripId == PackageTrip.TripId 
+                                                                                              && x.DestinationId == Destination.Id);
             if (TripDestination is null)
             {
                 return Result.BadRequest($" Cann't Add Destination With Id : {UpdateDto.PackageTripId} For PackageTrip With Id : {PackageTrip.Id}");
             }
-            var TripDate = await _tripDateRepositoryAsync.GetTableNoTracking().FirstOrDefaultAsync(x => x.PackageTripId == PackageTrip.Id);
-            if(TripDate is not null)
+            var TripDate = await _tripDateRepositoryAsync.GetTableNoTracking()
+                                                         .FirstOrDefaultAsync(x => x.PackageTripId == PackageTrip.Id);
+
+
+            if (TripDate is not null)
             {
                 return Result.BadRequest($" Cann't Update PackageTripDestination Because you have tripDate Connected before with PackageTrip: {PackageTrip.Id}");
-
             }
             return await base.UpdateAsync(id, UpdateDto);
         }

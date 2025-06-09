@@ -1,9 +1,7 @@
 ﻿namespace TripAgency.Service.Feature.PackageTripDestinationActivity.Commands
 {
-    public class UpdatePackageTripDestinationActivity
+    public class PackageTripDestinationActivitiesDto
     {
-        public int Id { get; set; }
-        public int PackageTripDestinationId { get; set; }
         public int ActivityId { get; set; }
         public decimal Price { get; set; }
         public int OrderActivity { get; set; }
