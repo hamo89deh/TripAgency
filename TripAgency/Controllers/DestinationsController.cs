@@ -85,6 +85,6 @@ namespace TripAgency.Controllers
                 return this.ToApiResult<string>(result);
             }
             return ApiResult<string>.Ok("Success Deleted");
-        }
+        }      
     }
 }

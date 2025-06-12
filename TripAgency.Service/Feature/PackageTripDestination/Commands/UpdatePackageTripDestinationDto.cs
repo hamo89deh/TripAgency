@@ -2,7 +2,6 @@
 {
     public class UpdatePackageTripDestinationDto
     {
-        public int Id { get; set; }
         public int PackageTripId { get; set; }
         public int DestinationId { get; set; }
         public int DayNumber { get; set; }

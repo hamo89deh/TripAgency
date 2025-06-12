@@ -13,6 +13,7 @@
   <ItemGroup>
     <Folder Include="Feature\City\Result\" />
     <Folder Include="Feature\Hotel\Commands\Validation\" />
+    <Folder Include="Mapping\PackageTripDestinationActivity_Entity\Queries\" />
   </ItemGroup>
 
   <ItemGroup>

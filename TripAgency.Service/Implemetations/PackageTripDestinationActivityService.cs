@@ -3,8 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using TripAgency.Data.Entities;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Infrastructure.Abstracts;
+using TripAgency.Infrastructure.Repositories;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.Activity.Queries;
+using TripAgency.Service.Feature.PackageTripDestination.Queries;
 using TripAgency.Service.Feature.PackageTripDestinationActivity.Commands;
 using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
 using TripAgency.Service.Generic;
@@ -17,15 +19,23 @@ namespace TripAgency.Service.Implemetations
         public IDestinationActivityRepositoryAsync _destinationActivityRepositoryAsync { get; }
         private ITripDateRepositoryAsync _tripDateRepositoryAsync { get; }
         private IPackageTripDestinationRepositoryAsync _packageTripDestinationRepoAsync { get; set; }
+        public IDestinationRepositoryAsync _destinationRepoAsync { get; }
+        public IPackageTripRepositoryAsync _packageTripRepoAsync { get; }
+        public IMapper _mapper { get; }
         public IPackageTripDestinationActivityRepositoryAsync _packageTripDestinationActivityRepoAsync { get; }
         public PackageTripDestinationActivityService(IPackageTripDestinationRepositoryAsync packageTripDestinationRepoAsync,
                                                      IPackageTripDestinationActivityRepositoryAsync packageTripDestinationActivityRepoAsync,
+                                                     IDestinationRepositoryAsync destinationRepoAsync,
+                                                     IPackageTripRepositoryAsync packageTripRepoAsync,
                                                      IMapper mapper,
                                                      IActivityRepositoryAsync activityRepositoryAsync,
                                                      IDestinationActivityRepositoryAsync destinationActivityRepositoryAsync,
                                                      ITripDateRepositoryAsync tripDateRepositoryAsync) : base(packageTripDestinationActivityRepoAsync, mapper)
         {
             _packageTripDestinationRepoAsync = packageTripDestinationRepoAsync;
+            _destinationRepoAsync = destinationRepoAsync;
+            _packageTripRepoAsync = packageTripRepoAsync;
+            _mapper = mapper;
             _packageTripDestinationActivityRepoAsync = packageTripDestinationActivityRepoAsync;
             _activityRepositoryAsync = activityRepositoryAsync;
             _destinationActivityRepositoryAsync = destinationActivityRepositoryAsync;
@@ -33,11 +43,23 @@ namespace TripAgency.Service.Implemetations
         }
         public override async Task<Result<GetPackageTripDestinationActivitiesDto>> CreateAsync(AddPackageTripDestinationActivityDto AddDto)
         {
-            var PackageTripDestination = await _packageTripDestinationRepoAsync.GetByIdAsync(AddDto.PackageTripDestinationId);
+            var PackageTrip = await _packageTripRepoAsync.GetByIdAsync(AddDto.PackageTripId);
+            if (PackageTrip is null)
+            {
+                return Result<GetPackageTripDestinationActivitiesDto>.NotFound($"Not Found PackageTrip With Id : {AddDto.PackageTripId}");
+            }
+            var Destination = await _destinationRepoAsync.GetByIdAsync(AddDto.DestinationId);
+            if (Destination is null)
+            {
+                return Result<GetPackageTripDestinationActivitiesDto>.NotFound($"Not Found Destination With Id : {AddDto.DestinationId}");
+            }
+            var PackageTripDestination = await _packageTripDestinationRepoAsync.GetTableNoTracking()
+                                                                               .FirstOrDefaultAsync(x=>x.PackageTripId == AddDto.PackageTripId
+                                                                                                    && x.DestinationId == AddDto.DestinationId);
            
             if (PackageTripDestination is null)
             {
-                return Result<GetPackageTripDestinationActivitiesDto>.NotFound($"Not Found PackageTripDestination With Id : {AddDto.PackageTripDestinationId}");          
+                return Result<GetPackageTripDestinationActivitiesDto>.NotFound($"Not Found PackageTrip With Id : {AddDto.PackageTripId} and Destination with Id {AddDto.DestinationId}");          
            
             }
             
@@ -123,28 +145,53 @@ namespace TripAgency.Service.Implemetations
         }
         public override async Task<Result> UpdateAsync(int id, UpdatePackageTripDestinationActivityDto UpdateDto)
         {
-            var PackageTripDestinationActivity = await _packageTripDestinationActivityRepoAsync.GetByIdAsync(id);
-            if (PackageTripDestinationActivity is null)
+            var PackageTrip = await _packageTripRepoAsync.GetByIdAsync(UpdateDto.PackageTripId);
+            if (PackageTrip is null)
             {
-                return Result.NotFound($"Not Found PackageTripDestinationActivity With Id : {id}");
-
+                return Result.NotFound($"Not Found PackageTrip With Id : {UpdateDto.PackageTripId}");
             }
 
-            var PackageTripDestination = await _packageTripDestinationRepoAsync.GetByIdAsync(UpdateDto.PackageTripDestinationId);
+            var Destination = await _destinationRepoAsync.GetByIdAsync(UpdateDto.DestinationId);
+            if (Destination is null)
+            {
+                return Result.NotFound($"Not Found Destination With Id : {UpdateDto.DestinationId}");
+            }
+            var Activity = await _activityRepositoryAsync.GetByIdAsync(UpdateDto.ActivityId);
+            if (Activity is null)
+            {
+                return Result.NotFound($"Not Found Activity With Id : {UpdateDto.ActivityId}");
+            }
+
+
+            var PackageTripDestination = await _packageTripDestinationRepoAsync.GetTableNoTracking()
+                                                                                .FirstOrDefaultAsync(x => x.PackageTripId == UpdateDto.PackageTripId
+                                                                                                  && x.DestinationId == UpdateDto.DestinationId);
+
             if (PackageTripDestination is null)
             {
-                return Result.NotFound($"Not Found PackageTripDestination With Id : {UpdateDto.PackageTripDestinationId}");
+                return Result.NotFound($"Not Found PackageTrip With Id : {UpdateDto.PackageTripId} and Destination with Id {UpdateDto.DestinationId}");
+
             }
 
+            var PackageTripDestinationActivity = await _packageTripDestinationActivityRepoAsync.GetTableNoTracking()
+                                                                                               .FirstOrDefaultAsync(p=> p.PackageTripDestinationId == PackageTripDestination.Id 
+                                                                                                                     && p.ActivityId== UpdateDto.ActivityId);
+            if (PackageTripDestinationActivity is null)
+            {
+                return Result.NotFound($"Not Found PackageTrip with id {UpdateDto.PackageTripId} Destination {UpdateDto.DestinationId} Activity With Id : {UpdateDto.ActivityId}");
+
+            }
+          
+
             var TripDate = await _tripDateRepositoryAsync.GetTableNoTracking()
-                                                          .Where(t => t.PackageTripId == PackageTripDestination.PackageTripId)
-                                                          .LastOrDefaultAsync();
+                                                         .Where(t => t.PackageTripId == PackageTripDestination.PackageTripId)
+                                                         .FirstOrDefaultAsync();
             if(TripDate is not null)
             {
-                return Result.BadRequest($"You Cann't Update PackageTrip Activities Because you have TripDate with Id: {TripDate.Id}");
+                return Result.BadRequest($"You Cann't Update PackageTrip Activity Because you have TripDate with Id: {TripDate.Id}");
 
             }           
-            return await base.UpdateAsync(id, UpdateDto);
+            return await base.UpdateAsync(PackageTripDestinationActivity.Id, UpdateDto);
         }
        
         public override async Task<Result> DeleteAsync(int id)
@@ -171,5 +218,55 @@ namespace TripAgency.Service.Implemetations
             return Result.Success();
         }
 
+        public async Task<Result<GetPackageTripDestinationActivityByIdDto>> GetPackageTripDestinationActivity(int PackageTripId, int DestinationId, int ActivityId)
+        {
+            var packageTrip= await _packageTripRepoAsync.GetByIdAsync(PackageTripId);
+            if(packageTrip is null)
+            {
+                return Result<GetPackageTripDestinationActivityByIdDto>.NotFound($"Not Found PackageTrip With id : {PackageTripId}");
+            }
+            var Destination = await _destinationRepoAsync.GetByIdAsync(DestinationId);
+            if (Destination is null)
+            {
+                return Result<GetPackageTripDestinationActivityByIdDto>.NotFound($"Not Found Destination With Id : {DestinationId}");
+            }
+            var Activity = await _activityRepositoryAsync.GetByIdAsync(ActivityId);
+            if (Activity is null)
+            {
+                return Result<GetPackageTripDestinationActivityByIdDto>.NotFound($"Not Found Activity With Id : {ActivityId}");
+            }
+            var PackageTripDestination = await _packageTripDestinationRepoAsync.GetTableNoTracking()
+                                                                                 .FirstOrDefaultAsync(x => x.PackageTripId == PackageTripId
+                                                                                                   && x.DestinationId == DestinationId);
+
+            if (PackageTripDestination is null)
+            {
+                return Result<GetPackageTripDestinationActivityByIdDto>.NotFound($"Not Found PackageTrip With Id : {PackageTripId} and Destination with Id {DestinationId}");
+
+            }
+            var PackageTripDestinationActivity = await _packageTripDestinationActivityRepoAsync.GetTableNoTracking()
+                                                                                              .FirstOrDefaultAsync(p => p.PackageTripDestinationId == PackageTripDestination.Id
+                                                                                                                    && p.ActivityId == ActivityId);
+            if (PackageTripDestinationActivity is null)
+            {
+                return Result<GetPackageTripDestinationActivityByIdDto>.NotFound($"Not Found PackageTrip with id {PackageTripId} Destination {DestinationId} Activity With Id : {ActivityId}");
+
+            }
+            var resultDto = new GetPackageTripDestinationActivityByIdDto
+            {
+                ActivityId = PackageTripDestinationActivity.ActivityId,
+                DestinationId = PackageTripDestination.DestinationId,
+                PackageTripId = PackageTripDestination.PackageTripId,
+                Description = PackageTripDestinationActivity.Description ,
+                Duration = PackageTripDestinationActivity.Duration ,
+                EndTime = PackageTripDestinationActivity.EndTime ,
+                StartTime = PackageTripDestinationActivity.StartTime ,
+                Id = PackageTripDestinationActivity.Id ,
+                OrderActivity = PackageTripDestinationActivity.OrderActivity,
+                Price = PackageTripDestinationActivity.Price
+                
+             };
+            return Result<GetPackageTripDestinationActivityByIdDto>.Success(resultDto);
+        }
     }
 }

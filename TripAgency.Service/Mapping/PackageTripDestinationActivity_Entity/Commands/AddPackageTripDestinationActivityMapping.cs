@@ -12,8 +12,8 @@ namespace TripAgency.Service.Mapping.PackageTripDestinationActivity_Entity
     {
         public void AddPackageTripDestinationActivityMapping()
         {
-            CreateMap<AddPackageTripDestinationActivityDto, PackageTripDestinationActivity>()
-                .ForMember(d => d.PackageTripDestinationId, op => op.MapFrom(s => s.PackageTripDestinationId));
+            CreateMap<AddPackageTripDestinationActivityDto, PackageTripDestinationActivity>();
+                
                 
         }
     }
