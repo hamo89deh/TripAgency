@@ -11,7 +11,7 @@ namespace TripAgency.Service.Mapping.PackageTripDestinationActivity_Entity
     {
         public PackageTripDestinationActivityProfile()
         {
-            
+            UpdatePackageTripDestinationActivityMapping();
         }
     }
 }

@@ -128,6 +128,7 @@ namespace TripAgency.Api.Controllers
             }
             return ApiResult<GetPackageTripDestinationActivitiesDto>.Created(packageTripDestinationActivityResult.Value!);
         }
+        
         [HttpPut("Activity")]
         public async Task<ApiResult<string>> UpdatePackageTripDestinationActivity(UpdatePackageTripDestinationActivityDto updatePackageTripDestinationActivity)
         {
@@ -137,6 +138,7 @@ namespace TripAgency.Api.Controllers
             return ApiResult<string>.Ok("Success Updated");
 
         }
+        
         [HttpDelete("{packageTripId}/Destination/{destinationId}/Activity/{activityId}")]
         public async Task<ApiResult<string>> DeletePackageTripDestinationActivity(int packageTripId, int destinationId , int activityId)
         {
