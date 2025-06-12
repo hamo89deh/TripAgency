@@ -57,6 +57,11 @@ namespace TripAgency.Service.Implemetations
             {
                 return Result<GetPackageTripDestinationByIdDto>.BadRequest($" Cann't Add Destination With Id : {AddDto.DestinationId} For PackageTrip With Id : {AddDto.PackageTripId}");
             }
+            var PackageTripDestination = await _packageTripDestinationRepoAsync.GetTableNoTracking().FirstOrDefaultAsync(x => x.PackageTripId == PackageTrip.Id && x.DestinationId == Destination.Id);
+            if (PackageTripDestination is not  null)
+            {
+                return Result<GetPackageTripDestinationByIdDto>.BadRequest($"Destination Id : {AddDto.DestinationId} is already associated with Package Trip Id: {AddDto.PackageTripId}.");
+            }
             return await base.CreateAsync(AddDto);
         }
         public override async Task<Result> UpdateAsync(int id, UpdatePackageTripDestinationDto UpdateDto)
@@ -74,7 +79,7 @@ namespace TripAgency.Service.Implemetations
             }
             if (PackageTrip.Id != PackageTripDestination.PackageTripId)
             {
-                return Result.BadRequest($"The PackageTripDestination With Id {PackageTripDestination.Id} Not Have PackgeTripId : {UpdateDto.PackageTripId}");
+                return Result.BadRequest($"The PackageTrip With Id {PackageTrip.Id} Not Have PackgeTripDestinationId : {UpdateDto.Id}");
             }
             var Destination = await _destinationRepositoryAsync.GetByIdAsync(UpdateDto.DestinationId);
             if (Destination is null)
@@ -89,10 +94,15 @@ namespace TripAgency.Service.Implemetations
             {
                 return Result.BadRequest($" Cann't Add Destination With Id : {UpdateDto.PackageTripId} For PackageTrip With Id : {PackageTrip.Id}");
             }
+
+            var CheckPackageTripDestination = await _packageTripDestinationRepoAsync.GetTableNoTracking().FirstOrDefaultAsync(x => x.PackageTripId == PackageTrip.Id && x.DestinationId == Destination.Id);
+            if (CheckPackageTripDestination is not null)
+            {
+                return Result.BadRequest($"Destination Id : {UpdateDto.DestinationId} is already associated with Package Trip Id: {UpdateDto.PackageTripId}.");
+            }
+
             var TripDate = await _tripDateRepositoryAsync.GetTableNoTracking()
                                                          .FirstOrDefaultAsync(x => x.PackageTripId == PackageTrip.Id);
-
-
             if (TripDate is not null)
             {
                 return Result.BadRequest($" Cann't Update PackageTripDestination Because you have tripDate Connected before with PackageTrip: {PackageTrip.Id}");

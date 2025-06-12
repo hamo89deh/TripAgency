@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TripAgency.Service.Feature.Activity.Queries;
+using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
 
 namespace TripAgency.Service.Feature.PackageTripDestinationActivity.Commands
 {
@@ -12,11 +13,5 @@ namespace TripAgency.Service.Feature.PackageTripDestinationActivity.Commands
         public int PackageTripDestinationId { get; set; }
         public IEnumerable<PackageTripDestinationActivitiesDto> ActivitiesDtos{get; set;}
    
-    }
-    public class GetPackageTripDestinationActivitiesDto
-    {
-        public int PackageTripDestinationId { get; set; }
-        public IEnumerable<GetActivityByIdDto> ActivitiesDtos { get; set; }
-
     }
 }

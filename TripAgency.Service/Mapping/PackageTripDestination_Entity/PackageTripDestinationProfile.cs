@@ -13,6 +13,7 @@ namespace TripAgency.Service.Mapping.PackageTripDestination_Entity
         {
             AddPackageTripDestinationMapping();
             UpdatePackageTripDestinationMapping();
+            GetPackageTripDestinationByIdMapping();
         }
     }
 }

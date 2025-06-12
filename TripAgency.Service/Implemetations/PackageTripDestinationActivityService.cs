@@ -6,6 +6,7 @@ using TripAgency.Infrastructure.Abstracts;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.Activity.Queries;
 using TripAgency.Service.Feature.PackageTripDestinationActivity.Commands;
+using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
 using TripAgency.Service.Generic;
 
 namespace TripAgency.Service.Implemetations
@@ -100,15 +101,20 @@ namespace TripAgency.Service.Implemetations
                 await _packageTripDestinationActivityRepoAsync.AddRangeAsync(PackageTripDestinationActivitiesToAdd);
             }
          
+
             var resultDto = new GetPackageTripDestinationActivitiesDto()
             {
                 PackageTripDestinationId = PackageTripDestination.Id,
-                ActivitiesDtos = destinationActivities.Select(da=> new GetActivityByIdDto
+                ActivitiesDtos = destinationActivities.Select(da=> new PackageTripDestinationActivitiesDto
                 {
-                    Id = da.Activity.Id,
-                    Description =da.Activity.Description,
-                    Name =da.Activity.Name,
-                    Price =da.Activity.Price
+                    ActivityId = da.Activity.Id,
+                    Description = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x=>x.ActivityId==da.ActivityId)!.Description,
+                   // Name =da.Activity.Name,
+                    Price =da.Activity.Price ,
+                    Duration = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.Duration ,
+                    StartTime = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.StartTime ,
+                    EndTime= PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.EndTime ,
+                    OrderActivity  = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.OrderActivity
                 })
             };
             

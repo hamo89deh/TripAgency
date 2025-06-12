@@ -5,6 +5,7 @@ using TripAgency.Bases;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.PackageTripDestination.Commands;
 using TripAgency.Service.Feature.PackageTripDestination.Queries;
+using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
 
 namespace TripAgency.Api.Controllers
 {

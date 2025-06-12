@@ -2,7 +2,11 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
+using System.Text.Json;
 using TripAgency.Api.Behavior;
+using TripAgency.Data;
 using TripAgency.Infrastructure;
 using TripAgency.Infrastructure.Context;
 using TripAgency.Middleware;
@@ -28,20 +32,33 @@ namespace TripAgency
 
                 builder.Services.AddControllers(op => op.Filters.Add(typeof(ValidationFilter)))
                     .ConfigureApiBehaviorOptions(options => options.InvalidModelStateResponseFactory = context => null!)
-                                  ;
+                    .AddJsonOptions(options =>
+                    {
+                        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    });
+                ;
                 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
                 builder.Services.AddEndpointsApiExplorer();
-                builder.Services.AddSwaggerGen();
+                builder.Services.AddSwaggerGen(options =>
+                {
+                    options.MapType<TimeSpan>(() => new OpenApiSchema
+                    {
+                        Type = "string",
+                        Example = new OpenApiString("00:00:00")
+                    });
+                });
 
                 builder.Services.AddDbContext<TripAgencyDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
                 builder.Services.AddServicesDependencies()
                                 .AddInfrastructureDependencies();
+
                 builder.Services.AddAutoMapper(typeof(CityProfile).Assembly);
 
                 builder.Services.AddFluentValidationAutoValidation()
                                 .AddValidatorsFromAssembly(typeof(AddCityDtoValidation).Assembly);
 
+              
                 var app = builder.Build();
                 app.UseMiddleware<ErrorHandlerExceptionMiddleware>();
                 // Configure the HTTP request pipeline.

@@ -1,4 +1,4 @@
-﻿namespace TripAgency.Service.Feature.PackageTripDestinationActivity.Commands
+﻿namespace TripAgency.Service.Feature.PackageTripDestinationActivity.Queries
 {
     public class PackageTripDestinationActivitiesDto
     {
