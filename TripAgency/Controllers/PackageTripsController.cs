@@ -118,7 +118,7 @@ namespace TripAgency.Api.Controllers
         }
 
 
-        [HttpPost("Activity")]
+        [HttpPost("/Destination/Activities")]
         public async Task<ApiResult<GetPackageTripDestinationActivitiesDto>> AddPackageTripDestinationActivity( AddPackageTripDestinationActivityDto packageTripDestinationActivity)
         {
             var packageTripDestinationActivityResult = await _packageTripDestinationActivityService.CreateAsync(packageTripDestinationActivity);
@@ -129,7 +129,7 @@ namespace TripAgency.Api.Controllers
             return ApiResult<GetPackageTripDestinationActivitiesDto>.Created(packageTripDestinationActivityResult.Value!);
         }
         
-        [HttpPut("Activity")]
+        [HttpPut("/Destination/Activity")]
         public async Task<ApiResult<string>> UpdatePackageTripDestinationActivity(UpdatePackageTripDestinationActivityDto updatePackageTripDestinationActivity)
         {
             var packageTripDestinationActivityResult = await _packageTripDestinationActivityService.UpdateAsync(0, updatePackageTripDestinationActivity);
@@ -154,6 +154,31 @@ namespace TripAgency.Api.Controllers
             return ApiResult<string>.Ok("Success Delete");
         }
 
+        [HttpGet("{Id}/Destinations")]
+        public async Task<ApiResult<GetPackageTripDestinationsDto>> GetPackageTripDestinations(int Id)
+        {
+            var packageTripsResult = await _packageTripDestinationService.GetPackageTripDestinations(Id);
+            if (!packageTripsResult.IsSuccess)
+                return this.ToApiResult<GetPackageTripDestinationsDto>(packageTripsResult);
+            return ApiResult<GetPackageTripDestinationsDto>.Ok(packageTripsResult.Value!);
+        }
+
+        [HttpGet("{PackageTripId}/Destination/{DestinationId}")]
+        public async Task<ApiResult<GetPackageTripDestinationActivitiesDto>> GetPackageTripDestinationActivities(int PackageTripId, int DestinationId)
+        {
+            var packageTripsResult = await _packageTripDestinationService.GetPackageTripDestinationActivities(PackageTripId, DestinationId);
+            if (!packageTripsResult.IsSuccess)
+                return this.ToApiResult<GetPackageTripDestinationActivitiesDto>(packageTripsResult);
+            return ApiResult<GetPackageTripDestinationActivitiesDto>.Ok(packageTripsResult.Value!);
+        }
+        [HttpGet("{PackageTripId}/Destinations/Activities")]
+        public async Task<ApiResult<GetPackageTripDestinationsActivitiesDto>> GetPackageTripDestinationsActivities(int PackageTripId)
+        {
+            var packageTripsResult = await _packageTripDestinationService.GetPackageTripDestinationsActivities(PackageTripId);
+            if (!packageTripsResult.IsSuccess)
+                return this.ToApiResult<GetPackageTripDestinationsActivitiesDto>(packageTripsResult);
+            return ApiResult<GetPackageTripDestinationsActivitiesDto>.Ok(packageTripsResult.Value!);
+        }
     }
 
 }

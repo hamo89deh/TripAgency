@@ -168,12 +168,16 @@ namespace TripAgency.Service.Implemetations
                     })
                  };
             }
-            resultDto = new GetPackageTripDestinationsDto()
+            else
             {
-                DestinationDto = [],
-                PackageTripId = packageTripId
+                resultDto = new GetPackageTripDestinationsDto()
+                {
+                    DestinationDto = [],
+                    PackageTripId = packageTripId
 
-            };
+                };
+            }
+            
             return Result<GetPackageTripDestinationsDto>.Success(resultDto);
         }
 
