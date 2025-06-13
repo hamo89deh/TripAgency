@@ -127,7 +127,8 @@ namespace TripAgency.Service.Implemetations
 
                 resultDto = new GetPackageTripDestinationActivitiesDto()
                 {
-                    PackageTripDestinationId = PackageTripDestination.Id,
+                    PackageTripId = PackageTripDestination.PackageTripId,
+                    DestinationId = PackageTripDestination.DestinationId,
                     ActivitiesDtos = destinationActivities.Select(da => new PackageTripDestinationActivitiesDto
                     {
                         ActivityId = da.Activity.Id,
@@ -146,7 +147,9 @@ namespace TripAgency.Service.Implemetations
                 resultDto = new GetPackageTripDestinationActivitiesDto()
                 {
                     ActivitiesDtos = [],
-                    PackageTripDestinationId = PackageTripDestination.Id
+
+                    PackageTripId = PackageTripDestination.PackageTripId,
+                    DestinationId = PackageTripDestination.DestinationId,
                 };
             }
 

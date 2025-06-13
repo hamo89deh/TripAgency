@@ -2,6 +2,7 @@
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Service.Feature.PackageTripDestination.Commands;
 using TripAgency.Service.Feature.PackageTripDestination.Queries;
+using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
 using TripAgency.Service.Generic;
 
 namespace TripAgency.Service.Abstracts
@@ -9,5 +10,8 @@ namespace TripAgency.Service.Abstracts
     public interface IPackageTripDestinationService : IWriteService<PackageTripDestination , AddPackageTripDestinationDto , UpdatePackageTripDestinationDto , GetPackageTripDestinationByIdDto >
     {
         Task<Result<GetPackageTripDestinationByIdDto>> GetPackageTripDestination(int packageTripId , int destinationId);
+        Task<Result<GetPackageTripDestinationsDto>> GetPackageTripDestinations(int packageTripId );
+        Task<Result<GetPackageTripDestinationActivitiesDto>> GetPackageTripDestinationActivities(int packageTripId , int destinationId );
+        Task<Result<GetPackageTripDestinationsActivitiesDto>> GetPackageTripDestinationsActivities(int packageTripId );
     }
 }
