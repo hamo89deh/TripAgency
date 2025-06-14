@@ -29,6 +29,7 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult(tripDatesResult);
             return ApiResult<IEnumerable<GetTripDatesDto>>.Ok(tripDatesResult.Value!);
         }
+      
         [HttpGet("{id}")]
         public async Task<ApiResult<GetTripDateByIdDto>> GetTripDateById(int id)
         {
@@ -37,7 +38,6 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult(tripDateResult);
             return ApiResult<GetTripDateByIdDto>.Ok(tripDateResult.Value!);
         }
-
       
         [HttpPost]
         public async Task<ApiResult<GetTripDateByIdDto>> AddTripDate(AddTripDateDto tripDate)
@@ -49,6 +49,7 @@ namespace TripAgency.Api.Controllers
             }
             return ApiResult<GetTripDateByIdDto>.Created(tripDateResult.Value!);
         }       
+   
     }
 
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using TripAgency.Data.Entities;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Infrastructure.Abstracts;
@@ -32,36 +33,32 @@ namespace TripAgency.Service.Implemetations
         }
         public override async Task<Result<GetTripDateByIdDto>> CreateAsync(AddTripDateDto AddDto)
         {
-            var packagaTrip = await _packageTripRepository.GetByIdAsync(AddDto.PackageTripId);
-            if(packagaTrip is null)
+            var packageTrip = await _packageTripRepository.GetTableNoTracking()
+                                                          .Where(p=>p.Id == AddDto.PackageTripId)
+                                                          .Include(p=>p.PackageTripDestinations)
+                                                          .ThenInclude(pd=>pd.PackageTripDestinationActivities)
+                                                          .FirstOrDefaultAsync();
+            if(packageTrip is null)
             {
                 return Result<GetTripDateByIdDto>.NotFound($"Not Found PackageTrip With Id : {AddDto.PackageTripId}");
             }
-            var packagaTripDestinations = await _packageTripDestinationRepoAsync.GetTableNoTracking()
-                                                                               .Where(ptd=>ptd.PackageTripId==packagaTrip.Id)
-                                                                               .ToListAsync();
-            if(!packagaTripDestinations.Any())
+           
+            if(!packageTrip.PackageTripDestinations.Any())
             {
-                return Result<GetTripDateByIdDto>.BadRequest($"Cann't Add This Package trip Before Add Destinations to this package");
+                return Result<GetTripDateByIdDto>.BadRequest($"Cannot Add Date to PackageTrip with id : {packageTrip.Id} Before Add Destinations to this package");
             }
 
-            var packagaTripDestinationActivities = await _packageTripDestinationActivityRepoAsync.GetTableNoTracking()
-                                                                   .Where(ptda => packagaTripDestinations.Select(ptd=>ptd.Id).Contains(ptda.PackageTripDestinationId))
-                                                                   .GroupBy(ptda => ptda.PackageTripDestinationId )
-                                                                   .ToListAsync();
-
-            var NotFoundpackagaTripDestinationActivitiesId = new List<int>();
-            foreach ( var pair in packagaTripDestinationActivities)
+            if (!packageTrip.PackageTripDestinations.Select(pd => pd.PackageTripDestinationActivities).Any())
             {
-                if (!pair.Any())
-                {
-                   NotFoundpackagaTripDestinationActivitiesId.Add(pair.Key);
-                }
+                return Result<GetTripDateByIdDto>.BadRequest($"Cannot Add Date to PackageTrip with id : {packageTrip.Id} Before Add Activities to destinations[ {string.Join(',', packageTrip.PackageTripDestinations.Select(d => d.DestinationId))} ]");
             }
+            var NotFoundPackageTripDestinationActivities = packageTrip.PackageTripDestinations
+                                                            .Where(d => d.PackageTripDestinationActivities.Count() == 0);
 
-            if (NotFoundpackagaTripDestinationActivitiesId.Any())
+            if (NotFoundPackageTripDestinationActivities.Any())
             {
-                return Result<GetTripDateByIdDto>.BadRequest($"Cann't Add This Package trip Before Add Destinations to this package missing packagaTripDestination Id {string.Join(',', NotFoundpackagaTripDestinationActivitiesId)}");
+                return Result<GetTripDateByIdDto>.BadRequest($"Cannot Add Date to PackageTrip with id : {packageTrip.Id} Before Add Activities to destinations[ {string.Join(',', NotFoundPackageTripDestinationActivities.Select(d => d.DestinationId))} ]");
+
             }
 
             return await base.CreateAsync(AddDto);
