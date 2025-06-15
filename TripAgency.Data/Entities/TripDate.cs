@@ -1,4 +1,6 @@
-﻿namespace TripAgency.Data.Entities
+﻿using TripAgency.Data.Enums;
+
+namespace TripAgency.Data.Entities
 {
     public class TripDate
     {
@@ -16,6 +18,7 @@
         // public int VehicleId { get; set; }
         public int PackageTripId { get; set; }
         public PackageTrip PackageTrip { get; set; }
+        public IEnumerable<BookingTrip> BookingTrips { get; set; }
 
     }
 

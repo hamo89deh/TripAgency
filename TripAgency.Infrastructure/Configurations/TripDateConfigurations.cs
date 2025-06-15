@@ -33,7 +33,7 @@ namespace TripAgency.Infrastructure.Configurations
             builder.Property(td => td.Status)
                    .IsRequired()
                    .HasConversion<int>()
-                   .HasComment("Represents trip status: 0 = Pending, 1 = Available, 2 = Completed, 3 = Cancelled");
+                   .HasComment("Represents trip status: 0 = Available, 1 = Completed, 2 = Cancelled, 3 = Planned");
 
             builder.Property(td => td.CreateDate)
                    .IsRequired()

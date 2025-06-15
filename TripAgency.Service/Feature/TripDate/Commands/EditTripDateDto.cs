@@ -1,4 +1,4 @@
-﻿using TripAgency.Data;
+﻿using TripAgency.Data.Enums;
 
 namespace TripAgency.Service.Feature.TripDate.Commands
 {

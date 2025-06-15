@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TripAgency.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using TripAgency.Infrastructure.Context;
 namespace TripAgency.Infrastructure.Migrations
 {
     [DbContext(typeof(TripAgencyDbContext))]
-    partial class TripAgencyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250614073905_AddBookingTripAndUser")]
+    partial class AddBookingTripAndUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -365,58 +368,6 @@ namespace TripAgency.Infrastructure.Migrations
                     b.ToTable("PackageTripTypes", (string)null);
                 });
 
-            modelBuilder.Entity("TripAgency.Data.Entities.Payment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("BookingTripId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("PaymentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PaymentMethodId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PaymentStatus")
-                        .HasColumnType("int")
-                        .HasComment("Represents Booking status: 0 = Pending, 1 = Completed, 2 = Cancelled");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingTripId")
-                        .IsUnique();
-
-                    b.HasIndex("PaymentMethodId");
-
-                    b.ToTable("Payments", (string)null);
-                });
-
-            modelBuilder.Entity("TripAgency.Data.Entities.PaymentMethod", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PaymentMethods");
-                });
-
             modelBuilder.Entity("TripAgency.Data.Entities.Trip", b =>
                 {
                     b.Property<int>("Id")
@@ -558,7 +509,7 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("User");
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.BookingTrip", b =>
@@ -689,25 +640,6 @@ namespace TripAgency.Infrastructure.Migrations
                     b.Navigation("TypeTrip");
                 });
 
-            modelBuilder.Entity("TripAgency.Data.Entities.Payment", b =>
-                {
-                    b.HasOne("TripAgency.Data.Entities.BookingTrip", "BookingTrip")
-                        .WithOne("Payment")
-                        .HasForeignKey("TripAgency.Data.Entities.Payment", "BookingTripId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("TripAgency.Data.Entities.PaymentMethod", "PaymentMethod")
-                        .WithMany()
-                        .HasForeignKey("PaymentMethodId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BookingTrip");
-
-                    b.Navigation("PaymentMethod");
-                });
-
             modelBuilder.Entity("TripAgency.Data.Entities.TripDate", b =>
                 {
                     b.HasOne("TripAgency.Data.Entities.PackageTrip", "PackageTrip")
@@ -743,12 +675,6 @@ namespace TripAgency.Infrastructure.Migrations
                     b.Navigation("DestinationActivities");
 
                     b.Navigation("PackageTripDestinationActivities");
-                });
-
-            modelBuilder.Entity("TripAgency.Data.Entities.BookingTrip", b =>
-                {
-                    b.Navigation("Payment")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.City", b =>

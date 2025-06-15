@@ -1,5 +1,5 @@
-﻿using TripAgency.Data;
-using TripAgency.Data.Entities;
+﻿using TripAgency.Data.Entities;
+using TripAgency.Data.Enums;
 using TripAgency.Service.Feature.TripDate.Commands;
 
 namespace TripAgency.Service.Mapping.TripDate_Entity

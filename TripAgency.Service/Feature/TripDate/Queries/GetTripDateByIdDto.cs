@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TripAgency.Data;
+using TripAgency.Data.Enums;
 
 namespace TripAgency.Service.Feature.TripDate.Queries
 {
