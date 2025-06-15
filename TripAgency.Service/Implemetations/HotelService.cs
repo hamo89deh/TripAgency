@@ -7,7 +7,7 @@ using TripAgency.Service.Feature.Hotel.Commands;
 using TripAgency.Service.Feature.Hotel.Queries;
 using TripAgency.Service.Generic;
 
-namespace TripAgency.Service.Implemetations
+namespace TripAgency.Service.Implementations
 {
     public class HotelService : GenericService<Hotel, GetHotelByIdDto, GetHotelsDto, AddHotelDto, UpdateHotelDto>, IHotelService
     {

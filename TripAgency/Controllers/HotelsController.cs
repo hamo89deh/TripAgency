@@ -7,7 +7,7 @@ using TripAgency.Service.Feature.City.Command;
 using TripAgency.Service.Feature.City.Queries;
 using TripAgency.Service.Feature.Hotel.Commands;
 using TripAgency.Service.Feature.Hotel.Queries;
-using TripAgency.Service.Implemetations;
+using TripAgency.Service.Implementations;
 
 namespace TripAgency.Api.Controllers
 {

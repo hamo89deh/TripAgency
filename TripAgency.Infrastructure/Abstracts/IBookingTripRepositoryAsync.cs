@@ -8,7 +8,7 @@ using TripAgency.Infrastructure.InfrastructureBases;
 
 namespace TripAgency.Infrastructure.Abstracts
 {
-    public interface IBookingTrip : IGenericRepositoryAsync<BookingTrip>
+    public interface IBookingTripRepositoryAsync : IGenericRepositoryAsync<BookingTrip>
     {
     }
 }

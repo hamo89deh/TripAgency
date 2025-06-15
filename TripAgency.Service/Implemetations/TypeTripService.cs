@@ -7,7 +7,7 @@ using TripAgency.Service.Feature.TypeTrip_Entity.Commands;
 using TripAgency.Service.Feature.TypeTrip_Entity.Queries;
 using TripAgency.Service.Generic;
 
-namespace TripAgency.Service.Implemetations
+namespace TripAgency.Service.Implementations
 {
     public class TypeTripService : GenericService<TypeTrip, GetTypeTripByIdDto, GetTypeTripsDto, AddTypeTripDto, UpdateTypeTripDto>, ITypeTripService
     {

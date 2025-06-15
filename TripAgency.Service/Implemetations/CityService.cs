@@ -14,7 +14,7 @@ using TripAgency.Service.Feature.City.Command;
 using TripAgency.Service.Feature.City.Queries;
 using TripAgency.Service.Generic;
 
-namespace TripAgency.Service.Implemetations
+namespace TripAgency.Service.Implementations
 {
     public class CityService :GenericService<City , GetCityByIdDto,GetCitiesDto,AddCityDto,UpdateCityDto> , ICityService
     {

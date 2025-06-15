@@ -7,7 +7,7 @@ using TripAgency.Service.Feature.PackageTrip.Commands;
 using TripAgency.Service.Feature.PackageTrip.Queries;
 using TripAgency.Service.Generic;
 
-namespace TripAgency.Service.Implemetations
+namespace TripAgency.Service.Implementations
 {
     public class PackageTripService : GenericService<PackageTrip, GetPackageTripByIdDto, GetPackageTripsDto, AddPackageTripDto, UpdatePackageTripDto>, IPackageTripService
     {

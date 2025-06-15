@@ -13,7 +13,7 @@ using TripAgency.Service.Feature.Destination.Queries;
 using TripAgency.Service.Feature.DestinationActivity.Queries;
 using TripAgency.Service.Generic;
 
-namespace TripAgency.Service.Implemetations
+namespace TripAgency.Service.Implementations
 {
     public class DestinationService :GenericService<Destination,GetDestinationByIdDto , GetDestinationsDto,AddDestinationDto ,UpdateDestinationDto> ,  IDestinationService
     {

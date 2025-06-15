@@ -9,7 +9,7 @@ using TripAgency.Service.Feature.Trip.Commands;
 using TripAgency.Service.Feature.Trip.Queries;
 using TripAgency.Service.Generic;
 
-namespace TripAgency.Service.Implemetations
+namespace TripAgency.Service.Implementations
 {
     public class TripService : GenericService<Trip, GetTripByIdDto, GetTripsDto, AddTripDto, UpdateTripDto>, ITripService
     {

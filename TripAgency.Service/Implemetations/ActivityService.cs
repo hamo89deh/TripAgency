@@ -7,7 +7,7 @@ using TripAgency.Service.Feature.Activity.Commands;
 using TripAgency.Service.Feature.Activity.Queries;
 using TripAgency.Service.Generic;
 
-namespace TripAgency.Service.Implemetations
+namespace TripAgency.Service.Implementations
 {
     public class ActivityService : GenericService<Activity, GetActivityByIdDto, GetActivitiesDto, AddActivityDto, UpdateActivityDto>, IActivityService
     {

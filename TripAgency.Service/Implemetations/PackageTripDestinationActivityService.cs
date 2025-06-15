@@ -8,7 +8,7 @@ using TripAgency.Service.Feature.PackageTripDestinationActivity.Commands;
 using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
 using TripAgency.Service.Generic;
 
-namespace TripAgency.Service.Implemetations
+namespace TripAgency.Service.Implementations
 {
     public class PackageTripDestinationActivityService : WriteService<PackageTripDestinationActivity, AddPackageTripDestinationActivityDto, UpdatePackageTripDestinationActivityDto, GetPackageTripDestinationActivitiesDto>, IPackageTripDestinationActivityService
     {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TripAgency.Service.Abstracts;
-using TripAgency.Service.Implemetations;
+using TripAgency.Service.Implementations;
 
 namespace TripAgency.Service
 {
@@ -24,6 +24,7 @@ namespace TripAgency.Service
             services.AddTransient<IPackageTripDestinationActivityService, PackageTripDestinationActivityService>();
             services.AddTransient<IActivityService, ActivityService>();
             services.AddTransient<ITripDateService, TripDateService>();
+            services.AddTransient<IBookingTripService, BookingTripService>();
 
             return services;
         }

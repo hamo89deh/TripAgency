@@ -10,7 +10,7 @@ using TripAgency.Service.Feature.PackageTripDestination.Commands;
 using TripAgency.Service.Feature.PackageTripDestination.Queries;
 using TripAgency.Service.Feature.PackageTripDestinationActivity.Commands;
 using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
-using TripAgency.Service.Implemetations;
+using TripAgency.Service.Implementations;
 
 namespace TripAgency.Api.Controllers
 {

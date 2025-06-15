@@ -9,7 +9,7 @@ using TripAgency.Service.Feature.TripDate.Commands;
 using TripAgency.Service.Feature.TripDate.Queries;
 using TripAgency.Service.Generic;
 
-namespace TripAgency.Service.Implemetations
+namespace TripAgency.Service.Implementations
 {
     public class TripDateService : ReadAndAddService<TripDate, GetTripDateByIdDto, GetTripDatesDto, AddTripDateDto>, ITripDateService
     {
