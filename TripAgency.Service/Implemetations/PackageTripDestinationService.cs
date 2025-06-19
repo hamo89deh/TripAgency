@@ -46,7 +46,9 @@ namespace TripAgency.Service.Implementations
             {
                 return Result<GetPackageTripDestinationByIdDto>.NotFound($"Not Found Destination With Id : {AddDto.DestinationId}");
             }
-            var TripDestination = await _tripDestinationRepositoryAsync.GetTableNoTracking().FirstOrDefaultAsync(x => x.TripId == PackageTrip.TripId && x.DestinationId == Destination.Id);
+            var TripDestination = await _tripDestinationRepositoryAsync.GetTableNoTracking()
+                                                                       .FirstOrDefaultAsync(x => x.TripId == PackageTrip.TripId  
+                                                                                              && x.DestinationId == Destination.Id);
             if (TripDestination is null)
             {
                 return Result<GetPackageTripDestinationByIdDto>.BadRequest($" Cann't Add Destination With Id : {AddDto.DestinationId} For PackageTrip With Id : {AddDto.PackageTripId}");
@@ -57,6 +59,13 @@ namespace TripAgency.Service.Implementations
             if (PackageTripDestination is not null)
             {
                 return Result<GetPackageTripDestinationByIdDto>.BadRequest($"Destination Id : {AddDto.DestinationId} is already associated with Package Trip Id: {AddDto.PackageTripId}.");
+            }
+
+            var TripDate = await _tripDateRepositoryAsync.GetTableNoTracking()
+                                                         .FirstOrDefaultAsync(x => x.PackageTripId == PackageTrip.Id);
+            if (TripDate is not null)
+            {
+                return Result<GetPackageTripDestinationByIdDto>.BadRequest($" Cann't Add PackageTripDestination Because you have tripDate with Id : {TripDate.Id} associated with PackageTrip: {PackageTrip.Id}");
             }
 
             return await base.CreateAsync(AddDto);
