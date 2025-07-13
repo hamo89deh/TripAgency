@@ -10,6 +10,6 @@ namespace TripAgency.Service.Feature.TripDate.Queries
         public DateTime StartBookingDate { get; set; }
         public DateTime EndBookingDate { get; set; } 
 
-        public PackageTripDataStatusDto Status { get; set; } 
+        public enPackageTripDataStatusDto Status { get; set; } 
     }
 }

@@ -98,7 +98,7 @@ namespace TripAgency.Service.Implementations
                 return Result.NotFound($"Not Found Trip Date with Id : {updateTripDateDto.Id}");
 
             if (packageTripDate.Status == PackageTripDataStatus.Draft &&
-                updateTripDateDto.Status == PackageTripDataStatusDto.Published)
+                updateTripDateDto.Status == enUpdatePackageTripDataStatusDto.Published)
             {
                 //TODO Check if I have Activity
                 if (packageTripDate.PackageTrip.PackageTripDestinations.Count()==0)
@@ -112,7 +112,7 @@ namespace TripAgency.Service.Implementations
                 }
             }
             if (packageTripDate.Status == PackageTripDataStatus.BookingClosed &&
-                updateTripDateDto.Status == PackageTripDataStatusDto.Published)
+                updateTripDateDto.Status == enUpdatePackageTripDataStatusDto.Published)
             {
                 // 1. التحقق من توفر المقاعد
 

@@ -9,30 +9,30 @@ namespace TripAgency.Data.NewFolder1
 {
     public class Global
     {
-        public static PackageTripDataStatusDto ConvertToDto(PackageTripDataStatus status)
+        public static enUpdatePackageTripDataStatusDto ConvertToDto(PackageTripDataStatus status)
         {
             switch (status)
             {
                 case PackageTripDataStatus.Published:
-                    return PackageTripDataStatusDto.Published;
+                    return enUpdatePackageTripDataStatusDto.Published;
                 case PackageTripDataStatus.BookingClosed:
-                    return PackageTripDataStatusDto.BookingClosed;
+                    return enUpdatePackageTripDataStatusDto.BookingClosed;
                 case PackageTripDataStatus.Cancelled:
-                    return PackageTripDataStatusDto.Cancelled;
+                    return enUpdatePackageTripDataStatusDto.Cancelled;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(status), status, null);
             }
         }  
         
-        public static PackageTripDataStatus ConvertDtoToEntity(PackageTripDataStatusDto status)
+        public static PackageTripDataStatus ConvertDtoToEntity(enUpdatePackageTripDataStatusDto status)
         {
             switch (status)
             {
-                case PackageTripDataStatusDto.Published:
+                case enUpdatePackageTripDataStatusDto.Published:
                     return PackageTripDataStatus.Published;
-                case PackageTripDataStatusDto.BookingClosed:
+                case enUpdatePackageTripDataStatusDto.BookingClosed:
                     return PackageTripDataStatus.BookingClosed;
-                case PackageTripDataStatusDto.Cancelled:
+                case enUpdatePackageTripDataStatusDto.Cancelled:
                     return PackageTripDataStatus.Cancelled;              
                 default:
                     throw new ArgumentOutOfRangeException(nameof(status), status, null);

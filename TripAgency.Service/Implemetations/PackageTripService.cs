@@ -105,6 +105,7 @@ namespace TripAgency.Service.Implementations
                     StartBookingDate = d.StartBookingDate,
                     StartPackageTripDate = d.StartPackageTripDate,
                     EndPackageTripDate = d.EndPackageTripDate ,
+                    Status = (enPackageTripDataStatusDto)d.Status
 
                 })
             };
