@@ -97,40 +97,40 @@ namespace TripAgency.Service.Implementations
             if( packageTripDate is null)
                 return Result.NotFound($"Not Found Trip Date with Id : {updateTripDateDto.Id}");
 
+           
+            if (!CanChangeStatus(packageTripDate.Status, Global.ConvertDtoToEntity(updateTripDateDto.Status)))
+            {
+                return Result.BadRequest($"Cannot change status from {packageTripDate.Status} to {updateTripDateDto.Status}.");
+            }
+
             if (packageTripDate.Status == PackageTripDataStatus.Draft &&
-                updateTripDateDto.Status == enUpdatePackageTripDataStatusDto.Published)
+               updateTripDateDto.Status == enUpdatePackageTripDataStatusDto.Published)
             {
                 //TODO Check if I have Activity
-                if (packageTripDate.PackageTrip.PackageTripDestinations.Count()==0)
+                if (packageTripDate.PackageTrip.PackageTripDestinations.Count() == 0)
                 {
                     return Result.BadRequest($"Cann't Update Status Package Trip Before Add Destinations And Activities ");
                 }
 
                 if (!packageTripDate.PackageTrip.PackageTripDestinations.All(ptd => ptd.PackageTripDestinationActivities.Any()))
                 {
-                    return Result.BadRequest($"Cann't Update Status Package Trip Before Add Activities For Destinations {string.Join(',' , packageTripDate.PackageTrip.PackageTripDestinations.Where(ptd=>ptd.PackageTripDestinationActivities.Count()==0).Select(d=>d.DestinationId))}");
+                    return Result.BadRequest($"Cann't Update Status Package Trip Before Add Activities For Destinations : {string.Join(',', packageTripDate.PackageTrip.PackageTripDestinations.Where(ptd => ptd.PackageTripDestinationActivities.Count() == 0).Select(d => d.DestinationId))}");
                 }
             }
+
             if (packageTripDate.Status == PackageTripDataStatus.BookingClosed &&
                 updateTripDateDto.Status == enUpdatePackageTripDataStatusDto.Published)
             {
-                // 1. التحقق من توفر المقاعد
 
                 if (packageTripDate.AvailableSeats <= 0)
                 {
-                    return Result.BadRequest("لا يمكن إعادة النشر لأن الرحلة ممتلئة");
+                    return Result.BadRequest("Cann't republished Because the Package of the Trip is full");
                 }
-
-                // 2. التحقق من تاريخ انتهاء الحجز
+            
                 if (packageTripDate.EndBookingDate <= DateTime.UtcNow)
                 {
-                    return Result.BadRequest("لا يمكن إعادة النشر لأن فترة الحجز انتهت");
+                    return Result.BadRequest("Cann't republished Because the Booking expiring");
                 }
-            }
-
-            if (!CanChangeStatus(packageTripDate.Status, Global.ConvertDtoToEntity(updateTripDateDto.Status)))
-            {
-                return Result.BadRequest($"Cannot change status from {packageTripDate.Status} to {updateTripDateDto.Status}.");
             }
 
             packageTripDate.Status = Global.ConvertDtoToEntity(updateTripDateDto.Status);
