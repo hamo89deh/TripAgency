@@ -63,8 +63,8 @@ namespace TripAgency.Api.Controllers
             return ApiResult<GetPackageTripByIdDto>.Created(packageTripResult.Value!);
         }
 
-
       
+
         [HttpPut]
         public async Task<ApiResult<string>> UpdatePackageTrip(UpdatePackageTripDto updatePackageTrip)
         {
@@ -106,12 +106,7 @@ namespace TripAgency.Api.Controllers
         [HttpDelete("{packageTripId}/Destination/{destinationId}")]
         public async Task<ApiResult<string>> DeletePackageTripDestination(int packageTripId, int destinationId)
         {
-            var packageTripDstinationDtoResult = await _packageTripDestinationService.GetPackageTripDestination(packageTripId, destinationId);
-            if (!packageTripDstinationDtoResult.IsSuccess)
-            {
-                return this.ToApiResult<string>(Result<string>.Failure(packageTripDstinationDtoResult.Message, packageTripDstinationDtoResult.Errors, packageTripDstinationDtoResult.FailureType));
-            }
-            var packageTripDestinationResult = await _packageTripDestinationService.DeleteAsync(packageTripDstinationDtoResult.Value!.Id);
+            var packageTripDestinationResult = await _packageTripDestinationService.DeletePackageTripDestinationAsync(packageTripId, destinationId);
             if (!packageTripDestinationResult.IsSuccess)
                 return this.ToApiResult<string>(packageTripDestinationResult);
             return ApiResult<string>.Ok("Success Delete");
@@ -142,15 +137,12 @@ namespace TripAgency.Api.Controllers
         [HttpDelete("{packageTripId}/Destination/{destinationId}/Activity/{activityId}")]
         public async Task<ApiResult<string>> DeletePackageTripDestinationActivity(int packageTripId, int destinationId , int activityId)
         {
-            var packageTripDestinationActivityDtoResult = await _packageTripDestinationActivityService.GetPackageTripDestinationActivity(packageTripId, destinationId, activityId);
-            if (!packageTripDestinationActivityDtoResult.IsSuccess)
-            {
-                return this.ToApiResult<string>(Result<string>.Failure(packageTripDestinationActivityDtoResult.Message, packageTripDestinationActivityDtoResult.Errors, packageTripDestinationActivityDtoResult.FailureType));
+            var packageTripDestinationActivityResult = await _packageTripDestinationActivityService.DeletePackageTripDestinationActivity(packageTripId, destinationId, activityId);
 
-            }
-            var packageTripDestinationActivityResult = await _packageTripDestinationActivityService.DeleteAsync(packageTripDestinationActivityDtoResult.Value!.Id);
             if (!packageTripDestinationActivityResult.IsSuccess)
+            {
                 return this.ToApiResult<string>(packageTripDestinationActivityResult);
+            }
             return ApiResult<string>.Ok("Success Delete");
         }
 
@@ -179,6 +171,17 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult<GetPackageTripDestinationsActivitiesDto>(packageTripsResult);
             return ApiResult<GetPackageTripDestinationsActivitiesDto>.Ok(packageTripsResult.Value!);
         }
+        [HttpGet("{PackageTripId}/Destinations/Activities/Dates")]
+        public async Task<ApiResult<GetPackageTripDestinationsActivitiesDatesDto>> GetPackageTripDestinationsActivitiesDates(int PackageTripId)
+        {
+            //TODO
+            var packageTripsResult = await _packageTripService.GetPackageTripDestinationsActivitiesDates(PackageTripId,Data.Enums.PackageTripDataStatus.Draft);
+            if (!packageTripsResult.IsSuccess)
+                return this.ToApiResult(packageTripsResult);
+            return ApiResult<GetPackageTripDestinationsActivitiesDatesDto>.Ok(packageTripsResult.Value!);
+        }
+
+
     }
 
 }

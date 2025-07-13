@@ -50,7 +50,7 @@ namespace TripAgency
 
                 builder.Services.AddDbContext<TripAgencyDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-                builder.Services.AddServicesDependencies()
+                builder.Services.AddServicesDependencies(builder.Configuration)
                                 .AddInfrastructureDependencies();
 
                 builder.Services.AddAutoMapper(typeof(CityProfile).Assembly);

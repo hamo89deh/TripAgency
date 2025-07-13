@@ -4,17 +4,17 @@ using TripAgency.Data.Entities;
 
 namespace TripAgency.Infrastructure.Configurations
 {
-    public class TripDateConfigurations : IEntityTypeConfiguration<TripDate>
+    public class PackageTripDateConfigurations : IEntityTypeConfiguration<PackageTripDate>
     {
-        public void Configure(EntityTypeBuilder<TripDate> builder)
+        public void Configure(EntityTypeBuilder<PackageTripDate> builder)
         {
             builder.HasKey(x => x.Id);
 
-            builder.Property(x=>x.StartTripDate)
+            builder.Property(x=>x.StartPackageTripDate)
                    .HasColumnType ("datetime2")
                    .IsRequired ();
 
-            builder.Property(x => x.EndTripDate)
+            builder.Property(x => x.EndPackageTripDate)
                    .HasColumnType("datetime2")
                    .IsRequired();
 
@@ -32,8 +32,8 @@ namespace TripAgency.Infrastructure.Configurations
 
             builder.Property(td => td.Status)
                    .IsRequired()
-                   .HasConversion<int>()
-                   .HasComment("Represents trip status: 0 = Available, 1 = Completed, 2 = Cancelled, 3 = Planned");
+                   .HasConversion<int>();
+                  // .HasComment("Represents trip status: 0 = Available, 1 = Completed, 2 = Cancelled, 3 = Planned");
 
             builder.Property(td => td.CreateDate)
                    .IsRequired()
@@ -43,14 +43,14 @@ namespace TripAgency.Infrastructure.Configurations
             builder.Property(td => td.IsAvailable)
                    .IsRequired()
                    .HasDefaultValue(true);
-
+            //TODO
             // builder.HasCheckConstraint("CK_TripDate_TripDates", "[StartTripDate] < [EndTripDate]");
 
 
-            builder.ToTable("TripDates");
+            builder.ToTable("PackageTripDates");
 
             builder.HasOne(s=>s.PackageTrip)
-                   .WithMany(d=>d.TripDates)
+                   .WithMany(d=>d.PackageTripDates)
                    .HasForeignKey(d => d.PackageTripId)
                    .OnDelete(DeleteBehavior.Restrict);
         }

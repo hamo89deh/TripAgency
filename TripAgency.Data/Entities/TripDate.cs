@@ -2,15 +2,15 @@
 
 namespace TripAgency.Data.Entities
 {
-    public class TripDate
+    public class PackageTripDate
     {
         public int Id { get; set; }
-        public DateTime StartTripDate { get; set; }
-        public DateTime EndTripDate { get; set; }
+        public DateTime StartPackageTripDate { get; set; }
+        public DateTime EndPackageTripDate { get; set; }
         public DateTime StartBookingDate { get; set; }
         public DateTime EndBookingDate { get; set; }
         public DateTime CreateDate { get; set; }
-        public TripDataStatus Status { get; set; }
+        public PackageTripDataStatus Status { get; set; }
         public int AvailableSeats { get; set; }
 
         public bool IsAvailable  { get; set; } 

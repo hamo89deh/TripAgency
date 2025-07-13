@@ -12,11 +12,11 @@ namespace TripAgency.Service.Implementations
     public class BookingTripService : GenericService<BookingTrip, GetBookingTripByIdDto, GetBookingTripsDto, AddBookingTripDto, UpdateBookingTripDto>, IBookingTripService
     {
         private IBookingTripRepositoryAsync _bookingTripRepository { get; set; }
-        private ITripDateRepositoryAsync _tripDateRepository { get; set; }
+        private IPackageTripDateRepositoryAsync _tripDateRepository { get; set; }
         public IMapper _mapper { get; }
 
         public BookingTripService(IBookingTripRepositoryAsync bookingTripRepository,
-                                  ITripDateRepositoryAsync tripDateRepository,
+                                  IPackageTripDateRepositoryAsync tripDateRepository,
                                   IMapper mapper
                                  ) : base(bookingTripRepository, mapper)
         {

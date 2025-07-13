@@ -73,10 +73,10 @@ namespace TripAgency.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar");
 
-                    b.Property<int>("PassengerCount")
+                    b.Property<int>("PackageTripDateId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TripDateId")
+                    b.Property<int>("PassengerCount")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
@@ -84,7 +84,7 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TripDateId");
+                    b.HasIndex("PackageTripDateId");
 
                     b.HasIndex("UserId");
 
@@ -209,6 +209,38 @@ namespace TripAgency.Infrastructure.Migrations
                     b.ToTable("Hotels", (string)null);
                 });
 
+            modelBuilder.Entity("TripAgency.Data.Entities.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<int>("PackageTripDateId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Notifications", (string)null);
+                });
+
             modelBuilder.Entity("TripAgency.Data.Entities.PackageTrip", b =>
                 {
                     b.Property<int>("Id")
@@ -253,6 +285,54 @@ namespace TripAgency.Infrastructure.Migrations
                     b.HasIndex("TripId");
 
                     b.ToTable("PackageTrips", (string)null);
+                });
+
+            modelBuilder.Entity("TripAgency.Data.Entities.PackageTripDate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AvailableSeats")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime>("CreateDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime>("EndBookingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EndPackageTripDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsAvailable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("PackageTripId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartBookingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("StartPackageTripDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PackageTripId");
+
+                    b.ToTable("PackageTripDates", (string)null);
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.PackageTripDestination", b =>
@@ -417,6 +497,36 @@ namespace TripAgency.Infrastructure.Migrations
                     b.ToTable("PaymentMethods");
                 });
 
+            modelBuilder.Entity("TripAgency.Data.Entities.Refund", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("BookingTripId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasComment(" status: 0 = Pending, 1 = Completed, 2 = Failed");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingTripId")
+                        .IsUnique();
+
+                    b.ToTable("Refunds", (string)null);
+                });
+
             modelBuilder.Entity("TripAgency.Data.Entities.Trip", b =>
                 {
                     b.Property<int>("Id")
@@ -438,55 +548,6 @@ namespace TripAgency.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Trips", (string)null);
-                });
-
-            modelBuilder.Entity("TripAgency.Data.Entities.TripDate", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AvailableSeats")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<DateTime>("CreateDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<DateTime>("EndBookingDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("EndTripDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsAvailable")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<int>("PackageTripId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartBookingDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("StartTripDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int")
-                        .HasComment("Represents trip status: 0 = Available, 1 = Completed, 2 = Cancelled, 3 = Planned");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PackageTripId");
-
-                    b.ToTable("TripDates", (string)null);
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.TripDestination", b =>
@@ -563,9 +624,9 @@ namespace TripAgency.Infrastructure.Migrations
 
             modelBuilder.Entity("TripAgency.Data.Entities.BookingTrip", b =>
                 {
-                    b.HasOne("TripAgency.Data.Entities.TripDate", "TripDate")
+                    b.HasOne("TripAgency.Data.Entities.PackageTripDate", "PackageTripDate")
                         .WithMany("BookingTrips")
-                        .HasForeignKey("TripDateId")
+                        .HasForeignKey("PackageTripDateId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -575,7 +636,7 @@ namespace TripAgency.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("TripDate");
+                    b.Navigation("PackageTripDate");
 
                     b.Navigation("User");
                 });
@@ -630,6 +691,17 @@ namespace TripAgency.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Trip");
+                });
+
+            modelBuilder.Entity("TripAgency.Data.Entities.PackageTripDate", b =>
+                {
+                    b.HasOne("TripAgency.Data.Entities.PackageTrip", "PackageTrip")
+                        .WithMany("PackageTripDates")
+                        .HasForeignKey("PackageTripId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("PackageTrip");
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.PackageTripDestination", b =>
@@ -708,15 +780,15 @@ namespace TripAgency.Infrastructure.Migrations
                     b.Navigation("PaymentMethod");
                 });
 
-            modelBuilder.Entity("TripAgency.Data.Entities.TripDate", b =>
+            modelBuilder.Entity("TripAgency.Data.Entities.Refund", b =>
                 {
-                    b.HasOne("TripAgency.Data.Entities.PackageTrip", "PackageTrip")
-                        .WithMany("TripDates")
-                        .HasForeignKey("PackageTripId")
+                    b.HasOne("TripAgency.Data.Entities.BookingTrip", "BookingTrip")
+                        .WithOne("Refund")
+                        .HasForeignKey("TripAgency.Data.Entities.Refund", "BookingTripId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("PackageTrip");
+                    b.Navigation("BookingTrip");
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.TripDestination", b =>
@@ -749,6 +821,9 @@ namespace TripAgency.Infrastructure.Migrations
                 {
                     b.Navigation("Payment")
                         .IsRequired();
+
+                    b.Navigation("Refund")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.City", b =>
@@ -769,11 +844,16 @@ namespace TripAgency.Infrastructure.Migrations
 
             modelBuilder.Entity("TripAgency.Data.Entities.PackageTrip", b =>
                 {
+                    b.Navigation("PackageTripDates");
+
                     b.Navigation("PackageTripDestinations");
 
                     b.Navigation("PackageTripTypes");
+                });
 
-                    b.Navigation("TripDates");
+            modelBuilder.Entity("TripAgency.Data.Entities.PackageTripDate", b =>
+                {
+                    b.Navigation("BookingTrips");
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.PackageTripDestination", b =>
@@ -786,11 +866,6 @@ namespace TripAgency.Infrastructure.Migrations
                     b.Navigation("PackageTrips");
 
                     b.Navigation("TripDestinations");
-                });
-
-            modelBuilder.Entity("TripAgency.Data.Entities.TripDate", b =>
-                {
-                    b.Navigation("BookingTrips");
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.TypeTrip", b =>

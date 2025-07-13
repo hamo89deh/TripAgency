@@ -2,9 +2,9 @@
 
 namespace TripAgency.Service.Feature.TripDate.Commands
 {
-    public class UpdateTripDateDto
+    public class UpdatePackageTripDateDto
     {
         public int Id { get; set; }     
-        public TripDataStatus Status { get; set; }
+        public PackageTripDataStatusDto Status { get; set; }
     }
 }

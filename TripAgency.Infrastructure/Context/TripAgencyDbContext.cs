@@ -28,13 +28,15 @@ namespace TripAgency.Infrastructure.Context
         public DbSet<PackageTripDestination> PackageTripDestinations { get; set; }
         public DbSet<PackageTripDestinationActivity> PackageTripDestinationActivities { get; set; }
         public DbSet<Data.Entities.Activity> Activities { get; set; }
-        public DbSet<TripDate> TripDates { get; set; }
+        public DbSet<PackageTripDate> TripDates { get; set; }
         public DbSet<TripDestination> TripDestinations { get; set; }
         public DbSet<DestinationActivity> DestinationActivities { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<BookingTrip> BookingTrips { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Refund> Refunds { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

@@ -7,6 +7,7 @@ using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.PackageTripDestination.Commands;
 using TripAgency.Service.Feature.PackageTripDestination.Queries;
 using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
+using TripAgency.Service.Feature.TripDate.Queries;
 using TripAgency.Service.Generic;
 
 namespace TripAgency.Service.Implementations
@@ -15,7 +16,7 @@ namespace TripAgency.Service.Implementations
     {
         private IPackageTripRepositoryAsync _packageTripRepositoryAsync { get; set; }
         private IDestinationRepositoryAsync _destinationRepositoryAsync { get; set; }
-        private ITripDateRepositoryAsync _tripDateRepositoryAsync { get; }
+        private IPackageTripDateRepositoryAsync _packageTripDateRepositoryAsync { get; }
         private ITripDestinationRepositoryAsync _tripDestinationRepositoryAsync { get; set; }
         private IPackageTripDestinationRepositoryAsync _packageTripDestinationRepoAsync { get; set; }
         private IMapper _mapper { get; }
@@ -24,14 +25,14 @@ namespace TripAgency.Service.Implementations
                                              IPackageTripRepositoryAsync packageTripRepositoryAsync,
                                              IMapper mapper,
                                              IDestinationRepositoryAsync destinationRepositoryAsync,
-                                             ITripDateRepositoryAsync tripDateRepositoryAsync,
+                                             IPackageTripDateRepositoryAsync tripDateRepositoryAsync,
                                              ITripDestinationRepositoryAsync tripDestinationRepositoryAsync) : base(packageTripDestinationRepoAsync, mapper)
         {
             _packageTripDestinationRepoAsync = packageTripDestinationRepoAsync;
             _packageTripRepositoryAsync = packageTripRepositoryAsync;
             _mapper = mapper;
             _destinationRepositoryAsync = destinationRepositoryAsync;
-            _tripDateRepositoryAsync = tripDateRepositoryAsync;
+            _packageTripDateRepositoryAsync = tripDateRepositoryAsync;
             _tripDestinationRepositoryAsync = tripDestinationRepositoryAsync;
         }
         public override async Task<Result<GetPackageTripDestinationByIdDto>> CreateAsync(AddPackageTripDestinationDto AddDto)
@@ -61,7 +62,7 @@ namespace TripAgency.Service.Implementations
                 return Result<GetPackageTripDestinationByIdDto>.BadRequest($"Destination Id : {AddDto.DestinationId} is already associated with Package Trip Id: {AddDto.PackageTripId}.");
             }
 
-            var TripDate = await _tripDateRepositoryAsync.GetTableNoTracking()
+            var TripDate = await _packageTripDateRepositoryAsync.GetTableNoTracking()
                                                          .FirstOrDefaultAsync(x => x.PackageTripId == PackageTrip.Id);
             if (TripDate is not null)
             {
@@ -102,7 +103,7 @@ namespace TripAgency.Service.Implementations
             }
 
 
-            var TripDate = await _tripDateRepositoryAsync.GetTableNoTracking()
+            var TripDate = await _packageTripDateRepositoryAsync.GetTableNoTracking()
                                                          .FirstOrDefaultAsync(x => x.PackageTripId == PackageTrip.Id);
             if (TripDate is not null)
             {
@@ -110,22 +111,51 @@ namespace TripAgency.Service.Implementations
             }
             return await base.UpdateAsync(PackageTripDestination.Id, UpdateDto);
         }
-        public override async Task<Result> DeleteAsync(int id)
+        public async Task<Result> DeletePackageTripDestinationAsync(int PackageTripId , int DestinationId)
         {
-            var PackageTripDestination = await _packageTripDestinationRepoAsync.GetByIdAsync(id);
+            var packageTrip = await _packageTripRepositoryAsync.GetByIdAsync(PackageTripId);
+            if (packageTrip is null)
+            {
+                return Result.NotFound($"Not Found PackageTrip With id : {PackageTripId}");
+            }
+            var Destination = await _destinationRepositoryAsync.GetByIdAsync(DestinationId);
+            if (Destination is null)
+            {
+                return Result.NotFound($"Not Found Destination With Id : {DestinationId}");
+            }
+
+            var PackageTripDate = await _packageTripDateRepositoryAsync.GetTableNoTracking()
+                                                .Where(t => t.PackageTripId == PackageTripId)
+                                                .Take(2)
+                                                .ToListAsync();
+
+            if (PackageTripDate.Any())
+            {
+                if (PackageTripDate.Count() != 1 || PackageTripDate[0].Status != Data.Enums.PackageTripDataStatus.Draft)
+                {
+                    return Result.BadRequest($"You Cann't  Delete any Destination For PackageTrip With Id : {PackageTripId} Because you have already Published it Before");
+                }
+            }
+
+            var PackageTripDestination = await _packageTripDestinationRepoAsync.GetTableNoTracking()
+                                                                               .Where(x => x.PackageTripId == PackageTripId
+                                                                                                      && x.DestinationId == DestinationId)
+                                                                               .Include(x => x.PackageTripDestinationActivities)
+                                                                               .FirstOrDefaultAsync();
             if (PackageTripDestination is null)
             {
-                return Result.NotFound($"Not Found PackageTripDestination With Id : {id}");
-
+                return Result.NotFound($"Not Found packageTrip With id : {PackageTripId} Related with Destination id {DestinationId} ");
             }
-            var TripDate = await _tripDateRepositoryAsync.GetTableNoTracking()
-                                                         .FirstOrDefaultAsync(x => x.PackageTripId == PackageTripDestination.PackageTripId);
-            if (TripDate is not null)
+       
+            
+            if (PackageTripDestination.PackageTripDestinationActivities.Count() != 0 )
             {
-                return Result.BadRequest($" Cann't Delete PackageTrip Destination Because you have TripDate :{TripDate.Id} associated  with PackageTrip: {PackageTripDestination.PackageTripId}");
+                return Result.BadRequest($"Cann't Delete Destination with Id : {PackageTripDestination.DestinationId} For PackageTrip With Id : {PackageTripId} Because already have Activities With Ids : {string.Join(',' , PackageTripDestination.PackageTripDestinationActivities.Select(d=>d.ActivityId))} Related before");
 
             }
-            return await base.DeleteAsync(id);
+
+            await _packageTripDestinationRepoAsync.DeleteAsync(PackageTripDestination);
+            return Result.Success();
         }
 
         public async Task<Result<GetPackageTripDestinationByIdDto>> GetPackageTripDestination(int packageTripId, int destinationId)
@@ -320,5 +350,6 @@ namespace TripAgency.Service.Implementations
 
             return Result<GetPackageTripDestinationsActivitiesDto>.Success(resultDto);
         }
-    }
+
+     }
 }

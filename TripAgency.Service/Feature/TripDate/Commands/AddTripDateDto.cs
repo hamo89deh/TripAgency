@@ -7,15 +7,12 @@ using TripAgency.Data;
 
 namespace TripAgency.Service.Feature.TripDate.Commands
 {
-    public class AddTripDateDto
+    public class AddPackageTripDateDto
     {
-        public DateTime StartTripDate { get; set; }
-        public DateTime EndTripDate { get; set; }
+        public DateTime StartPackageTripDate { get; set; }
+        public DateTime EndPackageTripDate { get; set; } 
         public DateTime StartBookingDate { get; set; }
         public DateTime EndBookingDate { get; set; }
-
-        public int AvailableSeats {  get; set; }
-        // public int VehicleId { get; set; }
         public int PackageTripId { get; set; }
     }
 }

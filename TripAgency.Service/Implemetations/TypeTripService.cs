@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Options;
 using TripAgency.Data.Entities;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Infrastructure.Abstracts;
@@ -33,3 +34,4 @@ namespace TripAgency.Service.Implementations
 
     }
 }
+

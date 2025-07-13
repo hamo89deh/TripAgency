@@ -9,7 +9,7 @@ namespace TripAgency.Service.Mapping.BookingTrip_Entity
         {
             CreateMap<BookingTrip, GetBookingTripsDto>()
                 .ForMember(d => d.Id, op => op.MapFrom(s => s.Id))
-                .ForMember(d => d.TripDateId, op => op.MapFrom(s => s.TripDateId))
+                .ForMember(d => d.TripDateId, op => op.MapFrom(s => s.PackageTripDateId))
                 .ForMember(d => d.UserId, op => op.MapFrom(s => s.UserId))
                 .ForMember(d => d.PassengerCount, op => op.MapFrom(s => s.PassengerCount))
                 .ForMember(d => d.ActualPrice, op => op.MapFrom(s => s.ActualPrice))

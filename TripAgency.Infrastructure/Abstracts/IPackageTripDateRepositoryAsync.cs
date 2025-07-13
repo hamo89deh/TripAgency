@@ -8,7 +8,7 @@ using TripAgency.Infrastructure.InfrastructureBases;
 
 namespace TripAgency.Infrastructure.Abstracts
 {
-    public interface ITripDateRepositoryAsync : IGenericRepositoryAsync<TripDate>
+    public interface IPackageTripDateRepositoryAsync : IGenericRepositoryAsync<PackageTripDate>
     {
     }
 }

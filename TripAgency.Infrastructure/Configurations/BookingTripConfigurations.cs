@@ -33,9 +33,9 @@ namespace TripAgency.Infrastructure.Configurations
 
             builder.ToTable("BookingTrips");
             
-            builder.HasOne(x=>x.TripDate)
+            builder.HasOne(x=>x.PackageTripDate)
                    .WithMany(x=>x.BookingTrips)
-                   .HasForeignKey(x=>x.TripDateId)
+                   .HasForeignKey(x=>x.PackageTripDateId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(x => x.User)

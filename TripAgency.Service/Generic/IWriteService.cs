@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace TripAgency.Service.Generic
 {
-    public interface IWriteService<T, AddDto, UpdateDto, GetByIdDto> :IAddService<T,AddDto , GetByIdDto> , IUpdateService<T,UpdateDto > , IDeleteService<T>
+    public interface IWriteService<T, AddDto, UpdateDto, GetByIdDto> : IAddService<T,AddDto , GetByIdDto> , IUpdateService<T,UpdateDto >
     {
     }
+    
 }

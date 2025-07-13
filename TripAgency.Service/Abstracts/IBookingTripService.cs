@@ -9,5 +9,5 @@ namespace TripAgency.Service.Abstracts
     public interface IBookingTripService : IGenericService<BookingTrip, GetBookingTripByIdDto, GetBookingTripsDto , AddBookingTripDto, UpdateBookingTripDto>                                  
     {
     
-    }
+    } 
 }

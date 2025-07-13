@@ -7,13 +7,13 @@ using TripAgency.Data.Enums;
 
 namespace TripAgency.Service.Feature.TripDate.Queries
 {
-    public class GetTripDateByIdDto
+    public class GetPackageTripDateByIdDto
     {
         public int Id { get; set; }
         public DateTime StartTripDate { get; set; }
         public DateTime EndTripDate { get; set; }
         public int AvailableSeats { get; set; }
-        public TripDataStatus Status { get; set; }
+        public PackageTripDataStatus Status { get; set; }
         public DateTime CreateDate { get; set; }
         public DateTime StartBookingDate { get; set; }
         public DateTime EndBookingDate { get; set; }

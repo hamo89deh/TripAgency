@@ -15,11 +15,12 @@ namespace TripAgency.Data.Entities
         public BookingStatus BookingStatus { get; set; }
         public decimal ActualPrice { get; set; }
         public string Notes { get; set; }
-        public TripDate TripDate { get; set; }  
-        public int TripDateId { get; set; }
+        public PackageTripDate PackageTripDate { get; set; }  
+        public int PackageTripDateId { get; set; }
         public User User { get; set; }
         public int UserId { get; set; }
         public Payment Payment { get; set; }
+        public Refund Refund { get; set; }
 
     }
 }

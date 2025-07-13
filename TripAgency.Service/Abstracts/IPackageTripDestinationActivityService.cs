@@ -8,6 +8,7 @@ namespace TripAgency.Service.Abstracts
 {
     public interface IPackageTripDestinationActivityService : IWriteService<PackageTripDestinationActivity, AddPackageTripDestinationActivityDto, UpdatePackageTripDestinationActivityDto, GetPackageTripDestinationActivitiesDto>
     {
-        public Task<Result<GetPackageTripDestinationActivityByIdDto>> GetPackageTripDestinationActivity( int packagetripId , int DestinationId ,int ActivityId);
+        public Task<Result<GetPackageTripDestinationActivityByIdDto>> GetPackageTripDestinationActivity( int PackageTripId , int DestinationId ,int ActivityId);
+        public Task<Result> DeletePackageTripDestinationActivity( int PackageTripId , int DestinationId ,int ActivityId);
     }
 }

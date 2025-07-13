@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using TripAgency.Data.Helping;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Implementations;
 
@@ -11,7 +10,7 @@ namespace TripAgency.Service
 {
     public static class ModuleServicesDependencies
     {
-        public static IServiceCollection AddServicesDependencies(this IServiceCollection services)
+        public static IServiceCollection AddServicesDependencies(this IServiceCollection services, IConfiguration configuration)
         {          
 
             services.AddTransient<ICityService,CityService>();
@@ -23,8 +22,16 @@ namespace TripAgency.Service
             services.AddTransient<IPackageTripDestinationService, PackageTripDestinationService>();
             services.AddTransient<IPackageTripDestinationActivityService, PackageTripDestinationActivityService>();
             services.AddTransient<IActivityService, ActivityService>();
-            services.AddTransient<ITripDateService, TripDateService>();
+            services.AddTransient<IPackageTripDateService, PackageTripDateService>();
             services.AddTransient<IBookingTripService, BookingTripService>();
+            services.AddTransient<IEmailService, EmailService>();
+            services.AddTransient<INotificationService, NotificationService>();
+
+
+            //Email
+            var emailSettings = new EmailSettings();
+            configuration.GetSection(nameof(emailSettings)).Bind(emailSettings);
+            services.AddSingleton(emailSettings);
 
             return services;
         }

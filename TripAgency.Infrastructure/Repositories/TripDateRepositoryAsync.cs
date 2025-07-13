@@ -5,7 +5,7 @@ using TripAgency.Infrastructure.InfrastructureBases;
 
 namespace TripAgency.Infrastructure.Repositories
 {
-    public class TripDateRepositoryAsync : GenericRepositoryAsync<TripDate>, ITripDateRepositoryAsync
+    public class TripDateRepositoryAsync : GenericRepositoryAsync<PackageTripDate>, IPackageTripDateRepositoryAsync
     {
         public TripDateRepositoryAsync(TripAgencyDbContext dbContext) : base(dbContext)
         {

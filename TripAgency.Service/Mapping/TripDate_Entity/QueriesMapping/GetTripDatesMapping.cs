@@ -7,12 +7,12 @@ namespace TripAgency.Service.Mapping.TripDate_Entity
     {
         public void GetTripDatesMapping()
         {
-            CreateMap<TripDate, GetTripDatesDto>()
+            CreateMap<PackageTripDate, GetPackageTripDatesDto>()
                 .ForMember(d => d.Id, op => op.MapFrom(s => s.Id))
                 .ForMember(d => d.StartBookingDate, op => op.MapFrom(s => s.StartBookingDate))
                 .ForMember(d => d.EndBookingDate, op => op.MapFrom(s => s.EndBookingDate))
-                .ForMember(d => d.StartTripDate, op => op.MapFrom(s => s.StartTripDate))
-                .ForMember(d => d.EndTripDate, op => op.MapFrom(s => s.EndTripDate))
+                .ForMember(d => d.StartPackageTripDate, op => op.MapFrom(s => s.StartPackageTripDate))
+                .ForMember(d => d.EndPackageTripDate, op => op.MapFrom(s => s.EndPackageTripDate))
                 .ForMember(d => d.AvailableSeats, op => op.MapFrom(s => s.AvailableSeats))
                 .ForMember(d => d.CreateDate, op => op.MapFrom(s => s.CreateDate))
                 .ForMember(d => d.PackageTripId, op => op.MapFrom(s => s.PackageTripId))

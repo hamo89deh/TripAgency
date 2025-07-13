@@ -13,5 +13,6 @@ namespace TripAgency.Service.Abstracts
         Task<Result<GetPackageTripDestinationsDto>> GetPackageTripDestinations(int packageTripId );
         Task<Result<GetPackageTripDestinationActivitiesDto>> GetPackageTripDestinationActivities(int packageTripId , int destinationId );
         Task<Result<GetPackageTripDestinationsActivitiesDto>> GetPackageTripDestinationsActivities(int packageTripId );
+        Task<Result> DeletePackageTripDestinationAsync(int PackageTripId, int DestinationId);
     }
 }
