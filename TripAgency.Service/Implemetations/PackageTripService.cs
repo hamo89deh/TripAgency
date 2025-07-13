@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TripAgency.Data.Entities;
 using TripAgency.Data.Enums;
+using TripAgency.Data.NewFolder1;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Infrastructure.Abstracts;
 using TripAgency.Infrastructure.Repositories;
@@ -45,13 +46,13 @@ namespace TripAgency.Service.Implementations
             return await base.UpdateAsync(id, UpdateDto);
         }
 
-        public async Task<Result<GetPackageTripDestinationsActivitiesDatesDto>> GetPackageTripDestinationsActivitiesDates(int packageTripId , PackageTripDataStatus status)
+        public async Task<Result<GetPackageTripDestinationsActivitiesDatesDto>> GetPackageTripDestinationsActivitiesDates(int packageTripId , enPackageTripDataStatusDto status)
         {
             var PackageTrip = await _packageTripRepositoryAsync.GetTableNoTracking()
                                                              .Where(x => x.Id == packageTripId)
                                                              .Include(x => x.PackageTripDestinations)
                                                              .ThenInclude(x => x.PackageTripDestinationActivities)
-                                                             .Include(x => x.PackageTripDates.Where(ptd => ptd.Status == status))
+                                                             .Include(x => x.PackageTripDates.Where(ptd => ptd.Status ==Global.ConvertEnPackageTripDataStatusDtoToPackageTripDataStatus( status)))
                                                              .FirstOrDefaultAsync();
                                                              
             if (PackageTrip is null)
@@ -98,7 +99,7 @@ namespace TripAgency.Service.Implementations
                         StartTime = d.StartTime,
                     })
                 }),
-                PackageTripDatesDtos = PackageTrip.PackageTripDates.Where(ptd=>ptd.Status== status).Select(d => new PackageTripDatesDto
+                PackageTripDatesDtos = PackageTrip.PackageTripDates.Where(ptd=>ptd.Status== Global.ConvertEnPackageTripDataStatusDtoToPackageTripDataStatus(status)).Select(d => new PackageTripDatesDto
                 {
                     Id = d.Id,
                     EndBookingDate = d.EndBookingDate,

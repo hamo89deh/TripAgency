@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
+using TripAgency.Data.Enums;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.PackageTrip.Commands;
@@ -172,10 +173,9 @@ namespace TripAgency.Api.Controllers
             return ApiResult<GetPackageTripDestinationsActivitiesDto>.Ok(packageTripsResult.Value!);
         }
         [HttpGet("{PackageTripId}/Destinations/Activities/Dates")]
-        public async Task<ApiResult<GetPackageTripDestinationsActivitiesDatesDto>> GetPackageTripDestinationsActivitiesDates(int PackageTripId)
+        public async Task<ApiResult<GetPackageTripDestinationsActivitiesDatesDto>> GetPackageTripDestinationsActivitiesDates(int PackageTripId , enPackageTripDataStatusDto status)
         {
-            //TODO
-            var packageTripsResult = await _packageTripService.GetPackageTripDestinationsActivitiesDates(PackageTripId,Data.Enums.PackageTripDataStatus.Draft);
+            var packageTripsResult = await _packageTripService.GetPackageTripDestinationsActivitiesDates(PackageTripId, status);
             if (!packageTripsResult.IsSuccess)
                 return this.ToApiResult(packageTripsResult);
             return ApiResult<GetPackageTripDestinationsActivitiesDatesDto>.Ok(packageTripsResult.Value!);

@@ -98,7 +98,7 @@ namespace TripAgency.Service.Implementations
                 return Result.NotFound($"Not Found Trip Date with Id : {updateTripDateDto.Id}");
 
            
-            if (!CanChangeStatus(packageTripDate.Status, Global.ConvertDtoToEntity(updateTripDateDto.Status)))
+            if (!CanChangeStatus(packageTripDate.Status, Global.ConvertenUpdatePackageTripDataStatusDtoToPackageTripDataStatusDto(updateTripDateDto.Status)))
             {
                 return Result.BadRequest($"Cannot change status from {packageTripDate.Status} to {updateTripDateDto.Status}.");
             }
@@ -106,7 +106,7 @@ namespace TripAgency.Service.Implementations
             if (packageTripDate.Status == PackageTripDataStatus.Draft &&
                updateTripDateDto.Status == enUpdatePackageTripDataStatusDto.Published)
             {
-                //TODO Check if I have Activity
+                
                 if (packageTripDate.PackageTrip.PackageTripDestinations.Count() == 0)
                 {
                     return Result.BadRequest($"Cann't Update Status Package Trip Before Add Destinations And Activities ");
@@ -133,7 +133,7 @@ namespace TripAgency.Service.Implementations
                 }
             }
 
-            packageTripDate.Status = Global.ConvertDtoToEntity(updateTripDateDto.Status);
+            packageTripDate.Status = Global.ConvertenUpdatePackageTripDataStatusDtoToPackageTripDataStatusDto(updateTripDateDto.Status);
             await _tripDateRepositoryAsync.SaveChangesAsync();
 
             await ExecuteStatusSpecificActions(packageTripDate.Id, packageTripDate.Status);
