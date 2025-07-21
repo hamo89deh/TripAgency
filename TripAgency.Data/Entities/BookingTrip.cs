@@ -20,7 +20,6 @@ namespace TripAgency.Data.Entities
         public User User { get; set; }
         public int UserId { get; set; }
         public Payment Payment { get; set; }
-        public Refund Refund { get; set; }
 
     }
 }

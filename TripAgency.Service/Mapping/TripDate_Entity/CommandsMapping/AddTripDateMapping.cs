@@ -16,7 +16,7 @@ namespace TripAgency.Service.Mapping.TripDate_Entity
                 .ForMember(d => d.CreateDate, op => op.MapFrom(s => DateTime.Now))
                 .ForMember(d => d.PackageTripId, op => op.MapFrom(s => s.PackageTripId))
                 .ForMember(d => d.IsAvailable, op => op.MapFrom(s => false))
-                .ForMember(d => d.Status, op => op.MapFrom(s => PackageTripDataStatus.Draft)) ;
+                .ForMember(d => d.Status, op => op.MapFrom(s => PackageTripDateStatus.Draft)) ;
         }
     }
 }

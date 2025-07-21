@@ -8,7 +8,7 @@ namespace TripAgency.Service.Feature.TripDate.Queries
         public DateTime StartPackageTripDate { get; set; }
         public DateTime EndPackageTripDate { get; set; }
         public int AvailableSeats { get; set; }
-        public PackageTripDataStatus Status { get; set; }
+        public PackageTripDateStatus Status { get; set; }
         public DateTime CreateDate { get; set; }
         public DateTime StartBookingDate { get; set; }
         public DateTime EndBookingDate { get; set; }

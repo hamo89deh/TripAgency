@@ -9,89 +9,89 @@ namespace TripAgency.Data.NewFolder1
 {
     public class Global
     {
-        public static enUpdatePackageTripDataStatusDto ConvertPackageTripDataStatusToenUpdatePackageTripDataStatusDto(PackageTripDataStatus status)
+        public static enUpdatePackageTripDataStatusDto ConvertPackageTripDataStatusToenUpdatePackageTripDataStatusDto(PackageTripDateStatus status)
         {
             switch (status)
             {
-                case PackageTripDataStatus.Published:
+                case PackageTripDateStatus.Published:
                     return enUpdatePackageTripDataStatusDto.Published;
-                case PackageTripDataStatus.BookingClosed:
+                case PackageTripDateStatus.BookingClosed:
                     return enUpdatePackageTripDataStatusDto.BookingClosed;
-                case PackageTripDataStatus.Cancelled:
+                case PackageTripDateStatus.Cancelled:
                     return enUpdatePackageTripDataStatusDto.Cancelled;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(status), status, null);
             }
         }  
         
-        public static PackageTripDataStatus ConvertenUpdatePackageTripDataStatusDtoToPackageTripDataStatusDto(enUpdatePackageTripDataStatusDto status)
+        public static PackageTripDateStatus ConvertenUpdatePackageTripDataStatusDtoToPackageTripDataStatusDto(enUpdatePackageTripDataStatusDto status)
         {
             switch (status)
             {
                 case enUpdatePackageTripDataStatusDto.Published:
-                    return PackageTripDataStatus.Published;
+                    return PackageTripDateStatus.Published;
                 case enUpdatePackageTripDataStatusDto.BookingClosed:
-                    return PackageTripDataStatus.BookingClosed;
+                    return PackageTripDateStatus.BookingClosed;
                 case enUpdatePackageTripDataStatusDto.Cancelled:
-                    return PackageTripDataStatus.Cancelled;              
+                    return PackageTripDateStatus.Cancelled;              
                 default:
                     throw new ArgumentOutOfRangeException(nameof(status), status, null);
             }
         }
 
-        public static enPackageTripDataStatusDto ConvertPackageTripDataStatusToEnPackageTripDataStatusDto(PackageTripDataStatus status)
+        public static enPackageTripDataStatusDto ConvertPackageTripDataStatusToEnPackageTripDataStatusDto(PackageTripDateStatus status)
         {
             switch (status)
             {
-                case PackageTripDataStatus.Draft:
+                case PackageTripDateStatus.Draft:
                     return enPackageTripDataStatusDto.Draft;
 
-                case PackageTripDataStatus.Published:
+                case PackageTripDateStatus.Published:
                     return enPackageTripDataStatusDto.Published;
 
-                case PackageTripDataStatus.BookingClosed:
+                case PackageTripDateStatus.BookingClosed:
                     return enPackageTripDataStatusDto.BookingClosed;
 
-                case PackageTripDataStatus.Full:
+                case PackageTripDateStatus.Full:
                     return enPackageTripDataStatusDto.Full;
 
-                case PackageTripDataStatus.Cancelled:
+                case PackageTripDateStatus.Cancelled:
                     return enPackageTripDataStatusDto.Cancelled;   
                                
-                case PackageTripDataStatus.Completed:
+                case PackageTripDateStatus.Completed:
                     return enPackageTripDataStatusDto.Completed;
 
-                case PackageTripDataStatus.Ongoing:
+                case PackageTripDateStatus.Ongoing:
                     return enPackageTripDataStatusDto.Ongoing;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(status), status, null);
             }
         }
 
-        public static PackageTripDataStatus ConvertEnPackageTripDataStatusDtoToPackageTripDataStatus(enPackageTripDataStatusDto status)
+        public static PackageTripDateStatus ConvertEnPackageTripDataStatusDtoToPackageTripDataStatus(enPackageTripDataStatusDto status)
         {
             switch (status)
             {
                 case enPackageTripDataStatusDto.Draft:
-                    return PackageTripDataStatus.Draft;
+                    return PackageTripDateStatus.Draft;
 
                 case enPackageTripDataStatusDto.Published:
-                    return PackageTripDataStatus.Published;
+                    return PackageTripDateStatus.Published;
 
                 case enPackageTripDataStatusDto.BookingClosed:
-                    return PackageTripDataStatus.BookingClosed;
+                    return PackageTripDateStatus.BookingClosed;
 
                 case enPackageTripDataStatusDto.Full:
-                    return PackageTripDataStatus.Full;
+                    return PackageTripDateStatus.Full;
 
                 case enPackageTripDataStatusDto.Cancelled:
-                    return PackageTripDataStatus.Cancelled;
+                    return PackageTripDateStatus.Cancelled;
 
                 case enPackageTripDataStatusDto.Completed:
-                    return PackageTripDataStatus.Completed;
+                    return PackageTripDateStatus.Completed;
 
                 case enPackageTripDataStatusDto.Ongoing:
-                    return PackageTripDataStatus.Ongoing;
+                    return PackageTripDateStatus.Ongoing;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(status), status, null);
             }

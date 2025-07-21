@@ -25,5 +25,5 @@ namespace TripAgency.Infrastructure.Repositories
 
         }
     }
-
+    
 }

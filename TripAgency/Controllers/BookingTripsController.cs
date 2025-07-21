@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.BookingTrip.Commands;
 using TripAgency.Service.Feature.BookingTrip.Queries;
+using TripAgency.Service.Feature.Payment;
+using TripAgency.Service.Implementations;
 
 namespace TripAgency.Api.Controllers
 {
@@ -39,15 +42,16 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ApiResult<GetBookingTripByIdDto>> AddBookingTrip(AddBookingTripDto bookingTrip)
+        public async Task<ApiResult<PaymentInitiationResponseDto>> AddBookingTrip(AddBookingPackageTripDto bookingTrip)
         {
-            var bookingTripResult = await _bookingTripService.CreateAsync(bookingTrip);
+            var bookingTripResult = await _bookingTripService.InitiateBookingAndPaymentAsync(bookingTrip);
             if (!bookingTripResult.IsSuccess)
             {
                 return this.ToApiResult(bookingTripResult);
             }
-            return ApiResult<GetBookingTripByIdDto>.Created(bookingTripResult.Value!);
+            return ApiResult<PaymentInitiationResponseDto>.Created(bookingTripResult.Value!);
         }
+             
         [HttpPut]
         public async Task<ApiResult<string>> UpdateBookingTrip(UpdateBookingTripDto updateBookingTrip)
         {

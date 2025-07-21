@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TripAgency.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using TripAgency.Infrastructure.Context;
 namespace TripAgency.Infrastructure.Migrations
 {
     [DbContext(typeof(TripAgencyDbContext))]
-    partial class TripAgencyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250720045511_UpdateReportandPayment")]
+    partial class UpdateReportandPayment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -525,7 +528,7 @@ namespace TripAgency.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<int?>("PaymentId")
+                    b.Property<int>("PaymentId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ReportDate")
@@ -912,7 +915,9 @@ namespace TripAgency.Infrastructure.Migrations
                 {
                     b.HasOne("TripAgency.Data.Entities.Payment", "Payment")
                         .WithMany()
-                        .HasForeignKey("PaymentId");
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("TripAgency.Data.Entities.User", "ReviewedByUser")
                         .WithMany()

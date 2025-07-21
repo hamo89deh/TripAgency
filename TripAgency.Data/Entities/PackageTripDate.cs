@@ -10,7 +10,7 @@ namespace TripAgency.Data.Entities
         public DateTime StartBookingDate { get; set; }
         public DateTime EndBookingDate { get; set; }
         public DateTime CreateDate { get; set; }
-        public PackageTripDataStatus Status { get; set; }
+        public PackageTripDateStatus Status { get; set; }
         public int AvailableSeats { get; set; }
 
         public bool IsAvailable  { get; set; } 

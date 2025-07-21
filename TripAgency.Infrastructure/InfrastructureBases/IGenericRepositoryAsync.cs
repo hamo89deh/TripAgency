@@ -13,9 +13,9 @@ namespace TripAgency.Infrastructure.InfrastructureBases
         Task UpdateAsync(T entity);
         Task UpdateRangeAsync(ICollection<T> entities);
         Task DeleteAsync(T entity);
-        IDbContextTransaction BeginTransaction();
-        void Commit();
-        void RollBack();
+        Task<IDbContextTransaction> BeginTransactionAsync();
+        Task Commit();
+        Task RollBack();
 
         Task SaveChangesAsync();
 

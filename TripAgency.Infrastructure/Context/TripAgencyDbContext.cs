@@ -37,6 +37,7 @@ namespace TripAgency.Infrastructure.Context
         public DbSet<BookingTrip> BookingTrips { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Refund> Refunds { get; set; }
+        public DbSet<PaymentDiscrepancyReport> PaymentDiscrepancyReports { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

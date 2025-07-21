@@ -23,11 +23,6 @@ namespace TripAgency.Infrastructure.Configurations
                    .HasPrecision(18, 2)
                    .IsRequired(true);
 
-            builder.HasOne(x => x.BookingTrip)
-                   .WithOne(x => x.Refund)
-                   .HasForeignKey<Refund>(x => x.BookingTripId)
-                   .OnDelete(DeleteBehavior.Restrict);
-
             builder.ToTable("Refunds");
         }
     }

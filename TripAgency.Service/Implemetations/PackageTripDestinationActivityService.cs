@@ -58,7 +58,7 @@ namespace TripAgency.Service.Implementations
 
             if (PackageTripDate.Any())
             {
-                if (PackageTripDate.Count() != 1 || PackageTripDate[0].Status != Data.Enums.PackageTripDataStatus.Draft)
+                if (PackageTripDate.Count() != 1 || PackageTripDate[0].Status != Data.Enums.PackageTripDateStatus.Draft)
                 {
                     return Result<GetPackageTripDestinationActivitiesDto>.BadRequest($"You Cann't Add Any New Activity For PackageTrip With Id {PackageTrip.Id} Because you have already Published it Before");
                 }
@@ -193,7 +193,7 @@ namespace TripAgency.Service.Implementations
                                                        
             if (PackageTripDate.Any())
             {
-                if (PackageTripDate.Count() != 1 || PackageTripDate[0].Status != Data.Enums.PackageTripDataStatus.Draft)
+                if (PackageTripDate.Count() != 1 || PackageTripDate[0].Status != Data.Enums.PackageTripDateStatus.Draft)
                 {
                     return Result.BadRequest($"You Cann't Update PackageTrip With Id : {PackageTrip.Id} Because you have already Published it Before");                  
                 }
@@ -249,7 +249,7 @@ namespace TripAgency.Service.Implementations
 
             if (PackageTripDate.Any())
             {
-                if (PackageTripDate.Count() != 1 || PackageTripDate[0].Status != Data.Enums.PackageTripDataStatus.Draft)
+                if (PackageTripDate.Count() != 1 || PackageTripDate[0].Status != Data.Enums.PackageTripDateStatus.Draft)
                 {
                     return Result.BadRequest($"You Cann't  Delete any Activity For PackageTrip With Id : {PackageTrip.Id} Because you have already Published it Before");
                 }

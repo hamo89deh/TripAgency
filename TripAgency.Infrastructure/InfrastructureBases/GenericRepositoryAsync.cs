@@ -96,20 +96,20 @@ namespace TripAgency.Infrastructure.InfrastructureBases
         }
 
 
-        public IDbContextTransaction BeginTransaction()
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
-            return _dbContext.Database.BeginTransaction();
+            return  await _dbContext.Database.BeginTransactionAsync();
         }
 
-        public void Commit()
+        public async Task Commit()
         {
-            _dbContext.Database.CommitTransaction();
+            await _dbContext.Database.CommitTransactionAsync();
 
         }
 
-        public void RollBack()
+        public async Task RollBack()
         {
-            _dbContext.Database.RollbackTransaction();
+            await _dbContext.Database.RollbackTransactionAsync();
 
         }
         #endregion

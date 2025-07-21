@@ -76,7 +76,7 @@ namespace TripAgency.Service.Implementations
                 StartPackageTripDate = AddDto.StartPackageTripDate,
                 EndPackageTripDate = AddDto.EndPackageTripDate, 
                 PackageTripId = packageTrip.Id,
-                Status = PackageTripDataStatus.Draft           
+                Status = PackageTripDateStatus.Draft           
             };
 
             await _tripDateRepositoryAsync.AddAsync(packageTripDate);
@@ -103,7 +103,7 @@ namespace TripAgency.Service.Implementations
                 return Result.BadRequest($"Cannot change status from {packageTripDate.Status} to {updateTripDateDto.Status}.");
             }
 
-            if (packageTripDate.Status == PackageTripDataStatus.Draft &&
+            if (packageTripDate.Status == PackageTripDateStatus.Draft &&
                updateTripDateDto.Status == enUpdatePackageTripDataStatusDto.Published)
             {
                 
@@ -118,7 +118,7 @@ namespace TripAgency.Service.Implementations
                 }
             }
 
-            if (packageTripDate.Status == PackageTripDataStatus.BookingClosed &&
+            if (packageTripDate.Status == PackageTripDateStatus.BookingClosed &&
                 updateTripDateDto.Status == enUpdatePackageTripDataStatusDto.Published)
             {
 
@@ -142,59 +142,158 @@ namespace TripAgency.Service.Implementations
             return Result.Success();
 
         }
-        public bool CanChangeStatus(PackageTripDataStatus currentStatus, PackageTripDataStatus newStatus)
+        public bool CanChangeStatus(PackageTripDateStatus currentStatus, PackageTripDateStatus newStatus)
         {
             switch (currentStatus)
             {
-                case PackageTripDataStatus.Draft:
-                    return newStatus == PackageTripDataStatus.Published || newStatus == PackageTripDataStatus.Cancelled;
-                case PackageTripDataStatus.Published:
-                    return newStatus == PackageTripDataStatus.BookingClosed ||
-                           newStatus == PackageTripDataStatus.Cancelled ||
-                           newStatus == PackageTripDataStatus.Full;
-                case PackageTripDataStatus.BookingClosed:
-                    return newStatus == PackageTripDataStatus.Ongoing ||
-                           newStatus == PackageTripDataStatus.Cancelled;
-                case PackageTripDataStatus.Full:
-                    return newStatus == PackageTripDataStatus.BookingClosed || newStatus == PackageTripDataStatus.Cancelled;
-                case PackageTripDataStatus.Ongoing:
-                    return newStatus == PackageTripDataStatus.Completed;
+                case PackageTripDateStatus.Draft:
+                    return newStatus == PackageTripDateStatus.Published || newStatus == PackageTripDateStatus.Cancelled;
+                case PackageTripDateStatus.Published:
+                    return newStatus == PackageTripDateStatus.BookingClosed ||
+                           newStatus == PackageTripDateStatus.Cancelled ||
+                           newStatus == PackageTripDateStatus.Full;
+                case PackageTripDateStatus.BookingClosed:
+                    return newStatus == PackageTripDateStatus.Ongoing ||
+                           newStatus == PackageTripDateStatus.Cancelled;
+                case PackageTripDateStatus.Full:
+                    return newStatus == PackageTripDateStatus.BookingClosed || newStatus == PackageTripDateStatus.Cancelled;
+                case PackageTripDateStatus.Ongoing:
+                    return newStatus == PackageTripDateStatus.Completed;
                 default:
                     return false; // الحالات الأخرى لا يمكن تغييرها
             }
         }
-        public async Task ExecuteStatusSpecificActions(int packageTripDateId, PackageTripDataStatus newStatus)
+        public async Task ExecuteStatusSpecificActions(int packageTripDateId, PackageTripDateStatus newStatus)
         {
             switch (newStatus)
             {
-                case PackageTripDataStatus.Cancelled:
-                    await _notificationServiceAsync.NotifyTripCancellation(packageTripDateId);
+                //case PackageTripDateStatus.Cancelled:
+                //    await _notificationServiceAsync.NotifyTripCancellation(packageTripDateId);
 
-                    await ProcessRefundsForCancelledTrip(packageTripDateId);
-                    break;
+                //    await ProcessRefundsForCancelledTrip(packageTripDateId);
+                //    break;
 
-                case PackageTripDataStatus.Completed:
-                    await _notificationServiceAsync.NotifyTripCompletion(packageTripDateId);
-                    break;
+                //case PackageTripDateStatus.Completed:
+                //    await _notificationServiceAsync.NotifyTripCompletion(packageTripDateId);
+                //    break;
             }
         }
         //TODO
         public async Task ProcessRefundsForCancelledTrip(int packageTripDateId)
         {
             // كود استرداد المبالغ (مثال باستخدام Stripe)
-            var bookings = _bookingTripRepositoryAsync.GetBookingTrips(packageTripDateId, PaymentStatus.Paid).ToList();
+            // var bookings = _bookingTripRepositoryAsync.GetBookingTrips(packageTripDateId, PaymentStatus.Paid).ToList();
 
-            foreach (var booking in bookings)
-            {
-                //var refundResult = await _paymentGateway.ProcessRefundAsync(
-                //    booking.PaymentTransactionId,
-                //    booking.AmountPaid);
+            //foreach (var booking in bookings)
+            //{
+            //    //var refundResult = await _paymentGateway.ProcessRefundAsync(
+            //    //    booking.PaymentTransactionId,
+            //    //    booking.AmountPaid);
 
-                //booking.PaymentStatus = refundResult.Success ?
-                //    PaymentStatus.Refunded :
-                //    PaymentStatus.RefundFailed;
-            }
+            //    //booking.PaymentStatus = refundResult.Success ?
+            //    //    PaymentStatus.Refunded :
+            //    //    PaymentStatus.RefundFailed;
+            //}
         }
-    }
+        //TODO
+        public async Task<Result> CancelPacakgeTripDateAsync(int packageTripDateId, int adminUserId, string cancellationReason)
+        {
+             using var transaction = await _packageTripRepositoryAsync.BeginTransactionAsync();
+           
+            // _logger.LogInformation("CancelTripDate: بدء إلغاء تاريخ الرحلة {TripDateId} بواسطة المسؤول {AdminUserId}.", tripDateId, adminUserId);
+
+            try
+            {
+                var packageTripDate = await _tripDateRepositoryAsync.GetTableNoTracking() // GetTable للحصول على كيان متتبع
+                                                        .Where(td => td.Id == packageTripDateId)
+                                                        .Include(td => td.BookingTrips) // **** تضمين الحجوزات المرتبطة ****
+                                                        .FirstOrDefaultAsync();
+
+                if (packageTripDate == null)
+                {
+                    await transaction.RollbackAsync();
+                    return Result.NotFound($"تاريخ الرحلة بالرقم التعريفي {packageTripDateId} غير موجود.");
+                }
+
+                // 1. التحقق من أن تاريخ الرحلة ليس ملغياً بالفعل أو مكتمل
+                if (packageTripDate.Status == PackageTripDateStatus.Cancelled ||
+                    packageTripDate.Status == PackageTripDateStatus.Completed || 
+                    packageTripDate.Status == PackageTripDateStatus.Ongoing  )
+                {
+                    //_logger.LogWarning("CancelTripDate: تاريخ الرحلة {TripDateId} هو بالفعل بحالة {Status}.", tripDateId, tripDate.Status);
+                    await transaction.CommitAsync(); // لا حاجة للتراجع، لا تغييرات فعلية
+                    return Result.BadRequest($"تاريخ الرحلة {packageTripDate.Id} هو بالفعل بحالة '{packageTripDate.Status.ToString()}' ولا يمكن إلغاؤه.");
+                }
+
+                // 2. تحديث حالة TripDate إلى 'Cancelled'
+                packageTripDate.Status = PackageTripDateStatus.Cancelled;
+                packageTripDate.IsAvailable = false;
+                await _tripDateRepositoryAsync.UpdateAsync(packageTripDate);
+
+                // 3. معالجة الحجوزات المرتبطة بهذا TripDate
+                // جلب المسؤول الذي قام بالإلغاء (للتدقيق في سجلات Refunds)
+                var adminUser = 2; //Todo
+                var adminUserName = "AdminSystem";
+
+                var affectedBookings = packageTripDate.BookingTrips.ToList(); // نسخ القائمة لتجنب التعديل أثناء المرور
+
+                foreach (var booking in affectedBookings)
+                {
+                    // 3.1. إلغاء الحجز (إذا لم يكن ملغى أو مكتمل)
+                    if (booking.BookingStatus == BookingStatus.Pending)
+                    {
+                        booking.BookingStatus = BookingStatus.Cancelled;
+                        await _bookingTripRepositoryAsync.UpdateAsync(booking);
+                        //_logger.LogInformation("CancelTripDate: تم إلغاء الحجز {BookingId} لأنه مرتبط بـ TripDate الملغاة.", booking.Id);
+                        
+                    }
+                    else if (booking.BookingStatus ==BookingStatus.Completed)
+                    {
+                        // 3.2. إذا كان الحجز مؤكداً، يجب إبلاغ العميل بضرورة الاسترداد (أو استرداد تلقائي)
+                        //_logger.LogWarning("CancelTripDate: الحجز {BookingId} كان مؤكداً وسيتم إلغاؤه. يحتاج استرداد مبلغ.", booking.Id);
+
+                        // هنا يتم تسجيل عملية الاسترداد لهذا الحجز المؤكد
+                        // ممكن استدعاء دالة RefundBookingAsync بشكل منفصل (بتحتاج تعديل بسيط في التوقيع لتسمح بـ adminUser)
+                        // أو تسجيل طلب استرداد لمراجعة المسؤول
+
+                        // لغرض التوضيح في هذه الدالة، سنقوم بإنشاء بلاغ مباشرة وإشعار
+                        //var discrepancyReport = new PaymentDiscrepancyReport
+                        //{
+                        //    BookingId = booking.Id,
+                        //    UserId = booking.UserId,
+                        //    ReportedTransactionRef = "Trip Cancellation", // ليس رقم عملية دفع
+                        //    ReportedPaymentDateTime = DateTime.UtcNow,
+                        //    ReportedPaidAmount = booking.ActualPrice,
+                        //    CustomerNotes = $"تم إلغاء الرحلة رقم {tripDateId}. يرجى التواصل لاسترداد المبلغ.",
+                        //    ReportDate = DateTime.UtcNow,
+                        //    Status = (int)PaymentDiscrepancyStatusEnum.PendingReview,
+                        //    AdminNotes = $"إلغاء رحلة {tripDateId} تسبب بإلغاء حجز مؤكد {booking.Id}. يتطلب استرداد مبلغ."
+                        //};
+                        //await _discrepancyReportRepository.AddAsync(discrepancyReport);
+                    }
+
+                    // 3.3. إرسال إشعار للعميل المتأثر
+                    await _notificationServiceAsync.CreateInAppNotificationAsync(
+                        booking.UserId,
+                        "إلغاء رحلتك رقم " + packageTripDateId,
+                        $"نعتذر، تم إلغاء رحلتك رقم {packageTripDateId} بتاريخ {packageTripDate.StartPackageTripDate.ToShortDateString()}. سبب الإلغاء: {cancellationReason}. يرجى مراجعة حجوزاتك لمعرفة التفاصيل.",
+                        "TripCancelled",
+                        booking.Id.ToString()
+                    );
+                }
+
+                await transaction.CommitAsync();
+                //_logger.LogInformation("CancelTripDate: تم إلغاء تاريخ الرحلة {TripDateId} بنجاح. عدد الحجوزات المتأثرة: {Count}.", tripDateId, affectedBookings.Count);
+                return Result.Success("تم إلغاء تاريخ الرحلة بنجاح.");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+              //  _logger.LogError(ex, "CancelTripDate: خطأ غير متوقع أثناء إلغاء تاريخ الرحلة {TripDateId}.", tripDateId);
+                return Result.Failure("حدث خطأ داخلي أثناء إلغاء تاريخ الرحلة.");
+            }
+            
+        }
+    }  
 }
 

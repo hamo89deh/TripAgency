@@ -17,8 +17,9 @@ namespace TripAgency.Service.Abstracts
                                         IAddService<PackageTripDate , AddPackageTripDateDto , GetPackageTripDateByIdDto>
     {
        public Task<Result> UpdateStatusTripDate(UpdatePackageTripDateDto updateTripDateDto);
-       public bool CanChangeStatus(PackageTripDataStatus currentStatus, PackageTripDataStatus newStatus);
-       public Task ExecuteStatusSpecificActions(int packageTripDateId, PackageTripDataStatus newStatus);
+       public bool CanChangeStatus(PackageTripDateStatus currentStatus, PackageTripDateStatus newStatus);
+       public Task<Result> CancelPacakgeTripDateAsync(int tripDateId, int adminUserId, string cancellationReason);
+        public Task ExecuteStatusSpecificActions(int packageTripDateId, PackageTripDateStatus newStatus);
        public Task ProcessRefundsForCancelledTrip(int packageTripDateId);
     }
 }
