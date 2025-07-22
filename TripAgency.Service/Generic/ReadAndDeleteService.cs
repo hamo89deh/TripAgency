@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TripAgency.Data.Entities;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Infrastructure.Context;
 using TripAgency.Infrastructure.InfrastructureBases;
@@ -13,7 +14,7 @@ using TripAgency.Service.Feature.City.Queries;
 
 namespace TripAgency.Service.Generic
 {
-    public class ReadAndDeleteService<T, GetByIdDto, GetALlDto> : IReadAndDeleteService<T, GetByIdDto, GetALlDto>
+    public class ReadAndDeleteService<T, GetByIdDto, GetALlDto> : IReadService<T, GetByIdDto, GetALlDto> , IDeleteService<T>
     {
         public ReadAndDeleteService( IGenericRepositoryAsync<T> repositoryAsync , IMapper mapper)
         {
@@ -51,6 +52,6 @@ namespace TripAgency.Service.Generic
             return Result<GetByIdDto>.Success(entityResult);
         }
     }
-    
+
 
 }

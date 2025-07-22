@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.Destination.Commands;
 using TripAgency.Service.Feature.Destination.Queries;
+using TripAgency.Service.Feature.DestinationActivity.Queries;
 
 namespace TripAgency.Controllers
 {
@@ -57,19 +59,19 @@ namespace TripAgency.Controllers
             return ApiResult<IEnumerable<GetDestinationsByCityNameDto>>.Ok(result.Value!);
         }
         [HttpPost]
-        public async Task<ApiResult<string>> AddDestination(AddDestinationDto destinationDto)
+        public async Task<ApiResult<GetDestinationByIdDto>> AddDestination(AddDestinationDto destinationDto)
         {
             var result = await _destinationService.CreateAsync(destinationDto);
             if (!result.IsSuccess)
             {
-                return this.ToApiResult<string>(result);
+                return this.ToApiResult<GetDestinationByIdDto>(result);
             }
-            return ApiResult<string>.Ok(result.Message);
+            return ApiResult<GetDestinationByIdDto>.Created(result.Value!);
         }
         [HttpPut]
         public async Task<ApiResult<string>> UpdateDestination(UpdateDestinationDto destinationDto)
         {
-            var result = await _destinationService.UpdateAsync(destinationDto);
+            var result = await _destinationService.UpdateAsync(destinationDto.Id,destinationDto);
             if (!result.IsSuccess)
             {
                 return this.ToApiResult<string>(result);
@@ -86,5 +88,37 @@ namespace TripAgency.Controllers
             }
             return ApiResult<string>.Ok("Success Deleted");
         }
+        [HttpPost("{DestinationId}/Activity/{ActivityId}")]
+        public async Task<ApiResult<string>> AddDestinationActivity(int DestinationId , int ActivityId)
+        {
+            var result = await _destinationService.AddDestinationActivity(DestinationId,ActivityId);
+            if (!result.IsSuccess)
+            {
+                return this.ToApiResult<string>(result);
+            }
+            return ApiResult<string>.Created(result.Message);
+        }
+        [HttpGet("{destinationId}/Activities")]
+        public async Task<ApiResult<GetDestinationActivitiesByIdDto>> GetDestinationActivities(int destinationId)
+        {
+            var result = await _destinationService.GetDestinationActivitiesByIdDto(destinationId);
+            if (!result.IsSuccess)
+            {
+                return this.ToApiResult<GetDestinationActivitiesByIdDto>(result);
+            }
+            return ApiResult<GetDestinationActivitiesByIdDto>.Ok(result.Value!);
+        }
+        
+        [HttpDelete("{DestinationId}/Activity/{ActivityId}")]
+        public async Task<ApiResult<string>> DeleteDestinationActivity(int DestinationId, int ActivityId)
+        {
+            var result = await _destinationService.DeleteDestinationActivity(DestinationId, ActivityId);
+            if (!result.IsSuccess)
+            {
+                return this.ToApiResult<string>(result);
+            }
+            return ApiResult<string>.Ok("Success Deleted");
+        }
+
     }
 }

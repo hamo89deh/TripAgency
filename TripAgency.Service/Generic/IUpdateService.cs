@@ -4,7 +4,7 @@ namespace TripAgency.Service.Generic
 {
     public interface IUpdateService<T, UpdateDto>
     {
-        Task<Result> UpdateAsync(UpdateDto updateCityDto);
+        Task<Result> UpdateAsync(int id, UpdateDto updateDto);
     }
 
 

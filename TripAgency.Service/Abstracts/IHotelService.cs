@@ -1,12 +1,16 @@
-﻿namespace TripAgency.Service.Abstracts
+﻿using TripAgency.Data.Entities;
+using TripAgency.Data.Result.TripAgency.Core.Results;
+using TripAgency.Infrastructure.InfrastructureBases;
+using TripAgency.Service.Feature.City.Command;
+using TripAgency.Service.Feature.Destination.Commands;
+using TripAgency.Service.Feature.Hotel.Commands;
+using TripAgency.Service.Feature.Hotel.Queries;
+using TripAgency.Service.Generic;
+
+namespace TripAgency.Service.Abstracts
 {
-    public interface IHotelService
+    public interface IHotelService : IGenericService<Hotel , GetHotelByIdDto ,GetHotelsDto,AddHotelDto , UpdateHotelDto>
     {
-        //Task<Result<IEnumerable<GetHotelsDto>>> GetAllHotelsAsync();
-        //Task<Result<HotelDto>> GetHotelByIdAsync(int id);
-        //Task<Result<HotelDto>> CreateHotelAsync(CreateHotelDto createHotelDto);
-        //Task<Result> UpdateHotelAsync(int id, UpdateHotelDto updateHotelDto);
-        //Task<Result> DeleteHotelAsync(int id);
-        //public Task<City> GetCityByNameAsync(string name);
+        public Task<Result<GetHotelByIdDto>> GetHotelByNameAsync(string name);
     }
 }

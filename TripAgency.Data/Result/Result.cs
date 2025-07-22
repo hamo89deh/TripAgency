@@ -29,9 +29,9 @@ namespace TripAgency.Data.Result
                 FailureType = failureType; // تعيين نوع الفشل
             }
 
-            public static Result<T> Success(T? value)
+            public static Result<T> Success(T? value, string message="")
             {
-                return new Result<T>(true, value, string.Empty, null, ResultFailureType.None);
+                return new Result<T>(true, value, message, null, ResultFailureType.None);
             }
 
           
@@ -55,7 +55,7 @@ namespace TripAgency.Data.Result
         public class Result
         {
             public bool IsSuccess { get; }
-            public string Message { get; } = string.Empty;
+            public string Message { get; set; } = string.Empty;
             public List<string> Errors { get; } = new List<string>();
             public ResultFailureType FailureType { get; }
 

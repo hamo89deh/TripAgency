@@ -51,20 +51,22 @@ namespace TripAgency.Controllers
             return ApiResult<GetCityByIdDto>.Ok(cityResult.Value!);
         }
         [HttpPost]
-        public async Task<ApiResult<string>> AddCity(AddCityDto city)
+        public async Task<ApiResult<GetCityByIdDto>> AddCity(AddCityDto city)
         {
             var cityResult= await _cityService.CreateAsync(city);
             if (!cityResult.IsSuccess)
-                return this.ToApiResult<string>(cityResult);
-            return ApiResult<string>.Created(cityResult.Message);
+            {                
+                return this.ToApiResult(cityResult);
+            }
+            return ApiResult<GetCityByIdDto>.Created(cityResult.Value!);
         }
         [HttpPut]
         public async Task<ApiResult<string>> UpdateCity(UpdateCityDto updateCity)
         {
-            var cityResult = await _cityService.UpdateAsync(updateCity);
+            var cityResult = await _cityService.UpdateAsync(updateCity.Id,updateCity);
             if (!cityResult.IsSuccess)
                 return this.ToApiResult<string>(cityResult);
-            return ApiResult<string>.NoContent("Success Updated");
+            return ApiResult<string>.Ok("Success Updated");
 
         }
         [HttpDelete]

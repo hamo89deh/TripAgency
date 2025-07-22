@@ -2,9 +2,11 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TripAgency.Data.Entities;
 using TripAgency.Infrastructure.Context;
 
 namespace TripAgency.Infrastructure.InfrastructureBases
@@ -49,7 +51,7 @@ namespace TripAgency.Infrastructure.InfrastructureBases
         {
             await _dbContext.Set<T>().AddAsync(entity);
             await _dbContext.SaveChangesAsync();
-               
+
         }
 
         public virtual async Task AddRangeAsync(ICollection<T> entities)
@@ -94,23 +96,22 @@ namespace TripAgency.Infrastructure.InfrastructureBases
         }
 
 
-        public IDbContextTransaction BeginTransaction()
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
-            return _dbContext.Database.BeginTransaction();
+            return  await _dbContext.Database.BeginTransactionAsync();
         }
 
-        public void Commit()
+        public async Task Commit()
         {
-            _dbContext.Database.CommitTransaction();
+            await _dbContext.Database.CommitTransactionAsync();
 
         }
 
-        public void RollBack()
+        public async Task RollBack()
         {
-            _dbContext.Database.RollbackTransaction();
+            await _dbContext.Database.RollbackTransactionAsync();
 
         }
-    }
         #endregion
-        
+    }
 }

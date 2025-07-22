@@ -1,0 +1,1038 @@
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System.ComponentModel.DataAnnotations;
+using TripAgency.Data.Entities;
+using TripAgency.Data.Enums;
+using TripAgency.Data.Result.TripAgency.Core.Results;
+using TripAgency.Infrastructure.Abstracts;
+using TripAgency.Service.Abstracts;
+using TripAgency.Service.Feature.BookingTrip.Commands;
+using TripAgency.Service.Feature.BookingTrip.Queries;
+using TripAgency.Service.Feature.Payment;
+using TripAgency.Service.Generic;
+
+namespace TripAgency.Service.Implementations
+{
+    public class BookingTripService : GenericService<BookingTrip, GetBookingTripByIdDto, GetBookingTripsDto, AddBookingTripDto, UpdateBookingTripDto>, IBookingTripService
+    {
+        private IBookingTripRepositoryAsync _bookingTripRepository { get; set; }
+        private IPackageTripDateRepositoryAsync _packageTripDateRepository { get; set; }
+        public IPaymentMethodRepositoryAsync _paymentMethodRepositoryAsync { get; }
+        public IPaymentTimerService _paymentTimerService { get; }
+        public INotificationService _notificationService { get; }
+        public IPaymentGatewayFactory _paymentGatewayFactory { get; }
+        public IPaymentDiscrepancyReportRepositoryAsync _discrepancyReportRepositoryAsync { get; }
+        public IPaymentRepositoryAsync _paymentRepositoryAsync { get; }
+        public IRefundRepositoryAsync _refundRepositoryAsync { get; }
+        public IConfiguration _configuration { get; }
+        public IMapper _mapper { get; }
+        private string baseUrl;
+        public BookingTripService(IBookingTripRepositoryAsync bookingTripRepository,
+                                  IPackageTripDateRepositoryAsync tripDateRepository,
+                                  IPaymentMethodRepositoryAsync paymentMethodRepositoryAsync,
+                                  IPaymentTimerService paymentTimerService,
+                                  IPaymentGatewayFactory paymentGatewayFactory,
+                                  INotificationService notificationService,
+                                  IPaymentDiscrepancyReportRepositoryAsync discrepancyReportRepositoryAsync,
+                                  IPaymentRepositoryAsync paymentRepositoryAsync,
+                                  IRefundRepositoryAsync refundRepositoryAsync,
+                                  IMapper mapper,
+                                  IConfiguration configuration
+                                 ) : base(bookingTripRepository, mapper)
+        {
+            _bookingTripRepository = bookingTripRepository;
+            _packageTripDateRepository = tripDateRepository;
+            _paymentMethodRepositoryAsync = paymentMethodRepositoryAsync;
+            _paymentTimerService = paymentTimerService;
+            _paymentGatewayFactory = paymentGatewayFactory;
+            _discrepancyReportRepositoryAsync = discrepancyReportRepositoryAsync;
+            _paymentRepositoryAsync = paymentRepositoryAsync;
+            _refundRepositoryAsync = refundRepositoryAsync;
+            _mapper = mapper;
+            _notificationService = notificationService;
+            _configuration = configuration;
+            baseUrl = configuration["BaseUrl"] ?? throw new InvalidOperationException("Not Found BaseUrl."); ;
+        }
+        public async Task<Result<PaymentInitiationResponseDto>> InitiateBookingAndPaymentAsync(AddBookingPackageTripDto bookPackageDto)
+        {
+            // 1.1. التحقق من توفر المقاعد وتاريخ الرحلة
+            var packageTripDate = await _packageTripDateRepository.GetTableNoTracking()
+                                                                  .Where(pt => pt.Id == bookPackageDto.PackageTripDateId)
+                                                                  .Include(pt => pt.PackageTrip)
+                                                                  .ThenInclude(pt => pt.PackageTripDestinations)
+                                                                  .ThenInclude(pt => pt.PackageTripDestinationActivities)
+                                                                  .FirstOrDefaultAsync();
+            if (packageTripDate is null)
+            {
+                return Result<PaymentInitiationResponseDto>.NotFound($"Not Found PackageTripDate With Id : {bookPackageDto.PackageTripDateId}");
+            }
+            if (packageTripDate.AvailableSeats < bookPackageDto.PassengerCount)
+            {
+                return Result<PaymentInitiationResponseDto>.BadRequest($"No Available seats at this date ");
+            }
+            if (packageTripDate.Status != PackageTripDateStatus.Published)
+            {
+                return Result<PaymentInitiationResponseDto>.BadRequest($"The PackageTrip Not Available");
+            }
+
+            // 1.2. جلب طريقة الدفع المختارة
+            var paymentMethod = await _paymentMethodRepositoryAsync.GetTableNoTracking()
+                                                                   .FirstOrDefaultAsync(pm => pm.Id == bookPackageDto.PaymentMethodId);
+            if (paymentMethod is null)
+            {
+                //  _logger.LogWarning("InitiatePayment: طريقة الدفع المختارة غير صالحة: {MethodName}", bookPackageDto.PaymentMethodName);
+                return Result<PaymentInitiationResponseDto>.BadRequest("Invalid Payment method .");
+            }
+
+            // النحقق من السعر الفعلي 
+            var calculatedTotalPrice = packageTripDate.PackageTrip.Price + packageTripDate.PackageTrip.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price));
+            if (calculatedTotalPrice != bookPackageDto.AmountPrice)
+            {
+                return Result<PaymentInitiationResponseDto>.BadRequest($"The ActualPrice is {calculatedTotalPrice}");
+            }
+            using var Transaction = await _bookingTripRepository.BeginTransactionAsync();
+            try
+            {
+                // 1.3. إنشاء BookingTrip في DB بحالة 'معلّق' (Pending)
+                var bookingTrip = new BookingTrip
+                {
+                    PackageTripDateId = packageTripDate.Id,
+                    PassengerCount = bookPackageDto.PassengerCount,
+                    BookingDate = DateTime.UtcNow,
+                    BookingStatus = BookingStatus.Pending,
+                    ActualPrice = calculatedTotalPrice,
+                    Notes = $"Pending payment via {paymentMethod.Name}",
+                    UserId = 2 // TODO
+                };
+
+                await _bookingTripRepository.AddAsync(bookingTrip);
+
+                // 1.4. نقصان المقاعد المتاحة (وحفظ)
+                packageTripDate.AvailableSeats -= bookPackageDto.PassengerCount;
+                await _packageTripDateRepository.UpdateAsync(packageTripDate);
+
+                // 1.5. جلب خدمة بوابة الدفع المناسبة من المصنع
+                var gatewayService = _paymentGatewayFactory.GetGatewayService(paymentMethod.Name);
+
+                // 1.6. بناء طلب الدفع
+                //var user =new User();
+                //if (user == null)
+                //{
+                //    // _logger.LogError("InitiatePayment: بيانات المستخدم غير متوفرة للحجز {BookingId}.", booking.Id);
+                //    // نرجع المقاعد ونلغي الحجز المؤقت
+                //    booking.BookingStatus = BookingStatus.Cancelled;
+                //    await _bookingRepository.UpdateAsync(booking);
+                //    packageTripDate.AvailableSeats += bookPackageDto.PassengerCount;
+                //    await _packageTripDateRepository.UpdateAsync(packageTripDate);
+                //    await _bookingRepository.SaveChangesAsync();
+                //    return Result<PaymentInitiationResponseDto>.Failure("بيانات المستخدم غير متوفرة لتهيئة الدفع.");
+                //}
+
+
+                //TODO
+                var paymentRequest = new PaymentRequest
+                {
+                    BookingId = bookingTrip.Id,
+                    Amount = bookPackageDto.AmountPrice,
+                    Currency = "USD",
+                    //CustomerEmail = user.Email,
+                    SuccessCallbackUrl = $"{baseUrl}/payment/success?bookingId={bookingTrip.Id}&method={paymentMethod.Name}",
+                    FailureCallbackUrl = $"{baseUrl}/payment/failure?bookingId={bookingTrip.Id}&method={paymentMethod.Name}",
+                    CancelCallbackUrl = $"{baseUrl}/payment/cancel?bookingId={bookingTrip.Id}&method={paymentMethod.Name}"
+                };
+
+                var initiationResult = await gatewayService.InitiatePaymentAsync(paymentRequest);
+
+                // 1.9. إنشاء سجل Payment مبدئي (دفعة معلقة)
+                // هذا السجل يُنشأ دائمًا هنا، ويتم تحديثه لاحقًا بواسطة الـ callback أو التأكيد اليدوي
+                var payment = new Payment
+                {
+                    BookingTripId = bookingTrip.Id,
+                    PaymentMethodId = paymentMethod.Id,
+                    Amount = calculatedTotalPrice, // المبلغ المراد دفعه
+                    PaymentDate = DateTime.UtcNow,
+                    PaymentStatus = PaymentStatus.Pending, // الحالة الأولية للدفع
+                    TransactionId = string.Empty
+                };
+                await _paymentRepositoryAsync.AddAsync(payment);
+
+                if (!initiationResult.IsSuccess)
+                {
+                    // _logger.LogError("InitiatePayment: فشل تهيئة الدفع للحجز {BookingId} عبر البوابة {Gateway}: {Error}", booking.Id, selectedPaymentMethod.Name, initiationResult.Message);
+                    // نرجع المقاعد ونلغي الحجز المؤقت
+                    await Transaction.RollbackAsync();
+                    return Result<PaymentInitiationResponseDto>.Failure($"Failed Initiate payment: {initiationResult.Message}");
+                }
+
+                // 1.7. بدء المؤقت الزمني 15 دقيقة
+                var responseDto = initiationResult.Value!;
+                responseDto.BookingTripId = bookingTrip.Id; // نتأكد إن الـ BookingId موجود
+                responseDto.ExpireTime = DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("ExpireBookingTime"));
+                _paymentTimerService.StartPaymentTimer(bookingTrip.Id, TimeSpan.FromMinutes(_configuration.GetValue<int>("ExpireBookingTime")));
+
+                // 
+                await Transaction.CommitAsync();
+                return Result<PaymentInitiationResponseDto>.Success(responseDto);
+            }
+            catch (Exception)
+            {
+                await Transaction.RollbackAsync();
+                throw;
+            }
+
+        }
+   
+    }
+
+    public class PaymentService : IPaymentService
+    {
+        private IBookingTripRepositoryAsync _bookingTripRepository { get; set; }
+        private IPackageTripDateRepositoryAsync _packageTripDateRepository { get; set; }
+        public IPaymentMethodRepositoryAsync _paymentMethodRepositoryAsync { get; }
+        public IPaymentTimerService _paymentTimerService { get; }
+        public INotificationService _notificationService { get; }
+        public IPaymentGatewayFactory _paymentGatewayFactory { get; }
+        public IPaymentDiscrepancyReportRepositoryAsync _discrepancyReportRepositoryAsync { get; }
+        public IPaymentRepositoryAsync _paymentRepositoryAsync { get; }
+        public IRefundRepositoryAsync _refundRepositoryAsync { get; }
+        public IConfiguration _configuration { get; }
+        public IMapper _mapper { get; }
+        private string baseUrl;
+        public PaymentService(IBookingTripRepositoryAsync bookingTripRepository,
+                                  IPackageTripDateRepositoryAsync tripDateRepository,
+                                  IPaymentMethodRepositoryAsync paymentMethodRepositoryAsync,
+                                  IPaymentTimerService paymentTimerService,
+                                  IPaymentGatewayFactory paymentGatewayFactory,
+                                  INotificationService notificationService,
+                                  IPaymentDiscrepancyReportRepositoryAsync discrepancyReportRepositoryAsync,
+                                  IPaymentRepositoryAsync paymentRepositoryAsync,
+                                  IRefundRepositoryAsync refundRepositoryAsync,
+                                  IMapper mapper,
+                                  IConfiguration configuration
+                                 )
+        {
+            _bookingTripRepository = bookingTripRepository;
+            _packageTripDateRepository = tripDateRepository;
+            _paymentMethodRepositoryAsync = paymentMethodRepositoryAsync;
+            _paymentTimerService = paymentTimerService;
+            _paymentGatewayFactory = paymentGatewayFactory;
+            _discrepancyReportRepositoryAsync = discrepancyReportRepositoryAsync;
+            _paymentRepositoryAsync = paymentRepositoryAsync;
+            _refundRepositoryAsync = refundRepositoryAsync;
+            _mapper = mapper;
+            _notificationService = notificationService;
+            _configuration = configuration;
+            baseUrl = configuration["BaseUrl"] ?? throw new InvalidOperationException("Not Found BaseUrl."); ;
+        }
+        //  دالة لمعالجة انتهاء مهلة الدفع (تستدعى من خدمة المؤقت)
+        public async Task<Result> HandlePaymentTimeoutAsync(int bookingId)
+        {
+            var bookingTrip = await _bookingTripRepository.GetTableNoTracking()
+                                                           .Where(b => b.Id == bookingId)
+                                                           .Include(p => p.Payment)
+                                                           .FirstOrDefaultAsync();
+
+            if (bookingTrip == null)
+            {
+                // _logger.LogWarning("Timeout: مهلة دفع انتهت لحجز غير موجود: {BookingId}", bookingId); return Result.NotFound("الحجز غير موجود."); 
+                return Result.NotFound($"Not Found Booking With Id : {bookingId}");
+
+            }
+
+            // إذا كان الحجز في حالة Pending (لم يتم الدفع)
+            if (bookingTrip.BookingStatus == BookingStatus.Pending)
+            {
+                // _logger.LogInformation("Timeout: الحجز {BookingId} في حالة Pending. جاري الإلغاء.", bookingId);
+
+                bookingTrip.BookingStatus = BookingStatus.Cancelled;
+                await _bookingTripRepository.UpdateAsync(bookingTrip);
+
+                var tripDate = await _packageTripDateRepository.GetByIdAsync(bookingTrip.PackageTripDateId);
+                if (tripDate != null)
+                {
+                    tripDate.AvailableSeats += bookingTrip.PassengerCount;
+                    await _packageTripDateRepository.UpdateAsync(tripDate);
+                }
+
+
+                bookingTrip.Payment.PaymentStatus = PaymentStatus.Cancelled;
+                await _paymentRepositoryAsync.UpdateAsync(bookingTrip.Payment);
+
+                await _notificationService.CreateInAppNotificationAsync(
+                                        bookingTrip.UserId,
+                                        "تم الغاء طلب الحجز",
+                                        $"نعتذر، تم الغاء طلب الججز {bookingTrip.Id} ." +
+                                        $" السبب: انتهاء الوقت  المخصص للدفع  اذا قمت بالدفع يرجى اعادة  طلب الحجز",
+                                        "BookingRejected",
+                                        bookingId.ToString());
+                // TODO Send Email 
+
+                // _logger.LogInformation("Timeout: الحجز {BookingId} تم إلغاؤه تلقائياً بسبب انتهاء مهلة الدفع.", bookingId);
+                return Result.Success("The Booking Cancelling due to deadline.");
+            }
+
+            // _logger.LogInformation("Timeout: مهلة دفع انتهت لحجز {BookingId} ليس في حالة Pending (الحالة الحالية: {Status}). لا حاجة لإلغاء إضافي.", bookingId, bookingTrip.BookingStatus);
+            return Result.Success("لا حاجة لعملية إلغاء، الحجز ليس في حالة Pending.");
+        }
+
+        // 4. تسجيل إشعار من العميل بالدفع اليدوي
+        public async Task<Result> SubmitManualPaymentNotificationAsync(ManualPaymentDetailsDto details)
+        {
+            var bookingTrip = await _bookingTripRepository.GetTableNoTracking()
+                                                          .Where(d => d.Id == details.BookingId)
+                                                          .Include(b => b.Payment)
+                                                          .ThenInclude(p => p.PaymentMethod)
+                                                          .Include(b => b.PackageTripDate)
+                                                          .FirstOrDefaultAsync();
+
+            // 1. التحقق من أن الحجز  
+            if (bookingTrip == null)
+            {
+                return Result.NotFound($"Not Found Booking with id : {details.BookingId}");
+            }
+
+            // 2. التحقق من أن الحجز يخص المستخدم الحالي  //TODO User
+            if (bookingTrip.UserId != 2)
+            {
+                //  _logger.LogWarning("SubmitManualPaymentNotification: محاولة إشعار دفع يدوي لحجز {BookingId} لا يخص المستخدم {UserId}.", notificationDto.BookingId, userId);
+                return Result.Failure("لا تملك صلاحية لتقديم إشعار دفع لهذا الحجز.", failureType: ResultFailureType.Forbidden);
+
+            }
+
+            // 3. التحقق من تاريخ الرحلة (لضمان عدم معالجة حجوزات مكتملة)
+            if (
+                bookingTrip.PackageTripDate.Status == PackageTripDateStatus.Ongoing ||
+                bookingTrip.PackageTripDate.Status == PackageTripDateStatus.Completed
+                )
+            {
+                //_logger.LogWarning("SubmitManualPaymentNotification: محاولة إشعار دفع يدوي للحجز {BookingId} لرحلة مكتملة بتاريخ {TripDate}.", notificationDto.BookingId, booking.TripDate.Date.ToShortDateString());
+                return Result.BadRequest("Cann't Pay For a Trip That has Ongoin Or Completed ");
+            }
+
+            if (bookingTrip.BookingStatus != BookingStatus.Pending || bookingTrip.Payment.PaymentStatus != PaymentStatus.Pending)
+            {
+                //TODO   Send email and Notifecation
+                await _notificationService.CreateInAppNotificationAsync(
+                        bookingTrip.UserId,
+                        "الحجز غير مؤهل للدفع",
+                        $"الحجز رقم {bookingTrip.Id} بحالة {bookingTrip.BookingStatus.ToString()} أو الدفعة بحالة {bookingTrip.Payment.PaymentStatus.ToString()}. لا يمكن تقديم إشعار دفع. يرجى الحجز مرة أخرى.",
+                        "BookingNotEligibleForPayment",
+                        bookingTrip.Id.ToString());
+
+                return Result.BadRequest("ا يمكن إرسال إشعار دفع لحجز غير مؤهل. يرجى الحجز مرة أخرى");
+            }
+
+            var existingPaymentWithSameTransaction = await _paymentRepositoryAsync.GetTableNoTracking()
+                                                              .FirstOrDefaultAsync(p => p.TransactionId == details.TransactionReference &&
+                                                                                        p.PaymentMethodId == bookingTrip.Payment.PaymentMethodId);
+            if (existingPaymentWithSameTransaction is not null)
+            {
+                await _notificationService.CreateInAppNotificationAsync(
+                       bookingTrip.UserId,
+                       "رقم العملية المرجعي مستخدم",
+                       $"رقم العملية المرجعي '{details.TransactionReference}' الذي قدمته للحجز رقم {bookingTrip.Id} مستخدم مسبقاً. يرجى مراجعة بياناتك.",
+                       "TransactionRefUsed",
+                       bookingTrip.Id.ToString());
+
+                return Result.BadRequest($"The Transaction With Id  : {details.TransactionReference} Previosly Used ");
+
+            }
+
+            var payment = bookingTrip.Payment;
+
+            if (!string.IsNullOrEmpty(payment.TransactionId))
+            {
+                await _notificationService.CreateInAppNotificationAsync(
+                                                        bookingTrip.UserId,
+                                                        "إشعار دفع متكرر",
+                                                        $"تم استلام إشعار دفع سابق للحجز رقم {bookingTrip.Id} برقم عملية '{bookingTrip.Payment.TransactionId}'. يرجى مراجعة سجلاتك أو تقديم بلاغ إذا كانت هناك مشكلة.",
+                                                        "DuplicatePaymentNotificationSubmitted",
+                                                        bookingTrip.Id.ToString());
+
+
+                return Result.BadRequest(" Cann't send More Than one Notification Payment For the Same Booking");
+
+            }
+
+            payment.Amount = details.PaidAmount;                  // المبلغ المبلغ عنه
+            payment.PaymentDate = details.PaymentDateTime;        // تاريخ الدفع المبلغ عنه
+            payment.TransactionId = details.TransactionReference; // رقم العملية الذي أرسله العميل
+
+            await _paymentRepositoryAsync.UpdateAsync(payment);
+            //_logger.LogInformation("SubmitManualPaymentNotification: تم إنشاء سجل دفعة يدوي جديد للحجز {BookingId}.", details.BookingId);
+
+            // 7. إيقاف المؤقت إذا كان لا يزال يعمل
+            _paymentTimerService.StopPaymentTimer(bookingTrip.Id);
+
+            // 1.10. إرسال إشعار داخلي للعميل بأن إشعاره تم استلامه
+            await _notificationService.CreateInAppNotificationAsync(
+                bookingTrip.UserId,
+                "إشعار دفعك قيد المراجعة",
+                $"تم استلام إشعار الدفع الخاص بالحجز رقم {bookingTrip.Id} ({details.TransactionReference}). المبلغ: {details.PaidAmount:N2}. إجمالي المدفوع للحجز: {bookingTrip.ActualPrice:N2}. سيتم مراجعته قريباً.",
+                "ManualPaymentReceived", bookingTrip.Id.ToString()
+                );
+
+            //_logger.LogInformation("SubmitManualPaymentNotification: تم تسجيل إشعار الدفع اليدوي بنجاح للحجز {BookingId}.", details.BookingId);
+            return Result.Success("تم استلام إشعار الدفع اليدوي الخاص بك بنجاح. سيتم مراجعته قريباً.");
+
+        }
+
+        // 5. معالجة تأكيد/رفض الدفع اليدوي من قبل المسؤول
+        public async Task<Result> ProcessManualPaymentConfirmationAsync(ManualPaymentConfirmationRequestDto request)
+        {
+            var bookingTrip = await _bookingTripRepository.GetTableNoTracking()
+                                                          .Include(b => b.Payment)
+                                                          .Where(b => b.Payment.TransactionId == request.TransactionRef)
+                                                          .Include(b => b.Payment)
+                                                          .FirstOrDefaultAsync();
+            if (bookingTrip == null)
+            {
+                return Result.NotFound($"Not Found Booking Related With payment Have : {request.TransactionRef}");
+            }
+
+
+            if (bookingTrip.BookingStatus != BookingStatus.Pending)
+            {
+                return Result.BadRequest("The Booking is not Pending");
+            }
+
+            // جلب طريقة الدفع اليدوية
+            var paymentMethod = await _paymentMethodRepositoryAsync.GetTableNoTracking()
+                                                                   .FirstOrDefaultAsync(pm => pm.Id == request.PaymentMethodId);
+            if (paymentMethod == null)
+            {
+                return Result.NotFound($"Not Found Payment Method With id {request.PaymentMethodId}");
+            }
+            if (bookingTrip.Payment.PaymentMethodId != paymentMethod.Id)
+            {
+                return Result.BadRequest($"Payment Method For Booking With id {bookingTrip.Id} Does Not Match The Payment Method sent ");
+            }
+            using var transaction = await _bookingTripRepository.BeginTransactionAsync();
+            try
+            {
+                if (!request.IsConfirmed)
+                {
+                    // رفض الدفع اليدوي: إلغاء الحجز والمقاعد
+
+                    bookingTrip.BookingStatus = BookingStatus.Cancelled;
+                    await _bookingTripRepository.UpdateAsync(bookingTrip);
+
+
+                    var tripDate = await _packageTripDateRepository.GetByIdAsync(bookingTrip.PackageTripDateId);
+
+                    if (tripDate != null)
+                    {
+                        tripDate.AvailableSeats += bookingTrip.PassengerCount;
+                        await _packageTripDateRepository.UpdateAsync(tripDate);
+                    }
+
+                    bookingTrip.Payment.PaymentStatus = PaymentStatus.Cancelled;
+                    await _paymentRepositoryAsync.UpdateAsync(bookingTrip.Payment);
+
+                    if (request.VerifiedAmount != 0)
+                    {
+                        var refunded = new Refund
+                        {
+                            AdminNotes = request.AdminNotes,
+                            TransactionReference = bookingTrip.Payment.TransactionId,
+                            Amount = request.VerifiedAmount,
+                            PaymentId = bookingTrip.Payment.Id,
+                            CreatedAt = DateTime.UtcNow,
+                            Status = RefundStatus.Pending
+                        };
+
+                        await _refundRepositoryAsync.AddAsync(refunded);
+                        //TODO
+                        await _notificationService.CreateInAppNotificationAsync(
+                            bookingTrip.UserId,
+                            "تم رفض طلب الدفع",
+                            $"نعتذر، تم رفض طلب الدفع الخاص بالحجز رقم {bookingTrip.Id} ({bookingTrip.Payment.TransactionId}) ." +
+                            $"وتم الغاء الحجز" +
+                            $" السبب: المبلغ الدفوع {request.VerifiedAmount} اقل من المبلغ الخاص بالحجز  {bookingTrip.ActualPrice} سوف يتم استرداد المبلغ المدفوع خلال 3-5 ايام عمل  ",
+                            "BookingRejected"
+                            );
+                    }
+
+
+
+                    await transaction.CommitAsync();
+
+                    //logger.LogWarning("ManualConfirmation: الحجز {BookingId} تم رفض دفعه يدوياً. ملاحظات المسؤول: {Notes}", request.BookingId, request.AdminNotes);
+                    return Result.Success("تم رفض الدفع اليدوي. الحجز ملغي.");
+                }
+
+                bookingTrip.BookingStatus = BookingStatus.Completed;
+                await _bookingTripRepository.UpdateAsync(bookingTrip);
+
+                bookingTrip.Payment.PaymentStatus = PaymentStatus.Completed;
+                await _paymentRepositoryAsync.UpdateAsync(bookingTrip.Payment);
+                await _notificationService.CreateInAppNotificationAsync(
+
+                    bookingTrip.UserId,
+                        "تم تاكيد طلب الدفع",
+                        $" تم تاكيد طلب الدفع الخاص بالحجز رقم {bookingTrip.Id} ({bookingTrip.Payment.TransactionId})." +
+                        $"وتم تاكيد الحجز",
+                        "BookingCompleted"
+                        );
+                if (request.VerifiedAmount > bookingTrip.ActualPrice)
+                {
+                    var refunded = new Refund
+                    {
+                        AdminNotes = request.AdminNotes,
+                        Amount = request.VerifiedAmount - bookingTrip.ActualPrice,
+                        PaymentId = bookingTrip.Payment.Id,
+                        CreatedAt = DateTime.UtcNow,
+                        Status = RefundStatus.Pending
+                    };
+
+                    await _refundRepositoryAsync.AddAsync(refunded);
+                    await _notificationService.CreateInAppNotificationAsync(
+                       bookingTrip.UserId,
+                       "استرجاع مبلغ فائض ",
+                       $"سوف يتم استرجاع المبلغ {refunded.Amount}  خلال 3-5 ايام عمل" +
+                       $"استرجاع مبلغ فائض",
+                       "BookingCompleted"
+                       );
+                }
+                await transaction.CommitAsync();
+                return Result.Success("تم تأكيد الدفع اليدوي بنجاح.");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Result.Failure("حدث خطا داخلي ");
+            }
+
+        }
+
+        public async Task<Result> ReportMissingPaymentAsync(MissingPaymentReportDto reportDto, int userId)
+        {
+            //// 2. التحقق من أن الحجز يخص المستخدم الحالي (أمني)
+            //if (booking.UserId != userId)
+            //{
+            //    // _logger.LogWarning("ReportPaymentDiscrepancy: محاولة تسجيل بلاغ لحجز {BookingId} لا يخص المستخدم {UserId}.", reportDto.BookingId, userId);
+            //    return Result.Failure("لا تملك صلاحية لتقديم بلاغ لهذا الحجز.", failureType: ResultFailureType.Forbidden);
+            //}
+
+
+            var existingReport = await _discrepancyReportRepositoryAsync.GetTableNoTracking()
+                                          .FirstOrDefaultAsync(r => r.ReportedTransactionRef == reportDto.TransactionReference);
+
+            if (existingReport != null)
+            {
+                if (existingReport.Status == PaymentDiscrepancyStatusEnum.PendingReview)
+                    return Result.Failure("يوجد بلاغ سابق لنفس المشكلة قيد المراجعة.", failureType: ResultFailureType.Conflict);
+
+                if (existingReport.Status == PaymentDiscrepancyStatusEnum.ReviewedConfirmed)
+                    return Result.Failure("يوجد بلاغ سابق لنفس المشكلة تمت مراجعته.", failureType: ResultFailureType.Conflict);
+
+                if (existingReport.Status == PaymentDiscrepancyStatusEnum.ReviewedRejected || existingReport.Status == PaymentDiscrepancyStatusEnum.Closed)
+                    return Result.Failure("يوجد بلاغ سابق لنفس المشكلة تم رفضه .", failureType: ResultFailureType.Conflict);
+            }
+
+            var refunded = await _refundRepositoryAsync.GetTableNoTracking()
+                                                       .Where(re => re.TransactionReference == reportDto.TransactionReference)
+                                                       .FirstOrDefaultAsync();
+            if (refunded is not null)
+            {
+
+                //ذا وصل لهون فاما قام العميل باسترجاع المبلغ من خلال الغاء الحجز او قام ال
+                //admin
+                // بالغاء الرحلة فسوف يتم استرجاع المبلغ للمستخدمين
+                // او الحجز الغي بسبب دفع مبلغ اقل من مبلغ الحجز 
+                await _notificationService.CreateInAppNotificationAsync(
+                    userId,
+                    "بلاغ دفعك: الدفعة في حالة استرداد   ",
+                    $"الدفعة برقم العملية '{reportDto.TransactionReference}' في حالة استرداد . لا حاجة لبلاغ جديد.",
+                    "DiscrepancyReportPaymentRefunded",
+                    reportDto.TransactionReference);
+                return Result.Failure($"حالة استرجاع الرصيد لهذه الدفعة  {refunded.Status}.", failureType: ResultFailureType.Conflict);
+            }
+
+            var booking = await _bookingTripRepository.GetTableNoTracking()
+                                                      .Include(b => b.Payment)
+                                                      .Where(b => b.Payment.TransactionId == reportDto.TransactionReference)
+                                                      .Include(b => b.User)
+                                                      .Include(b => b.PackageTripDate)
+                                                      .FirstOrDefaultAsync();
+
+            if (booking is not null)
+            {
+                if (booking.BookingStatus == BookingStatus.Pending)
+                {
+                    await _notificationService.CreateInAppNotificationAsync(userId,
+                   "بلاغ دفعك: الدفعة في انتظار التحقق",
+                   $"الدفعة برقم العملية '{reportDto.TransactionReference}' للحجز رقم {booking.Id} في انتظار التحقق. لا حاجة لبلاغ جديد.",
+                   "DiscrepancyReportPaymentPending",
+                    booking.Id.ToString());
+                    return Result.BadRequest("Booking is pending");
+                }
+                if (booking.BookingStatus == BookingStatus.Completed)
+                {
+                    await _notificationService.CreateInAppNotificationAsync(userId,
+                     "بلاغ دفعك: الدفعة مؤكدة  ",
+                     $"الدفعة برقم العملية '{reportDto.TransactionReference}' للحجز رقم {booking.Id} مؤكدة  . لا حاجة لبلاغ جديد.",
+                     "DiscrepancyReportPaymentConfirmed",
+                     booking.Id.ToString());
+                    return Result.BadRequest("الحجز لديه دفعة مؤكدة .");
+
+                }
+            }
+
+            // 5. إنشاء سجل بلاغ جديد
+            var newDiscrepancyReport = new PaymentDiscrepancyReport
+            {
+                UserId = userId,
+                ReportedTransactionRef = reportDto.TransactionReference,
+                ReportedPaymentDateTime = reportDto.PaymentDateTime,
+                ReportedPaidAmount = reportDto.PaidAmount,
+                CustomerNotes = reportDto.CustomerNotes,
+                ReportDate = DateTime.UtcNow,
+                Status = PaymentDiscrepancyStatusEnum.PendingReview,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _discrepancyReportRepositoryAsync.AddAsync(newDiscrepancyReport);
+
+            //_logger.LogInformation("ReportPaymentDiscrepancy: تم تسجيل بلاغ جديد بنجاح للحجز {BookingId} بواسطة المستخدم {UserId}.", reportDto.BookingId, userId);
+
+            // إرسال إشعار داخلي للعميل بتأكيد تسجيل بلاغه
+            await _notificationService.CreateInAppNotificationAsync(
+                userId,
+                "بلاغ الدفع الخاص بك",
+                $" : تم تسجيل بلاغك الخاص بالعملية رقم {reportDto.TransactionReference} . سيتم مراجعته قريباً.",
+                "DiscrepancyReportSubmitted"
+                );
+
+            return Result.Success("تم تسجيل بلاغك بنجاح. سيتم مراجعته قريباً.");
+        }
+
+        public async Task<Result> ResolveMissingPaymentReportAsync(DiscrepancyReportProcessRequestDto discrepancyReport)
+        {
+
+            var report = await _discrepancyReportRepositoryAsync.GetTableNoTracking()
+                                                                 .Where(r => r.Id == discrepancyReport.ReportId && r.Status == (int)PaymentDiscrepancyStatusEnum.PendingReview)
+                                                                 .Include(r => r.Payment)
+                                                                 .FirstOrDefaultAsync(r => r.Id == discrepancyReport.ReportId && r.Status == PaymentDiscrepancyStatusEnum.PendingReview);
+
+            if (report == null)
+            {
+                //_logger.LogWarning("ProcessDiscrepancyReport: بلاغ التضارب {ReportId} غير موجود أو ليس في حالة 'بانتظار المراجعة'.", reportId);
+                return Result.NotFound("بلاغ التضارب غير موجود أو ليس في حالة 'بانتظار المراجعة'.");
+            }
+            using var transaction = await _discrepancyReportRepositoryAsync.BeginTransactionAsync();
+            try
+            {
+
+
+                // تحديث حالة البلاغ وملاحظات المسؤول
+                report.Status = discrepancyReport.Status;
+                report.AdminNotes = discrepancyReport.AdminNotes;
+                report.ReviewedByUserId = 2;//TODO
+                report.ReviewDate = DateTime.UtcNow;
+                await _discrepancyReportRepositoryAsync.UpdateAsync(report);
+
+
+                //  _logger.LogInformation("ProcessDiscrepancyReport: تم تحديث بلاغ التضارب {ReportId} إلى حالة {Status} بنجاح.", reportId, status);
+
+                // إشعار العميل بحالة البلاغ (وليس حالة الدفع)
+                string notificationTitle = "";
+                string notificationMessage = "";
+                string notificationType = "";
+
+                if (discrepancyReport.Status == PaymentDiscrepancyStatusEnum.ReviewedConfirmed)
+                {
+                    notificationTitle = "تم مراجعة بلاغ الدفع";
+                    notificationMessage = $"تم مراجعة بلاغك بخصوص الدفعة رقم {report.ReportedTransactionRef} تم تأكيد المراجعة.";
+                    notificationType = "ReportReviewedConfirmed";
+
+
+
+                    var refund = new Refund()
+                    {
+                        AdminNotes = discrepancyReport.AdminNotes ?? "",
+                        ProcessedByUserId = 2,
+                        CreatedAt = DateTime.UtcNow,
+                        Amount = discrepancyReport.VerifiedAmount,
+                        TransactionReference = report.ReportedTransactionRef
+                    };
+                    await _refundRepositoryAsync.AddAsync(refund);
+                }
+                else if (discrepancyReport.Status == PaymentDiscrepancyStatusEnum.ReviewedRejected)
+                {
+                    notificationTitle = "تم رفض بلاغ الدفع";
+                    notificationMessage = $"تم مراجعة بلاغك بخصوص الدفعة رقم {report.ReportedTransactionRef}  " +
+                        $" وتم رفضه. السبب: {discrepancyReport.AdminNotes}. يرجى التواصل مع الدعم الفني.";
+                    notificationType = "ReportReviewedRejected";
+                }
+
+                if (!string.IsNullOrEmpty(notificationTitle))
+                {
+                    await _notificationService.CreateInAppNotificationAsync(report.UserId, notificationTitle, notificationMessage, notificationType);
+                }
+                await transaction.CommitAsync();
+                return Result.Success($"تم معالجة بلاغ التضارب بنجاح إلى حالة {discrepancyReport.Status}.");
+
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+
+
+        }
+
+        public async Task<Result<PaymentTransactionStatusDto>> GetDetailsTransactionAsync(string transactionReference)
+        {
+            // سننشئ DTO جديد لتلخيص الحالة
+            var transactionStatus = new PaymentTransactionStatusDto
+            {
+                TransactionReference = transactionReference,
+                ExistsInSystem = false
+            };
+
+            // 1. البحث عن الدفعة (Payment) بهذا TransactionReference
+            var payment = await _paymentRepositoryAsync.GetTableNoTracking()
+                .Where(p => p.TransactionId == transactionReference)
+                .Include(p => p.BookingTrip)
+                .ThenInclude(b => b.PackageTripDate)
+                .Include(p => p.BookingTrip)
+                .ThenInclude(b => b.User)
+                .Include(p => p.PaymentMethod)
+                .FirstOrDefaultAsync();
+
+            if (payment != null)
+            {
+                transactionStatus.PaymentDetailDto.PaymentId = payment.Id;
+                transactionStatus.PaymentDetailDto.PaymentAmount = payment.Amount;
+                transactionStatus.PaymentDetailDto.PaymentVerifiedAmount = payment.Amount;
+                transactionStatus.PaymentDetailDto.PaymentStatus = payment.PaymentStatus;
+                transactionStatus.PaymentDetailDto.PaymentDate = payment.PaymentDate;
+                transactionStatus.PaymentDetailDto.PaymentMethodName = payment.PaymentMethod?.Name;
+
+                transactionStatus.BookingTripDetailDto.AssociatedBookingId = payment.BookingTripId;
+                transactionStatus.BookingTripDetailDto.BookingStatus = payment.BookingTrip.BookingStatus;
+                transactionStatus.BookingTripDetailDto.TripDate = payment.BookingTrip.PackageTripDate?.StartPackageTripDate;
+                transactionStatus.BookingTripDetailDto.TripDateStatus = payment.BookingTrip.PackageTripDate != null ? (PackageTripDateStatus)payment.BookingTrip.PackageTripDate.Status : null;
+            }
+
+            // 2. البحث عن البلاغات (PaymentDiscrepancyReport) بهذا TransactionReference
+            var discrepancyReport = await _discrepancyReportRepositoryAsync.GetTableNoTracking()
+                .Where(r => r.ReportedTransactionRef == transactionReference)
+                .FirstOrDefaultAsync();
+
+
+            if (discrepancyReport != null)
+            {
+                transactionStatus .ReportDetailDto.ReportId = discrepancyReport.Id;
+                transactionStatus.ReportDetailDto.ReportStatus = discrepancyReport.Status;
+                transactionStatus.ReportDetailDto.ReportedAmount = discrepancyReport.ReportedPaidAmount;
+                transactionStatus.ReportDetailDto.ReportedPaymentDateTime = discrepancyReport.ReportedPaymentDateTime;
+                transactionStatus.ReportDetailDto.CustomerNotes = discrepancyReport.CustomerNotes;
+                transactionStatus.ReportDetailDto.AdminNotesOnReport = discrepancyReport.AdminNotes;
+
+                // إذا لم يكن هناك payment، لكن هناك report، هذا يعني دفعة يتيمة غير معروفة للنظام
+                if (payment == null)
+                {
+                    //_logger.LogWarning("VerifyPaymentTransaction: تم العثور على بلاغ {ReportId} بدون سجل دفع مطابق لمعرف العملية {TransactionRef}.", discrepancyReport.Id, transactionReference);
+                    transactionStatus.DiscrepancyType = "بلاغ بدون دفعة مطابقة";
+                }
+            }
+
+            // 3. البحث عن سجلات الاسترداد (Refunds) المرتبطة بهذا TransactionReference (لو تم الاسترداد)
+            var refund = await _refundRepositoryAsync.GetTableNoTracking()
+                                                     .Where(r => r.TransactionReference == transactionReference) // TransactionReference في Refund هو لمعرف عملية الاسترداد
+                                                     .FirstOrDefaultAsync();
+
+            if (refund != null)
+            {
+                transactionStatus.RefundedDetailDto.RefundId = refund.Id;
+                transactionStatus.RefundedDetailDto.RefundAmount = refund.Amount;
+                transactionStatus.RefundedDetailDto.RefundStatus = refund.Status;
+                transactionStatus.RefundedDetailDto.RefundProcessedDate = refund.RefundProcessedDate;
+                transactionStatus.RefundedDetailDto.AdminNotesOnRefund = refund.AdminNotes;
+            }
+
+            if (payment == null) // لو في Refund بس ما في Payment (سيناريو غريب، ممكن يكون Refund لدفعة مجهولة)
+            {
+                transactionStatus.DiscrepancyType = "استرداد بدون دفعة أصلية";
+            }
+            else if (payment != null && payment.PaymentStatus == PaymentStatus.Refunded)
+            {
+                transactionStatus.DiscrepancyType = "دفعة مستردة";
+            }
+            else if (payment != null && payment.PaymentStatus == PaymentStatus.Pending && payment.BookingTrip.BookingStatus == BookingStatus.Pending)
+            {
+                transactionStatus.DiscrepancyType = "دفعة معلقة بانتظار التأكيد";
+            }
+            else if (payment != null && payment.PaymentStatus == PaymentStatus.Cancelled)
+            {
+                transactionStatus.DiscrepancyType = "دفعة  ملغاة";
+            }
+            else if (payment != null && payment.Amount != payment.BookingTrip?.ActualPrice)
+            {
+                transactionStatus.DiscrepancyType = "مبلغ غير مطابق";
+            }
+
+            // إذا لم يتم العثور على أي شيء، هذا الرقم غير معروف للنظام
+            if (payment is not null || refund is not null)
+            {
+                transactionStatus.ExistsInSystem = true;
+            }
+            if (!transactionStatus.ExistsInSystem && discrepancyReport is null)
+            {
+                return Result<PaymentTransactionStatusDto>.NotFound("Not Found Transaction");
+            }
+            return Result<PaymentTransactionStatusDto>.Success(transactionStatus);
+        }
+
+        public async Task<Result> CreateRefundRequestAsync(int bookingId, int? paymentId, int? reportId, decimal amountToRefund, string adminNotes, int adminUserId)
+        {
+            return null;
+            //// لا يوجد Transaction شامل هنا، كل SaveChangesAsync هي معاملة مستقلة.
+            //_dbContext.DisableSaveChanges = true;
+            //_logger.LogInformation("CreateRefundRequest: إنشاء طلب استرداد للحجز {BookingId} بمبلغ {Amount}.", bookingId, amountToRefund);
+
+            //try
+            //{
+            //    var booking = await _bookingRepository.GetTableNoTracking().FirstOrDefaultAsync(b => b.Id == bookingId);
+            //    if (booking == null) { await _dbContext.SaveChangesAsync(); return Result.NotFound("الحجز غير موجود لإنشاء طلب استرداد."); }
+
+            //    var user = await _userRepository.GetByIdAsync(adminUserId);
+            //    if (user == null) { _logger.LogError("CreateRefundRequest: المسؤول {AdminUserId} غير موجود.", adminUserId); return Result.InternalError("بيانات المسؤول غير موجودة."); }
+
+            //    var refund = new Refund
+            //    {
+            //        BookingId = bookingId,
+            //        UserId = booking.UserId, // صاحب الحجز هو المستفيد
+            //        OriginalPaymentId = paymentId,
+            //        ReportId = reportId,
+            //        Amount = amountToRefund,
+            //        RefundDate = DateTime.UtcNow, // تاريخ إنشاء طلب الاسترداد
+            //        Status = (int)RefundStatusEnum.Pending, // بانتظار المعالجة
+            //        AdminNotes = adminNotes,
+            //        ProcessedByUserId = adminUserId
+            //    };
+            //    await _refundRepository.AddAsync(refund);
+            //    await _dbContext.SaveChangesAsync();
+
+            //    _logger.LogInformation("CreateRefundRequest: تم إنشاء طلب استرداد {RefundId} للحجز {BookingId} بنجاح.", refund.Id, bookingId);
+            //    await _notificationService.CreateInAppNotificationAsync(
+            //        booking.UserId, "طلب استرداد مبلغ",
+            //        $"تم إنشاء طلب استرداد لمبلغ {amountToRefund:N2} SAR للحجز رقم {booking.Id}. سيتم مراجعته قريباً.",
+            //        "RefundRequested", booking.Id);
+
+            //    return Result.Success("تم إنشاء طلب الاسترداد بنجاح.");
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex, "CreateRefundRequest: خطأ غير متوقع أثناء إنشاء طلب استرداد للحجز {BookingId}.", bookingId);
+            //    return Result.InternalError("حدث خطأ داخلي أثناء إنشاء طلب الاسترداد.");
+            //}
+            //finally
+            //{
+            //    _dbContext.DisableSaveChanges = false;
+            //}
+        }
+        public async Task<Result> ProcessRefundRequestAsync(int refundId, bool isApproved, string adminNotes, int adminUserId)
+        {
+            return null;
+            //await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            //_dbContext.DisableSaveChanges = true;
+            //_logger.LogInformation("ProcessRefundRequest: معالجة طلب استرداد {RefundId}. موافقة: {IsApproved} بواسطة المسؤول {AdminUserId}.", refundId, isApproved, adminUserId);
+
+            //try
+            //{
+            //    var refund = await _refundRepository.GetTable() // GetTable للحصول على كيان متتبع
+            //        .FirstOrDefaultAsync(r => r.Id == refundId);
+
+            //    if (refund == null)
+            //    {
+            //        _logger.LogWarning("ProcessRefundRequest: طلب الاسترداد {RefundId} غير موجود.", refundId);
+            //        await transaction.RollbackAsync();
+            //        return Result.NotFound("طلب الاسترداد غير موجود.");
+            //    }
+            //    if (refund.Status != (int)RefundStatusEnum.Pending)
+            //    {
+            //        _logger.LogWarning("ProcessRefundRequest: طلب الاسترداد {RefundId} ليس في حالة 'بانتظار'. حالته: {Status}.", refundId, refund.Status);
+            //        await transaction.RollbackAsync();
+            //        return Result.BadRequest("طلب الاسترداد ليس في حالة بانتظار المعالجة.");
+            //    }
+
+            //    // جلب الحجز والدفعة الأصلية لتحديثها
+            //    var booking = await _bookingRepository.GetTable()
+            //        .Include(b => b.Payments).ThenInclude(p => p.PaymentMethod)
+            //        .Include(b => b.TripDate)
+            //        .FirstOrDefaultAsync(b => b.Id == refund.BookingId);
+
+            //    if (booking == null) { _logger.LogError("ProcessRefundRequest: الحجز المرتبط بطلب الاسترداد {RefundId} غير موجود.", refundId); await transaction.RollbackAsync(); return Result.NotFound("الحجز المرتبط بطلب الاسترداد غير موجود."); }
+
+            //    var originalPayment = booking.Payments.FirstOrDefault(p => p.Id == refund.OriginalPaymentId); // قد يكون null إذا لم يكن هناك OriginalPaymentId
+
+            //    if (isApproved)
+            //    {
+            //        // 1. تحديث سجل الاسترداد
+            //        refund.Status = (int)RefundStatusEnum.Completed;
+            //        refund.RefundProcessedDate = DateTime.UtcNow;
+            //        refund.AdminNotes = adminNotes;
+            //        refund.ProcessedByUserId = adminUserId;
+            //        _refundRepository.Update(refund);
+
+            //        // 2. تحديث الدفعة الأصلية (إذا كانت موجودة)
+            //        if (originalPayment != null)
+            //        {
+            //            originalPayment.PaymentStatus = (int)PaymentStatusEnum.Refunded; // حالة الدفعة الأصلية تُصبح Refunded
+            //            _paymentRepository.Update(originalPayment);
+            //        }
+
+            //        // 3. تحديث حالة الحجز (عادةً Cancelled بعد الاسترداد)
+            //        if (booking.BookingStatus != (int)BookingStatusEnum.Cancelled)
+            //        {
+            //            booking.BookingStatus = (int)BookingStatusEnum.Cancelled;
+            //            _bookingRepository.Update(booking);
+            //        }
+
+            //        // 4. إعادة المقاعد إلى TripDate (إذا لم تكن قد أعيدت بالفعل)
+            //        if (booking.TripDate != null && booking.TripDate.AvailableSeats < booking.PassengerCount) // إذا كانت المقاعد قد خُصمت
+            //        {
+            //            booking.TripDate.AvailableSeats += booking.PassengerCount;
+            //            _tripDateRepository.Update(booking.TripDate);
+            //        }
+
+            //        // 5. تحديث TotalPaidAmount في BookingTrip
+            //        booking.TotalPaidAmount = booking.Payments.Where(p => p.PaymentStatus == (int)PaymentStatusEnum.Completed).Sum(p => p.Amount);
+            //        _bookingRepository.Update(booking);
+
+            //        _logger.LogInformation("ProcessRefundRequest: تم استرداد المبلغ للحجز {BookingId} بنجاح. معرف الاسترداد: {RefundId}.", booking.Id, refundId);
+            //        await _notificationService.CreateInAppNotificationAsync(
+            //            booking.UserId, "تم استرداد المبلغ",
+            //            $"تم استرداد مبلغ {refund.Amount:N2} SAR لحجزك رقم {booking.Id}. المبلغ سيصل إلى حسابك قريباً.",
+            //            "RefundCompleted", booking.Id);
+            //    }
+            //    else // الـ Admin رفض طلب الاسترداد
+            //    {
+            //        refund.Status = (int)RefundStatusEnum.Rejected;
+            //        refund.AdminNotes = adminNotes;
+            //        refund.ProcessedByUserId = adminUserId;
+            //        _refundRepository.Update(refund);
+
+            //        _logger.LogWarning("ProcessRefundRequest: طلب الاسترداد {RefundId} للحجز {BookingId} تم رفضه.", refundId, booking.Id);
+            //        await _notificationService.CreateInAppNotificationAsync(
+            //            booking.UserId, "طلب استرداد مرفوض",
+            //            $"نعتذر، تم رفض طلب استرداد المبلغ {refund.Amount:N2} SAR لحجزك رقم {booking.Id}. السبب: {adminNotes}.",
+            //            "RefundRejected", booking.Id);
+            //    }
+
+            //    await _dbContext.SaveChangesAsync();
+            //    await transaction.CommitAsync();
+            //    return Result.Success(isApproved ? "تمت معالجة الاسترداد بنجاح." : "تم رفض طلب الاسترداد.");
+            //}
+            //catch (Exception ex)
+            //{
+            //    await transaction.RollbackAsync();
+            //    _logger.LogError(ex, "ProcessRefundRequest: خطأ غير متوقع أثناء معالجة طلب استرداد {RefundId}.", refundId);
+            //    return Result.InternalError("حدث خطأ داخلي أثناء معالجة طلب الاسترداد.");
+            //}
+            //finally
+            //{
+            //    _dbContext.DisableSaveChanges = false;
+            //}
+        }
+
+        // 11. جلب بلاغات الدفع المفقودة للمدير
+        public async Task<Result<IEnumerable<MissingPaymentReportResponceDto>>> GetMissingPaymentReportsForAdminAsync()
+        {
+            // _logger.LogInformation("GetMissingPaymentReports: جلب بلاغات الدفع المفقودة للمدير.");
+            var pendingReports = await _discrepancyReportRepositoryAsync.GetTableNoTracking()
+                .Where(r => r.Status == PaymentDiscrepancyStatusEnum.PendingReview)
+                .ToListAsync();
+
+            var resultDtos = pendingReports.Select(r => new MissingPaymentReportResponceDto // نستخدم نفس DTO للعرض
+            {
+                TransactionReference = r.ReportedTransactionRef,
+                PaymentDateTime = r.ReportedPaymentDateTime,
+                PaidAmount = r.ReportedPaidAmount,
+                CustomerNotes = r.CustomerNotes
+            }).ToList();
+
+            return Result<IEnumerable<MissingPaymentReportResponceDto>>.Success(resultDtos);
+        }
+
+    }
+    public class DiscrepancyReportProcessRequestDto
+    {
+        [Required(ErrorMessage = "معرف البلاغ مطلوب.")]
+        public int ReportId { get; set; }
+
+        [Required(ErrorMessage = "حالة المعالجة الجديدة مطلوبة.")]
+        public PaymentDiscrepancyStatusEnum Status { get; set; } // الحالة الجديدة للبلاغ
+
+
+        public decimal VerifiedAmount { get; set; }
+
+        public string? AdminNotes { get; set; } // ملاحظات المسؤول (اختياري)
+
+        // AdminUserId سيأتي من Claims الـ Controller، لذا لا يُرسل في الـ DTO مباشرة
+        // public int AdminUserId { get; set; }
+    }
+    public class PaymentTransactionStatusDto
+    {
+        public string TransactionReference { get; set; } = string.Empty; // رقم العملية الذي تم البحث عنه
+
+        public bool ExistsInSystem { get; set; } // هل يوجد سجل دفعة بهذا الرقم؟
+
+        public PaymentDetailDto  PaymentDetailDto { get; set; }
+        public BookingTripDetailDto  BookingTripDetailDto { get; set; }
+        public RefundedDetailDto RefundedDetailDto { get; set; }
+        public ReportDetailDto ReportDetailDto { get; set; }       
+        // تصنيف عام لنوع التضارب
+        public string? DiscrepancyType { get; set; } // مثال: "مفقودة", "زائدة", "مكررة", "مستردة"
+    }
+    public class PaymentDetailDto
+    {
+        // معلومات عن الدفعة (Payment)
+        public int? PaymentId { get; set; }
+        public decimal? PaymentAmount { get; set; } // المبلغ المسجل في سجل الدفعة
+        public decimal? PaymentVerifiedAmount { get; set; } // المبلغ الفعلي الذي أكده المسؤول (لو موجود)
+        public PaymentStatus? PaymentStatus { get; set; } // حالة الدفعة
+        public DateTime? PaymentDate { get; set; } // تاريخ الدفعة
+        public string? PaymentMethodName { get; set; } // طريقة الدفع
+        public string? PaymentErrorDetails { get; set; } // تفاصيل خطأ الدفعة
+    } 
+    public class BookingTripDetailDto
+    {
+        // معلومات عن الحجز (BookingTrip) المرتبط
+        public int? AssociatedBookingId { get; set; }
+        public BookingStatus? BookingStatus { get; set; } // حالة الحجز المرتبط
+        public decimal? BookingActualPrice { get; set; } // السعر المطلوب للحجز
+        public decimal? BookingTotalPaidAmount { get; set; } // إجمالي المدفوع للحجز
+        public DateTime? TripDate { get; set; } // تاريخ بداية الرحلة
+        public PackageTripDateStatus? TripDateStatus { get; set; } // حالة تاريخ الرحلة
+    }
+    public class ReportDetailDto
+    {
+        // معلومات عن بلاغ التضارب (PaymentDiscrepancyReport) المرتبط
+        public int? ReportId { get; set; }
+        public PaymentDiscrepancyStatusEnum? ReportStatus { get; set; } // حالة البلاغ
+        public decimal? ReportedAmount { get; set; } // المبلغ المبلغ عنه في البلاغ
+        public DateTime? ReportedPaymentDateTime { get; set; } // تاريخ الدفع المبلغ عنه في البلاغ
+        public string? CustomerNotes { get; set; } // ملاحظات العميل في البلاغ
+        public string? AdminNotesOnReport { get; set; } // ملاحظات المسؤول على البلاغ
+    }
+    public class RefundedDetailDto
+    {
+        // معلومات عن الاسترداد (Refund) المرتبط
+        public int? RefundId { get; set; }
+        public decimal? RefundAmount { get; set; }
+        public RefundStatus? RefundStatus { get; set; }
+        public DateTime? RefundProcessedDate { get; set; }
+        public string? AdminNotesOnRefund { get; set; }
+
+    }
+}
+
+
+
