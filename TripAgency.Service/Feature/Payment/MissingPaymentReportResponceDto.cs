@@ -1,6 +1,6 @@
 ﻿namespace TripAgency.Service.Feature.Payment
 {
-    public class MissingPaymentReportDto
+    public class MissingPaymentReportResponceDto
     {
         public string TransactionReference { get; set; } = string.Empty; // رقم الـ Transaction ID من بوابة الدفع أو مرجع التحويل اليدوي
         public DateTime PaymentDateTime { get; set; } // الوقت الفعلي الذي تم فيه الدفع حسب العميل
