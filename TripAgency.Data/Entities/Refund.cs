@@ -1,4 +1,5 @@
-﻿using TripAgency.Data.Enums;
+﻿using TripAgency.Data.Entities.Identity;
+using TripAgency.Data.Enums;
 
 namespace TripAgency.Data.Entities
 {

@@ -6,6 +6,7 @@ using TripAgency.Data.Helping;
 using TripAgency.Infrastructure.Abstracts;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Implementations;
+using TripAgency.Service.Implemetations;
 
 namespace TripAgency.Service
 {
@@ -31,6 +32,8 @@ namespace TripAgency.Service
             services.AddTransient<IPaymentGatewayService, UsdtPaymentGatewayService>();
             services.AddTransient<IPaymentGatewayService, PayeerPaymentGatewayService>();
             services.AddTransient<IPaymentGatewayFactory, PaymentGatewayFactory>();
+            services.AddTransient<IApplicationUserService, ApplicationUserService>();
+            services.AddTransient<IAuthonticationService, AuthonticationService>();
             services.AddTransient<IPaymentService, PaymentService>();
             services.AddTransient<UsdtPaymentGatewayService>(); 
             services.AddTransient<PayeerPaymentGatewayService>();

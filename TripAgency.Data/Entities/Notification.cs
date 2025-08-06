@@ -5,6 +5,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TripAgency.Data.Entities.Identity;
 using TripAgency.Data.Enums;
 
 namespace TripAgency.Data.Entities

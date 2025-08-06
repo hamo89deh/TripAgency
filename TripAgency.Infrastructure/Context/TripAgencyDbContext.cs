@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,10 +9,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TripAgency.Data.Entities;
+using TripAgency.Data.Entities.Identity;
 
 namespace TripAgency.Infrastructure.Context
 {
-    public class TripAgencyDbContext : DbContext
+    public class TripAgencyDbContext :  IdentityDbContext<User, Role, int, IdentityUserClaim<int>, IdentityUserRole<int>
+                                                         , IdentityUserLogin<int>, IdentityRoleClaim<int>, IdentityUserToken<int>>
+   
     {
         public TripAgencyDbContext(DbContextOptions options)  : base(options)
         {
@@ -33,7 +38,8 @@ namespace TripAgency.Infrastructure.Context
         public DbSet<DestinationActivity> DestinationActivities { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
-        public DbSet<User> Users { get; set; }
+        public DbSet<User> User { get; set; }
+        public DbSet<Role> Role { get; set; } 
         public DbSet<BookingTrip> BookingTrips { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Refund> Refunds { get; set; }

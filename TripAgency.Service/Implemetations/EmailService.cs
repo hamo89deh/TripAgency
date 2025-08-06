@@ -52,7 +52,7 @@ namespace TripAgency.Service.Implementations
             }
             catch (Exception ex)
             {
-                return "Failed";
+                throw ex;
             }
         }
         #endregion
