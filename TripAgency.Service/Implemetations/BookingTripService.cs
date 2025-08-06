@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
 using TripAgency.Data.Entities;
 using TripAgency.Data.Enums;
@@ -25,6 +26,7 @@ namespace TripAgency.Service.Implementations
         public IPaymentDiscrepancyReportRepositoryAsync _discrepancyReportRepositoryAsync { get; }
         public IPaymentRepositoryAsync _paymentRepositoryAsync { get; }
         public IRefundRepositoryAsync _refundRepositoryAsync { get; }
+        public IPaymentService _paymentService { get; }
         public IConfiguration _configuration { get; }
         public IMapper _mapper { get; }
         private string baseUrl;
@@ -36,6 +38,7 @@ namespace TripAgency.Service.Implementations
                                   INotificationService notificationService,
                                   IPaymentDiscrepancyReportRepositoryAsync discrepancyReportRepositoryAsync,
                                   IPaymentRepositoryAsync paymentRepositoryAsync,
+                                  IPaymentService paymentService,
                                   IRefundRepositoryAsync refundRepositoryAsync,
                                   IMapper mapper,
                                   IConfiguration configuration
@@ -52,6 +55,7 @@ namespace TripAgency.Service.Implementations
             _mapper = mapper;
             _notificationService = notificationService;
             _configuration = configuration;
+            _paymentService = paymentService;
             baseUrl = configuration["BaseUrl"] ?? throw new InvalidOperationException("Not Found BaseUrl."); ;
         }
         public async Task<Result<PaymentInitiationResponseDto>> InitiateBookingAndPaymentAsync(AddBookingPackageTripDto bookPackageDto)
@@ -182,9 +186,117 @@ namespace TripAgency.Service.Implementations
             }
 
         }
-   
+
+        public async Task<Result> CancellingBookingAndRefundPayemntAsync(int bookingId)
+        {
+            var bookingTrip = await _bookingTripRepository.GetTableNoTracking()
+                                                      .Where(b => b.Id == bookingId)
+                                                      .Include(b => b.Payment)
+                                                      .Include(b => b.PackageTripDate)
+                                                      .FirstOrDefaultAsync();
+            if (bookingTrip is null)
+            {
+                return Result.NotFound($"Not Found Booking With Id : {bookingId}");
+            }
+          
+            if (bookingTrip.PackageTripDate.Status == PackageTripDateStatus.Cancelled)
+            {
+                return Result.BadRequest("Cann't Cancelling Booking For PackageTrip Cancelled");
+            }
+
+            if (bookingTrip.BookingStatus == BookingStatus.Pending)
+            {
+                if(bookingTrip.Payment.TransactionId.IsNullOrEmpty())
+                {
+                     _paymentTimerService.StopPaymentTimer(bookingId);
+                    await _paymentService.HandlePaymentTimeoutAsync(bookingId);
+                    await _notificationService.CreateInAppNotificationAsync(
+                        bookingTrip.UserId,
+                        "تم الغاء طلب الحجز بنجاح",
+                        $" تم الغاء طلب الججز {bookingTrip.Id} ." +
+                        $" السبب: طلب المستخدم الغاء الحجز  ",
+                        "BookingCancelling",
+                        bookingId.ToString());
+                    // TODO Send Email 
+                    return Result.Success();
+                }
+                else
+                {
+                    await _paymentService.HandlePaymentTimeoutAsync(bookingId);
+                   
+                    var newDiscrepancyReport = new PaymentDiscrepancyReport
+                    {
+                        UserId = 2 ,//TODO
+                        ReportedTransactionRef = bookingTrip.Payment.TransactionId,
+                        ReportedPaymentDateTime = bookingTrip.Payment.PaymentDate,
+                        ReportedPaidAmount = bookingTrip.Payment.Amount,
+                        CustomerNotes = "تم انشاء هذا التقرير من قبل النظام عندما الغى المستخدم الحجز",
+                        ReportDate = DateTime.UtcNow,
+                        Status = PaymentDiscrepancyStatusEnum.PendingReview,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+
+                    await _discrepancyReportRepositoryAsync.AddAsync(newDiscrepancyReport);
+
+                    await _notificationService.CreateInAppNotificationAsync(
+                        bookingTrip.UserId,
+                        "تم الغاء طلب الحجز بنجاح",
+                        $" تم الغاء طلب الججز {bookingTrip.Id} ." +
+                        $"   : السبب: طلب المستخدم الغاء الحجز سوف يتم التحقق من رقم المعاملة {bookingTrip.Payment.TransactionId} واجراء التدابير المناسبة  ",
+                        "BookingCancelling",
+                        bookingId.ToString());
+                    return Result.Success();
+                }
+            }           
+            if (bookingTrip.BookingStatus == BookingStatus.Completed)
+            {
+                //TODO
+                //CHECK time cancelling 
+                //check status Trip 
+                //Cancelling Boooking 
+                //Refund Payment 
+                if(bookingTrip.PackageTripDate.Status == PackageTripDateStatus.Ongoing ||
+                   bookingTrip.PackageTripDate.Status == PackageTripDateStatus.Completed)
+                {
+                    return Result.BadRequest("Cann't Cancelling Booking For PackageTrip Ongoing Or  Completed ");
+                }
+               
+                bookingTrip.BookingStatus = BookingStatus.Cancelled;
+                await _bookingTripRepository.UpdateAsync(bookingTrip);
+
+                var tripDate = await _packageTripDateRepository.GetByIdAsync(bookingTrip.PackageTripDateId);
+                if (tripDate != null)
+                {
+                    tripDate.AvailableSeats += bookingTrip.PassengerCount;
+                    await _packageTripDateRepository.UpdateAsync(tripDate);
+                }
+
+                //Refunded Payment
+                var refunded = new Refund
+                {
+                    UpdatedAt = DateTime.Now,
+                    Status = RefundStatus.Pending,
+                    TransactionReference = bookingTrip.Payment.TransactionId,
+                    CreatedAt = DateTime.Now,
+                    PaymentId = bookingTrip.Payment.Id,
+                    ProcessedByUserId = 2,
+                    AdminNotes = "Refunded Because User Cancelling Booking"
+
+
+                };
+                await _refundRepositoryAsync.AddAsync(refunded);
+
+                bookingTrip.Payment.PaymentStatus = PaymentStatus.Cancelled; //TODO refund or cancelling
+                await _paymentRepositoryAsync.UpdateAsync(bookingTrip.Payment);
+
+                return Result.Success();
+            }
+
+            
+            return Result.BadRequest("Cann't Cancelling BookingTrip Cancelled Before");
+        }
     }
-   
 }
 
 

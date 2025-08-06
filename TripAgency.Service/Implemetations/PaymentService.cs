@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.Collections.Generic;
 using TripAgency.Data.Entities;
 using TripAgency.Data.Enums;
 using TripAgency.Data.Result.TripAgency.Core.Results;
@@ -84,14 +86,6 @@ namespace TripAgency.Service.Implementations
                 bookingTrip.Payment.PaymentStatus = PaymentStatus.Cancelled;
                 await _paymentRepositoryAsync.UpdateAsync(bookingTrip.Payment);
 
-                await _notificationService.CreateInAppNotificationAsync(
-                                        bookingTrip.UserId,
-                                        "تم الغاء طلب الحجز",
-                                        $"نعتذر، تم الغاء طلب الججز {bookingTrip.Id} ." +
-                                        $" السبب: انتهاء الوقت  المخصص للدفع  اذا قمت بالدفع يرجى اعادة  طلب الحجز",
-                                        "BookingRejected",
-                                        bookingId.ToString());
-                // TODO Send Email 
 
                 // _logger.LogInformation("Timeout: الحجز {BookingId} تم إلغاؤه تلقائياً بسبب انتهاء مهلة الدفع.", bookingId);
                 return Result.Success("The Booking Cancelling due to deadline.");
@@ -195,7 +189,8 @@ namespace TripAgency.Service.Implementations
                 bookingTrip.UserId,
                 "إشعار دفعك قيد المراجعة",
                 $"تم استلام إشعار الدفع الخاص بالحجز رقم {bookingTrip.Id} ({details.TransactionReference}). المبلغ: {details.PaidAmount:N2}. إجمالي المدفوع للحجز: {bookingTrip.ActualPrice:N2}. سيتم مراجعته قريباً.",
-                "ManualPaymentReceived", bookingTrip.Id.ToString()
+                "ManualPaymentReceived",
+                bookingTrip.Id.ToString()
                 );
 
             //_logger.LogInformation("SubmitManualPaymentNotification: تم تسجيل إشعار الدفع اليدوي بنجاح للحجز {BookingId}.", details.BookingId);
@@ -362,7 +357,7 @@ namespace TripAgency.Service.Implementations
             if (refunded is not null)
             {
 
-                //ذا وصل لهون فاما قام العميل باسترجاع المبلغ من خلال الغاء الحجز او قام ال
+                //ذا وصل لهون فاما قام العميل باسترجاع المبلغ من خلال الغاء حجز مكتمل  او قام ال
                 //admin
                 // بالغاء الرحلة فسوف يتم استرجاع المبلغ للمستخدمين
                 // او الحجز الغي بسبب دفع مبلغ اقل من مبلغ الحجز 
@@ -447,6 +442,7 @@ namespace TripAgency.Service.Implementations
                 //_logger.LogWarning("ProcessDiscrepancyReport: بلاغ التضارب {ReportId} غير موجود أو ليس في حالة 'بانتظار المراجعة'.", reportId);
                 return Result.NotFound("بلاغ التضارب غير موجود أو ليس في حالة 'بانتظار المراجعة'.");
             }
+           
             using var transaction = await _discrepancyReportRepositoryAsync.BeginTransactionAsync();
             try
             {
@@ -478,10 +474,14 @@ namespace TripAgency.Service.Implementations
                     var refund = new Refund()
                     {
                         AdminNotes = discrepancyReport.AdminNotes ?? "",
-                        ProcessedByUserId = 2,
+                        ProcessedByUserId = 2,//TODO
                         CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
                         Amount = discrepancyReport.VerifiedAmount,
-                        TransactionReference = report.ReportedTransactionRef
+                        TransactionReference = report.ReportedTransactionRef,
+                        TransactionRefunded = string.Empty,
+                        ReportId = report.Id,
+                        
                     };
                     await _refundRepositoryAsync.AddAsync(refund);
                 }
@@ -629,6 +629,61 @@ namespace TripAgency.Service.Implementations
                 return Result<PaymentTransactionStatusDto>.NotFound("Not Found Transaction");
             }
             return Result<PaymentTransactionStatusDto>.Success(transactionStatus);
+        }
+
+     
+        // 11. جلب بلاغات الدفع المفقودة للمدير
+        public async Task<Result<IEnumerable<MissingPaymentReportResponceDto>>> GetMissingPaymentReportsForAdminAsync()
+        {
+            // _logger.LogInformation("GetMissingPaymentReports: جلب بلاغات الدفع المفقودة للمدير.");
+            var pendingReports = await _discrepancyReportRepositoryAsync.GetTableNoTracking()
+                                                                        .Where(r => r.Status == PaymentDiscrepancyStatusEnum.PendingReview)
+                                                                        .ToListAsync();
+
+            var resultDtos = pendingReports.Select(r => new MissingPaymentReportResponceDto // نستخدم نفس DTO للعرض
+            {
+                ReportId = r.Id,
+                TransactionReference = r.ReportedTransactionRef,
+                PaymentDateTime = r.ReportedPaymentDateTime,
+                PaidAmount = r.ReportedPaidAmount,
+                CustomerNotes = r.CustomerNotes
+            }).ToList();
+         
+            if (!resultDtos.Any())
+            {
+                return Result<IEnumerable<MissingPaymentReportResponceDto>>.NotFound("Not Found any Report Pending");
+            }
+
+            return Result<IEnumerable<MissingPaymentReportResponceDto>>.Success(resultDtos);
+        }
+
+        public async Task<Result<IEnumerable<ManualPaymentDetailsDto>>> GetPendingManualPaymentsForAdminAsync()
+        {
+            var paymnetsPending = await _paymentRepositoryAsync.GetTableNoTracking()
+                                                               .Where(p => p.PaymentStatus == PaymentStatus.Pending)
+                                                               .ToListAsync();
+            paymnetsPending = paymnetsPending.Where(p =>!p.TransactionId.IsNullOrEmpty()).ToList();
+            if (!paymnetsPending.Any())
+            {
+                return Result<IEnumerable<ManualPaymentDetailsDto>>.NotFound("Not Found Any payment Pending");
+            }
+
+            var manualPaymentDetailsDtos = new List<ManualPaymentDetailsDto>();
+            foreach (var payment in paymnetsPending)
+            {
+                manualPaymentDetailsDtos.Add(new ManualPaymentDetailsDto
+                {
+                    BookingId = payment.BookingTripId,
+                    PaidAmount = payment.Amount,
+                    PaymentDateTime = payment.PaymentDate,
+                    PaymentMethodId = payment.PaymentMethodId,
+                    TransactionReference = payment.TransactionId
+                    
+                });          
+            }
+            return Result<IEnumerable<ManualPaymentDetailsDto>>.Success(manualPaymentDetailsDtos);
+
+
         }
 
         public async Task<Result> CreateRefundRequestAsync(int bookingId, int? paymentId, int? reportId, decimal amountToRefund, string adminNotes, int adminUserId)
@@ -782,25 +837,6 @@ namespace TripAgency.Service.Implementations
             //{
             //    _dbContext.DisableSaveChanges = false;
             //}
-        }
-
-        // 11. جلب بلاغات الدفع المفقودة للمدير
-        public async Task<Result<IEnumerable<MissingPaymentReportResponceDto>>> GetMissingPaymentReportsForAdminAsync()
-        {
-            // _logger.LogInformation("GetMissingPaymentReports: جلب بلاغات الدفع المفقودة للمدير.");
-            var pendingReports = await _discrepancyReportRepositoryAsync.GetTableNoTracking()
-                .Where(r => r.Status == PaymentDiscrepancyStatusEnum.PendingReview)
-                .ToListAsync();
-
-            var resultDtos = pendingReports.Select(r => new MissingPaymentReportResponceDto // نستخدم نفس DTO للعرض
-            {
-                TransactionReference = r.ReportedTransactionRef,
-                PaymentDateTime = r.ReportedPaymentDateTime,
-                PaidAmount = r.ReportedPaidAmount,
-                CustomerNotes = r.CustomerNotes
-            }).ToList();
-
-            return Result<IEnumerable<MissingPaymentReportResponceDto>>.Success(resultDtos);
         }
 
     }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using TripAgency.Data.Entities;
 using TripAgency.Service.Abstracts;
 
 namespace TripAgency.Service.Implementations
@@ -11,11 +12,11 @@ namespace TripAgency.Service.Implementations
         // ConcurrentDictionary آمن للاستخدام من خيوط متعددة
         private static readonly ConcurrentDictionary<int, CancellationTokenSource> _activeTimers = new ConcurrentDictionary<int, CancellationTokenSource>();
         private readonly IServiceScopeFactory _scopeFactory; // لإنشاء Scope جديد داخل الـ Task
-
+       
         public PaymentTimerService(ILogger<PaymentTimerService> logger, IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
-            _scopeFactory = scopeFactory;
+            _scopeFactory = scopeFactory;         
         }
 
         public void StartPaymentTimer(int bookingId, TimeSpan timeoutDuration)
@@ -38,7 +39,7 @@ namespace TripAgency.Service.Implementations
                         using (var scope = _scopeFactory.CreateScope()) // إنشاء Scope جديد لأننا خارج طلب HTTP
                         {
                             var paymentService = scope.ServiceProvider.GetRequiredService<IPaymentService>();
-                            await paymentService.HandlePaymentTimeoutAsync(bookingId);
+                            await paymentService.HandlePaymentTimeoutAsync(bookingId);                          
                         }
                     }
                 }

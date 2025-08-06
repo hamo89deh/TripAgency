@@ -61,10 +61,18 @@ namespace TripAgency.Api.Controllers
             return ApiResult<string>.Ok("Success Updated");
 
         }
-        [HttpDelete]
-        public async Task<ApiResult<string>> DeleteBookingTrip(int id)
+        [HttpPut("CancellingBookingTrip")]
+        public async Task<ApiResult<string>> CansellingBookingTrip(int BookingId)
         {
-            var bookingTripResult = await _bookingTripService.DeleteAsync(id);
+            var bookingTripResult = await _bookingTripService.CancellingBookingAndRefundPayemntAsync(BookingId);
+            if (!bookingTripResult.IsSuccess)
+                return this.ToApiResult<string>(bookingTripResult);
+            return ApiResult<string>.Ok("Success Delete");
+        } 
+        [HttpDelete]
+        public async Task<ApiResult<string>> DeleteBookingTrip(int BookingId)
+        {
+            var bookingTripResult = await _bookingTripService.DeleteAsync(BookingId);
             if (!bookingTripResult.IsSuccess)
                 return this.ToApiResult<string>(bookingTripResult);
             return ApiResult<string>.Ok("Success Delete");

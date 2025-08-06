@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
 using TripAgency.Service.Abstracts;
@@ -72,6 +73,16 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult(DetailsTransactionResult);
             }
             return ApiResult<PaymentTransactionStatusDto>.Ok(DetailsTransactionResult.Value!);
+        }
+        [HttpGet("PaymentsPending")]
+        public async Task<ApiResult<IEnumerable<ManualPaymentDetailsDto>>> GetPendingManualPaymentsForAdminAsync()
+        {
+            var PendingManualPayments = await _paymentService.GetPendingManualPaymentsForAdminAsync();
+            if (!PendingManualPayments.IsSuccess)
+            {
+                return this.ToApiResult(PendingManualPayments);
+            }
+            return ApiResult<IEnumerable<ManualPaymentDetailsDto>>.Ok(PendingManualPayments.Value!);
         }
     
         [HttpGet("GetMissingPayment")]
