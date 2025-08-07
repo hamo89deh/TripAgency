@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TripAgency.Data.Entities.Identity
 {
@@ -8,8 +9,12 @@ namespace TripAgency.Data.Entities.Identity
         public string? Country { get; set; }
         public string FullName { get; set; }
         public int LoyaltyPoints { get; set; } = 0;
+
+        public string? Code { get; set; }
+
         public IEnumerable<BookingTrip>? BookingTrips { get; set; }
 
-
+        [InverseProperty(nameof(UserRefreshToken.User))]
+        public virtual ICollection<UserRefreshToken>? UserRefreshTokens { get; set; }
     }
 }

@@ -39,10 +39,15 @@ namespace TripAgency.Service
             services.AddTransient<PayeerPaymentGatewayService>();
 
 
-            //Email
+            //Email Setting
             var emailSettings = new EmailSettings();
             configuration.GetSection(nameof(emailSettings)).Bind(emailSettings);
             services.AddSingleton(emailSettings);
+
+            //JWT Authentication
+            var jwtSettings = new JwtSettings();
+            configuration.GetSection(nameof(jwtSettings)).Bind(jwtSettings);
+            services.AddSingleton(jwtSettings);
 
             return services;
         }

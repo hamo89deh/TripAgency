@@ -662,7 +662,7 @@ namespace TripAgency.Service.Implementations
             var paymnetsPending = await _paymentRepositoryAsync.GetTableNoTracking()
                                                                .Where(p => p.PaymentStatus == PaymentStatus.Pending)
                                                                .ToListAsync();
-            paymnetsPending = paymnetsPending.Where(p =>!p.TransactionId.IsNullOrEmpty()).ToList();
+            paymnetsPending = paymnetsPending.Where(p =>! string.IsNullOrEmpty(p.TransactionId)).ToList();
             if (!paymnetsPending.Any())
             {
                 return Result<IEnumerable<ManualPaymentDetailsDto>>.NotFound("Not Found Any payment Pending");

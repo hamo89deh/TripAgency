@@ -206,8 +206,9 @@ namespace TripAgency.Service.Implementations
 
             if (bookingTrip.BookingStatus == BookingStatus.Pending)
             {
-                if(bookingTrip.Payment.TransactionId.IsNullOrEmpty())
-                {
+               
+                if (string.IsNullOrEmpty(bookingTrip.Payment.TransactionId))
+                { 
                      _paymentTimerService.StopPaymentTimer(bookingId);
                     await _paymentService.HandlePaymentTimeoutAsync(bookingId);
                     await _notificationService.CreateInAppNotificationAsync(
