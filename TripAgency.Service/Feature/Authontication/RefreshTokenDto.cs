@@ -1,9 +1,9 @@
 ﻿namespace TripAgency.Service.Feature.Authontication
 {
-    public class JwtAuthResult
+    public class RefreshAccessTokenDto
     {
         public string AccessToken { get; set; }
-        public RefreshTokenResult RefreshToken { get; set; }
+        public string RefreshToken { get; set; }
     }
 
 }

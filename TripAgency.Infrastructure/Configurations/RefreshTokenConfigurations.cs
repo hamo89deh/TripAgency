@@ -12,10 +12,12 @@ namespace TripAgency.Infrastructure.Configurations
 
             builder.Property(x => x.RefreshToken)
                    .HasColumnType("nvarchar")
+                   .HasMaxLength(4000)
                    .IsRequired(true);
 
             builder.Property(x => x.Token)
-                    .HasColumnType("nvarchar")
+                   .HasColumnType("nvarchar")
+                   .HasMaxLength(4000)
                    .IsRequired(false);
 
             builder.HasOne(r=>r.User)
