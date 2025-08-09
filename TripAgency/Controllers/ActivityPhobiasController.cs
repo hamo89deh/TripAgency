@@ -3,22 +3,22 @@ using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
 using TripAgency.Service.Abstracts;
-using TripAgency.Service.Feature.Activity.Commands;
-using TripAgency.Service.Feature.Activity.Queries;
+using TripAgency.Service.Feature.ActivityPhobia.Commands;
+using TripAgency.Service.Feature.ActivityPhobia.Queries;
 
 namespace TripAgency.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ActivitiyPhobiasController : ControllerBase
+    public class ActivityPhobiasController : ControllerBase
     {
-        public ActivitiyPhobiasController(IActivityPhobiaService activityPhobiaService, IMapper mapper)
+        public ActivityPhobiasController(IActivityPhobiasService activityPhobiaService, IMapper mapper)
         {
             _activityPhobiaService = activityPhobiaService;
             _mapper = mapper;
         }
 
-        public IActivityPhobiaService _activityPhobiaService { get; }
+        public IActivityPhobiasService _activityPhobiaService { get; }
         public IMapper _mapper { get; }
 
         [HttpGet("{ActivityId}")]
@@ -50,5 +50,4 @@ namespace TripAgency.Api.Controllers
         }
 
     }
-
 }

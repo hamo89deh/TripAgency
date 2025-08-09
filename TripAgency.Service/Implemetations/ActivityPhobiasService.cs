@@ -4,13 +4,13 @@ using TripAgency.Data.Entities;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Infrastructure.Abstracts;
 using TripAgency.Service.Abstracts;
-using TripAgency.Service.Feature.Activity.Commands;
-using TripAgency.Service.Feature.Activity.Queries;
+using TripAgency.Service.Feature.ActivityPhobia.Commands;
+using TripAgency.Service.Feature.ActivityPhobia.Queries;
 using TripAgency.Service.Feature.Phobia.Queries;
 
 namespace TripAgency.Service.Implementations
 {
-    public class ActivityPhobiasService : IActivityPhobiaService
+    public class ActivityPhobiasService : IActivityPhobiasService
     {
         private IActivityRepositoryAsync _activityRepository { get; set; }
         public IMapper _mapper { get; }

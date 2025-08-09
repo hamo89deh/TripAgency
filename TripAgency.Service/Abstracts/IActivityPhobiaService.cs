@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TripAgency.Data.Result.TripAgency.Core.Results;
-using TripAgency.Service.Feature.Activity.Commands;
-using TripAgency.Service.Feature.Activity.Queries;
+using TripAgency.Service.Feature.ActivityPhobia.Commands;
+using TripAgency.Service.Feature.ActivityPhobia.Queries;
 
 namespace TripAgency.Service.Abstracts
 {
-    public interface IActivityPhobiaService
+    public interface IActivityPhobiasService
     {
         Task<Result> AddActivityPhobias(AddActivityPhobiasDto addActivityPhobiasDto);
         Task<Result<GetActivityPhobiasDto>> GetActivityPhobiasAsync(int ActivityId);

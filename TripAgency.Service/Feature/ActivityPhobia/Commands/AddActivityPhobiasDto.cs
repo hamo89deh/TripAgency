@@ -1,4 +1,4 @@
-﻿namespace TripAgency.Service.Feature.Activity.Commands
+﻿namespace TripAgency.Service.Feature.ActivityPhobia.Commands
 {
     public class AddActivityPhobiasDto
     {

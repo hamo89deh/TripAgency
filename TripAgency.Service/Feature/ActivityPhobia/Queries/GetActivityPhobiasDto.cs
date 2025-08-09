@@ -1,6 +1,6 @@
 ﻿using TripAgency.Service.Feature.Phobia.Queries;
 
-namespace TripAgency.Service.Feature.Activity.Queries
+namespace TripAgency.Service.Feature.ActivityPhobia.Queries
 {
     public class GetActivityPhobiasDto
     {
