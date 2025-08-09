@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Net.NetworkInformation;
 using TripAgency.Data.Entities;
+using TripAgency.Data.Entities.Identity;
 using TripAgency.Data.Enums;
 using TripAgency.Data.NewFolder1;
 using TripAgency.Data.Result.TripAgency.Core.Results;
@@ -19,6 +20,7 @@ namespace TripAgency.Service.Implementations
         private IPackageTripDateRepositoryAsync _tripDateRepositoryAsync { get; }
         private IPackageTripRepositoryAsync _packageTripRepositoryAsync { get; }  
         private IBookingTripRepositoryAsync _bookingTripRepositoryAsync { get; }
+        public ICurrentUserService _currentUserService { get; }
         private INotificationService _notificationServiceAsync { get; }
         private IMapper _mapper { get; }
 
@@ -26,7 +28,8 @@ namespace TripAgency.Service.Implementations
                               IMapper mapper,
                               IPackageTripRepositoryAsync packageTripRepository,
                               INotificationService notificationServiceAsync,
-                              IBookingTripRepositoryAsync bookingTripRepository
+                              IBookingTripRepositoryAsync bookingTripRepository,
+                              ICurrentUserService currentUserService
                               ) : base(tripDateRepository, mapper)
         {
             _tripDateRepositoryAsync = tripDateRepository;
@@ -34,6 +37,7 @@ namespace TripAgency.Service.Implementations
             _packageTripRepositoryAsync = packageTripRepository;
             _notificationServiceAsync = notificationServiceAsync;
             _bookingTripRepositoryAsync = bookingTripRepository;
+            _currentUserService = currentUserService;
         }
         public override async Task<Result<GetPackageTripDateByIdDto>> CreateAsync(AddPackageTripDateDto AddDto)
         {
@@ -196,10 +200,10 @@ namespace TripAgency.Service.Implementations
             //}
         }
         //TODO
-        public async Task<Result> CancelPacakgeTripDateAsync(int packageTripDateId, int adminUserId, string cancellationReason)
+        public async Task<Result> CancelPacakgeTripDateAsync(int packageTripDateId, string cancellationReason)
         {
              using var transaction = await _packageTripRepositoryAsync.BeginTransactionAsync();
-           
+            
             // _logger.LogInformation("CancelTripDate: بدء إلغاء تاريخ الرحلة {TripDateId} بواسطة المسؤول {AdminUserId}.", tripDateId, adminUserId);
 
             try
@@ -232,8 +236,8 @@ namespace TripAgency.Service.Implementations
 
                 // 3. معالجة الحجوزات المرتبطة بهذا TripDate
                 // جلب المسؤول الذي قام بالإلغاء (للتدقيق في سجلات Refunds)
-                var adminUser = 2; //Todo
-                var adminUserName = "AdminSystem";
+
+                var admin = await _currentUserService.GetUserAsync();
 
                 var affectedBookings = packageTripDate.BookingTrips.ToList(); // نسخ القائمة لتجنب التعديل أثناء المرور
 
@@ -249,6 +253,7 @@ namespace TripAgency.Service.Implementations
                     }
                     else if (booking.BookingStatus ==BookingStatus.Completed)
                     {
+                        //TODO
                         // 3.2. إذا كان الحجز مؤكداً، يجب إبلاغ العميل بضرورة الاسترداد (أو استرداد تلقائي)
                         //_logger.LogWarning("CancelTripDate: الحجز {BookingId} كان مؤكداً وسيتم إلغاؤه. يحتاج استرداد مبلغ.", booking.Id);
 

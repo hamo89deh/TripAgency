@@ -24,6 +24,7 @@ namespace TripAgency.Service.Implementations
         public IPaymentRepositoryAsync _paymentRepositoryAsync { get; }
         public IRefundRepositoryAsync _refundRepositoryAsync { get; }
         public IConfiguration _configuration { get; }
+        public ICurrentUserService _currentUserService { get; }
         public IMapper _mapper { get; }
         private string baseUrl;
         public PaymentService(IBookingTripRepositoryAsync bookingTripRepository,
@@ -36,7 +37,8 @@ namespace TripAgency.Service.Implementations
                                   IPaymentRepositoryAsync paymentRepositoryAsync,
                                   IRefundRepositoryAsync refundRepositoryAsync,
                                   IMapper mapper,
-                                  IConfiguration configuration
+                                  IConfiguration configuration,
+                                  ICurrentUserService currentUserService
                                  )
         {
             _bookingTripRepository = bookingTripRepository;
@@ -50,6 +52,7 @@ namespace TripAgency.Service.Implementations
             _mapper = mapper;
             _notificationService = notificationService;
             _configuration = configuration;
+            _currentUserService = currentUserService;
             baseUrl = configuration["BaseUrl"] ?? throw new InvalidOperationException("Not Found BaseUrl."); ;
         }
         //  دالة لمعالجة انتهاء مهلة الدفع (تستدعى من خدمة المؤقت)
@@ -111,8 +114,9 @@ namespace TripAgency.Service.Implementations
                 return Result.NotFound($"Not Found Booking with id : {details.BookingId}");
             }
 
-            // 2. التحقق من أن الحجز يخص المستخدم الحالي  //TODO User
-            if (bookingTrip.UserId != 2)
+            // 2. التحقق من أن الحجز يخص المستخدم الحالي 
+            var user = await _currentUserService.GetUserAsync();
+            if (bookingTrip.UserId != user.Id)
             {
                 //  _logger.LogWarning("SubmitManualPaymentNotification: محاولة إشعار دفع يدوي لحجز {BookingId} لا يخص المستخدم {UserId}.", notificationDto.BookingId, userId);
                 return Result.Failure("لا تملك صلاحية لتقديم إشعار دفع لهذا الحجز.", failureType: ResultFailureType.Forbidden);
@@ -326,16 +330,10 @@ namespace TripAgency.Service.Implementations
 
         }
 
-        public async Task<Result> ReportMissingPaymentAsync(MissingPaymentReportDto reportDto, int userId)
+        public async Task<Result> ReportMissingPaymentAsync(MissingPaymentReportDto reportDto)
         {
-            //// 2. التحقق من أن الحجز يخص المستخدم الحالي (أمني)
-            //if (booking.UserId != userId)
-            //{
-            //    // _logger.LogWarning("ReportPaymentDiscrepancy: محاولة تسجيل بلاغ لحجز {BookingId} لا يخص المستخدم {UserId}.", reportDto.BookingId, userId);
-            //    return Result.Failure("لا تملك صلاحية لتقديم بلاغ لهذا الحجز.", failureType: ResultFailureType.Forbidden);
-            //}
-
-
+            var userId =  _currentUserService.GetUserId();
+            
             var existingReport = await _discrepancyReportRepositoryAsync.GetTableNoTracking()
                                           .FirstOrDefaultAsync(r => r.ReportedTransactionRef == reportDto.TransactionReference);
 
@@ -446,12 +444,10 @@ namespace TripAgency.Service.Implementations
             using var transaction = await _discrepancyReportRepositoryAsync.BeginTransactionAsync();
             try
             {
-
-
                 // تحديث حالة البلاغ وملاحظات المسؤول
                 report.Status = discrepancyReport.Status;
                 report.AdminNotes = discrepancyReport.AdminNotes;
-                report.ReviewedByUserId = 2;//TODO
+                report.ReviewedByUserId = _currentUserService.GetUserId(); ;
                 report.ReviewDate = DateTime.UtcNow;
                 await _discrepancyReportRepositoryAsync.UpdateAsync(report);
 
@@ -474,7 +470,7 @@ namespace TripAgency.Service.Implementations
                     var refund = new Refund()
                     {
                         AdminNotes = discrepancyReport.AdminNotes ?? "",
-                        ProcessedByUserId = 2,//TODO
+                        ProcessedByUserId = _currentUserService.GetUserId(),
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         Amount = discrepancyReport.VerifiedAmount,

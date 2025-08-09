@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
 using TripAgency.Data.Entities;
+using TripAgency.Data.Entities.Identity;
 using TripAgency.Data.Enums;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Infrastructure.Abstracts;
@@ -28,6 +29,7 @@ namespace TripAgency.Service.Implementations
         public IRefundRepositoryAsync _refundRepositoryAsync { get; }
         public IPaymentService _paymentService { get; }
         public IConfiguration _configuration { get; }
+        public ICurrentUserService _currentUserService { get; }
         public IMapper _mapper { get; }
         private string baseUrl;
         public BookingTripService(IBookingTripRepositoryAsync bookingTripRepository,
@@ -41,7 +43,8 @@ namespace TripAgency.Service.Implementations
                                   IPaymentService paymentService,
                                   IRefundRepositoryAsync refundRepositoryAsync,
                                   IMapper mapper,
-                                  IConfiguration configuration
+                                  IConfiguration configuration,
+                                  ICurrentUserService currentUserService
                                  ) : base(bookingTripRepository, mapper)
         {
             _bookingTripRepository = bookingTripRepository;
@@ -55,11 +58,14 @@ namespace TripAgency.Service.Implementations
             _mapper = mapper;
             _notificationService = notificationService;
             _configuration = configuration;
+            _currentUserService = currentUserService;
             _paymentService = paymentService;
             baseUrl = configuration["BaseUrl"] ?? throw new InvalidOperationException("Not Found BaseUrl."); ;
         }
         public async Task<Result<PaymentInitiationResponseDto>> InitiateBookingAndPaymentAsync(AddBookingPackageTripDto bookPackageDto)
         {
+            var user = await _currentUserService.GetUserAsync();
+
             // 1.1. التحقق من توفر المقاعد وتاريخ الرحلة
             var packageTripDate = await _packageTripDateRepository.GetTableNoTracking()
                                                                   .Where(pt => pt.Id == bookPackageDto.PackageTripDateId)
@@ -107,7 +113,7 @@ namespace TripAgency.Service.Implementations
                     BookingStatus = BookingStatus.Pending,
                     ActualPrice = calculatedTotalPrice,
                     Notes = $"Pending payment via {paymentMethod.Name}",
-                    UserId = 2 // TODO
+                    UserId = user.Id
                 };
 
                 await _bookingTripRepository.AddAsync(bookingTrip);
@@ -134,13 +140,12 @@ namespace TripAgency.Service.Implementations
                 //}
 
 
-                //TODO
                 var paymentRequest = new PaymentRequest
                 {
                     BookingId = bookingTrip.Id,
                     Amount = bookPackageDto.AmountPrice,
                     Currency = "USD",
-                    //CustomerEmail = user.Email,
+                    CustomerEmail = user.Email!,
                     SuccessCallbackUrl = $"{baseUrl}/payment/success?bookingId={bookingTrip.Id}&method={paymentMethod.Name}",
                     FailureCallbackUrl = $"{baseUrl}/payment/failure?bookingId={bookingTrip.Id}&method={paymentMethod.Name}",
                     CancelCallbackUrl = $"{baseUrl}/payment/cancel?bookingId={bookingTrip.Id}&method={paymentMethod.Name}"
@@ -189,6 +194,8 @@ namespace TripAgency.Service.Implementations
 
         public async Task<Result> CancellingBookingAndRefundPayemntAsync(int bookingId)
         {
+            var user = await _currentUserService.GetUserAsync();
+
             var bookingTrip = await _bookingTripRepository.GetTableNoTracking()
                                                       .Where(b => b.Id == bookingId)
                                                       .Include(b => b.Payment)
@@ -224,10 +231,10 @@ namespace TripAgency.Service.Implementations
                 else
                 {
                     await _paymentService.HandlePaymentTimeoutAsync(bookingId);
-                   
+
                     var newDiscrepancyReport = new PaymentDiscrepancyReport
                     {
-                        UserId = 2 ,//TODO
+                        UserId = user.Id,
                         ReportedTransactionRef = bookingTrip.Payment.TransactionId,
                         ReportedPaymentDateTime = bookingTrip.Payment.PaymentDate,
                         ReportedPaidAmount = bookingTrip.Payment.Amount,
@@ -276,15 +283,11 @@ namespace TripAgency.Service.Implementations
                 //Refunded Payment
                 var refunded = new Refund
                 {
-                    UpdatedAt = DateTime.Now,
                     Status = RefundStatus.Pending,
                     TransactionReference = bookingTrip.Payment.TransactionId,
                     CreatedAt = DateTime.Now,
-                    PaymentId = bookingTrip.Payment.Id,
-                    ProcessedByUserId = 2,
-                    AdminNotes = "Refunded Because User Cancelling Booking"
-
-
+                    UpdatedAt = DateTime.Now,
+                    PaymentId = bookingTrip.Payment.Id
                 };
                 await _refundRepositoryAsync.AddAsync(refunded);
 

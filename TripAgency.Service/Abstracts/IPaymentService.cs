@@ -8,7 +8,7 @@ namespace TripAgency.Service.Abstracts
     {
         Task<Result> SubmitManualPaymentNotificationAsync(ManualPaymentDetailsDto details);
         Task<Result> ProcessManualPaymentConfirmationAsync(ManualPaymentConfirmationRequestDto request);
-        Task<Result> ReportMissingPaymentAsync(MissingPaymentReportDto reportDto, int userId);
+        Task<Result> ReportMissingPaymentAsync(MissingPaymentReportDto reportDto);
         Task<Result> ResolveMissingPaymentReportAsync(DiscrepancyReportProcessRequestDto discrepancyReport);
         Task<Result<PaymentTransactionStatusDto>> GetDetailsTransactionAsync(string transactionReference);
         Task<Result<IEnumerable<MissingPaymentReportResponceDto>>> GetMissingPaymentReportsForAdminAsync();

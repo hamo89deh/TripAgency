@@ -8,7 +8,8 @@
         public decimal Price { get; set; }
         public IEnumerable<DestinationActivity> DestinationActivities { get; set; }
         public IEnumerable<PackageTripDestinationActivity> PackageTripDestinationActivities { get; set; }
-     
+        public IEnumerable<ActivityPhobias> ActivityPhobias { get; set; }
+
     }
 
 }

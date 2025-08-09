@@ -3,9 +3,7 @@ using TripAgency.Infrastructure.InfrastructureBases;
 
 namespace TripAgency.Infrastructure.Abstracts
 {
-    public interface IActivityRepositoryAsync : IGenericRepositoryAsync<Activity>
+    public interface IPhobiaRepositoryAsync : IGenericRepositoryAsync<Phobia>
     {
-        public Task<Activity?> GetActivityByName(string Name);
-
     }
 }

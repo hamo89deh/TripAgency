@@ -45,7 +45,7 @@ namespace TripAgency.Api.Controllers
         [HttpPost("ReportMissingPayment")]
         public async Task<ApiResult<string>> ReportMissingPayment(MissingPaymentReportDto reportDto)
         {
-            var ReportMissingPaymentResult = await _paymentService.ReportMissingPaymentAsync(reportDto, 2);//TODO
+            var ReportMissingPaymentResult = await _paymentService.ReportMissingPaymentAsync(reportDto);
             if (!ReportMissingPaymentResult.IsSuccess)
             {
                 return this.ToApiResult<string>(ReportMissingPaymentResult);
@@ -56,7 +56,7 @@ namespace TripAgency.Api.Controllers
         [HttpPost("ResolveMissingPaymentReport")]
         public async Task<ApiResult<string>> ResolveMissingPaymentReportAsync(DiscrepancyReportProcessRequestDto reportDto)
         {
-            var ResolveMissingPaymentReportResult = await _paymentService.ResolveMissingPaymentReportAsync(reportDto);//TODO
+            var ResolveMissingPaymentReportResult = await _paymentService.ResolveMissingPaymentReportAsync(reportDto);
             if (!ResolveMissingPaymentReportResult.IsSuccess)
             {
                 return this.ToApiResult<string>(ResolveMissingPaymentReportResult);

@@ -14,6 +14,7 @@ namespace TripAgency.Data.Entities.Identity
 
         public IEnumerable<BookingTrip>? BookingTrips { get; set; }
         public IEnumerable<FavoritePackageTrip>? FavoritePackageTrips { get; set; }
+        public IEnumerable<UserPhobias>? UserPhobias { get; set; }
 
         [InverseProperty(nameof(UserRefreshToken.User))]
         public virtual ICollection<UserRefreshToken>? UserRefreshTokens { get; set; }

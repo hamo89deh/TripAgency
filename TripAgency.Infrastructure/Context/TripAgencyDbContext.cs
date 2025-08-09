@@ -45,6 +45,9 @@ namespace TripAgency.Infrastructure.Context
         public DbSet<Refund> Refunds { get; set; }
         public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
         public DbSet<PaymentDiscrepancyReport> PaymentDiscrepancyReports { get; set; }
+        public DbSet<Phobia> Phobias { get; set; }
+        public DbSet<ActivityPhobias> ActivityPhobias { get; set; }
+        public DbSet<UserPhobias> UserPhobias { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

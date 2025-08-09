@@ -9,7 +9,7 @@ namespace TripAgency.Service.Implementations
     public class UsdtPaymentGatewayService : IPaymentGatewayService
     {
         private readonly ILogger<UsdtPaymentGatewayService> _logger;
-        private readonly string _usdtWalletAddress; //TODO
+        private readonly string _usdtWalletAddress; 
         private readonly string _usdtNetworkType;
         private readonly string baseUrl;
 
