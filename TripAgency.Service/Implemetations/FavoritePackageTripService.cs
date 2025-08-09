@@ -18,22 +18,25 @@ namespace TripAgency.Service.Implementations
         public IFavoritePackageTripRepositoryAsync _favoritePackageTripRepository { get; set; }
         public UserManager<User> _userManager { get; set; }
         public IHttpContextAccessor _httpContextAccessor { get; }
+        public ICurrentUserService _currentUserService { get; }
 
         public FavoritePackageTripService(IFavoritePackageTripRepositoryAsync favoritePackageTripRepository,
                                           UserManager<User> userManager ,
                                           IHttpContextAccessor httpContextAccessor,
-                                          IPackageTripDateRepositoryAsync packageTripDateRepository
+                                          IPackageTripDateRepositoryAsync packageTripDateRepository,
+                                          ICurrentUserService currentUserService
                                           )
         {
             _favoritePackageTripRepository = favoritePackageTripRepository;
             _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
             _packageTripDateRepository = packageTripDateRepository;
+            _currentUserService = currentUserService;
         }
         public async Task<Result> AddFavoritePackageTripDto(int PackageTripId)
         {
-            var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue(nameof(UserClaimModel.Id));
-            var user = await _userManager.FindByIdAsync(userId!);
+            var userId =  _currentUserService.GetUserId();
+            var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user is null)
                 return Result.NotFound($"Not Found User by Id :{userId}");
             var packageTrip = await _packageTripDateRepository.GetTableNoTracking()
@@ -50,11 +53,10 @@ namespace TripAgency.Service.Implementations
             return Result.Success("Adding To Favorite Successing");
 
         }
-
         public async Task<Result> DeleteFavoritePackageTripDto(int PackageTripId)
         {
-            var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue(nameof(UserClaimModel.Id));
-            var user = await _userManager.FindByIdAsync(userId!);
+            var userId = _currentUserService.GetUserId();
+            var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user is null)
                 return Result.NotFound($"Not Found User by Id :{userId}");
             var packageTrip = await _packageTripDateRepository.GetTableNoTracking()
@@ -72,11 +74,10 @@ namespace TripAgency.Service.Implementations
             await _favoritePackageTripRepository.DeleteAsync(favoritePackageTrip);
             return Result.Success("Deleting From Favorite Successing");
         }
-
         public async Task<Result<IEnumerable<GetFavoritePackageTripsDto>>> GetFavoritePackageTripsDto()
         {
-            var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue(nameof(UserClaimModel.Id));
-            var user = await _userManager.FindByIdAsync(userId!);
+            var userId = _currentUserService.GetUserId();
+            var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user is null)
                 return Result<IEnumerable<GetFavoritePackageTripsDto >>.NotFound($"Not Found User by Id :{userId}");
 
