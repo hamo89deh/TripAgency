@@ -38,6 +38,7 @@ namespace TripAgency.Service
             services.AddTransient<IFavoritePackageTripService, FavoritePackageTripService>();
             services.AddTransient<ICurrentUserService, CurrentUserService>();
             services.AddTransient<IRefundService, RefundService>();
+            services.AddTransient<IPhobiaService, PhobiaService>();
            
             services.AddTransient<UsdtPaymentGatewayService>(); 
             services.AddTransient<PayeerPaymentGatewayService>();
