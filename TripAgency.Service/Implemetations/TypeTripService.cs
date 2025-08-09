@@ -10,12 +10,12 @@ using TripAgency.Service.Generic;
 
 namespace TripAgency.Service.Implementations
 {
-    public class TypeTripService : GenericService<TypeTrip, GetTypeTripByIdDto, GetTypeTripsDto, AddTypeTripDto, UpdateTypeTripDto>, ITypeTripService
+    public class TripTypeService : GenericService<TypeTrip, GetTypeTripByIdDto, GetTripTypesDto, AddTypeTripDto, UpdateTypeTripDto>, ITripTypeService
     {
-        private ITypeTripRepositoryAsync _typeTripRepository { get; set; }
+        private ITripTypeRepositoryAsync _typeTripRepository { get; set; }
         public IMapper _mapper { get; }
 
-        public TypeTripService(ITypeTripRepositoryAsync typeTripRepository,
+        public TripTypeService(ITripTypeRepositoryAsync typeTripRepository,
                            IMapper mapper
                            ) : base(typeTripRepository, mapper)
         {

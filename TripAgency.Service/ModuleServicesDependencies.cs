@@ -19,7 +19,7 @@ namespace TripAgency.Service
             services.AddTransient<IDestinationService,DestinationService>();
             services.AddTransient<IHotelService,HotelService>();
             services.AddTransient<ITripService, TripService>();
-            services.AddTransient<ITypeTripService, TypeTripService>();
+            services.AddTransient<ITripTypeService, TripTypeService>();
             services.AddTransient<IPackageTripService, PackageTripService>();
             services.AddTransient<IPackageTripDestinationService, PackageTripDestinationService>();
             services.AddTransient<IPackageTripDestinationActivityService, PackageTripDestinationActivityService>();
@@ -41,6 +41,7 @@ namespace TripAgency.Service
             services.AddTransient<IPhobiaService, PhobiaService>();
             services.AddTransient<IActivityPhobiasService, ActivityPhobiasService>();
             services.AddTransient<IUserPhobiaService, UserPhobiasService>();
+            services.AddTransient<IPackageTripTypesService, PackageTripTypesService>();
            
             services.AddTransient<UsdtPaymentGatewayService>(); 
             services.AddTransient<PayeerPaymentGatewayService>();

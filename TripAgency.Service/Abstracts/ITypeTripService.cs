@@ -8,7 +8,7 @@ using TripAgency.Service.Feature.TypeTrip_Entity.Commands;
 
 namespace TripAgency.Service.Abstracts
 {
-    public interface ITypeTripService : IReadService<TypeTrip, GetTypeTripByIdDto, GetTypeTripsDto>,
+    public interface ITripTypeService : IReadService<TypeTrip, GetTypeTripByIdDto, GetTripTypesDto>,
                                    IUpdateService<TypeTrip, UpdateTypeTripDto>,
                                    IAddService<TypeTrip, AddTypeTripDto, GetTypeTripByIdDto>,
                                    IDeleteService<TypeTrip>

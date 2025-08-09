@@ -12,22 +12,22 @@ namespace TripAgency.Controllers
     [ApiController]
     public class TypeTripsController : ControllerBase
     {
-        public TypeTripsController(ITypeTripService typeTripService, IMapper mapper)
+        public TypeTripsController(ITripTypeService typeTripService, IMapper mapper)
         {
             _typeTripService = typeTripService;
             _mapper = mapper;
         }
 
-        public ITypeTripService _typeTripService { get; }
+        public ITripTypeService _typeTripService { get; }
         public IMapper _mapper { get; }
 
         [HttpGet]
-        public async Task<ApiResult<IEnumerable<GetTypeTripsDto>>> GetTypeTrips()
+        public async Task<ApiResult<IEnumerable<GetTripTypesDto>>> GetTypeTrips()
         {
             var typetripsResult = await _typeTripService.GetAllAsync();
             if (!typetripsResult.IsSuccess)
                 return this.ToApiResult(typetripsResult);
-            return ApiResult<IEnumerable<GetTypeTripsDto>>.Ok(typetripsResult.Value!);
+            return ApiResult<IEnumerable<GetTripTypesDto>>.Ok(typetripsResult.Value!);
         }
         [HttpGet("{id}")]
         public async Task<ApiResult<GetTypeTripByIdDto>> GetTypeTripById(int id)
