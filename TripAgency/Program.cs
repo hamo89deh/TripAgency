@@ -1,17 +1,21 @@
 
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using System.Text;
 using System.Text.Json;
 using TripAgency.Api.Behavior;
-using TripAgency.Data;
 using TripAgency.Data.Entities.Identity;
+using TripAgency.Data.Helping;
 using TripAgency.Infrastructure;
 using TripAgency.Infrastructure.Context;
 using TripAgency.Middleware;
@@ -62,8 +66,8 @@ namespace TripAgency
 
                 builder.Services.AddFluentValidationAutoValidation()
                                 .AddValidatorsFromAssembly(typeof(AddCityDtoValidation).Assembly);
-             
-                
+
+
                 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
                 builder.Services.AddTransient<IUrlHelper>(x =>
                 {
@@ -96,8 +100,70 @@ namespace TripAgency
 
                 }).AddEntityFrameworkStores<TripAgencyDbContext>().AddDefaultTokenProviders();
                 #endregion
+
+                //Authontication
+
+                builder.Services.AddAuthentication(x =>
+                {
+                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+               .AddJwtBearer(x =>
+               {
+                   x.RequireHttpsMetadata = false;
+                   x.SaveToken = true;
+                   x.TokenValidationParameters = new TokenValidationParameters
+                   {
+                       ValidateIssuer = Boolean.Parse(builder.Configuration["jwtSettings:ValidateIssuer"]!),
+                       ValidIssuers = new[] { builder.Configuration["jwtSettings:Issuer"] },
+                       ValidateIssuerSigningKey = Boolean.Parse(builder.Configuration["jwtSettings:ValidateIssuerSigningKey"]!),
+                      
+                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["jwtSettings:Secret"]!)),
+                       ValidAudience = builder.Configuration["jwtSettings:Audience"],
+                       ValidateAudience = Boolean.Parse(builder.Configuration["jwtSettings:ValidateAudience"]!) ,
+                       ValidateLifetime = Boolean.Parse(builder.Configuration["jwtSettings:ValidateLifeTime"]! ),
+                   };
+               });
+
+
+                //Swagger Gn
+                builder.Services.AddSwaggerGen(c =>
+                {
+                    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Trip Agency", Version = "v1" });
+                    // c.EnableAnnotations();
+
+                    c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+                    {
+                        Description = "JWT Authorization header using the Bearer scheme (Example: 'Bearer 12345abcdef')",
+                        Name = "Authorization",
+                        In = ParameterLocation.Header,
+                        Type = SecuritySchemeType.ApiKey,
+                        Scheme = JwtBearerDefaults.AuthenticationScheme
+                    });
+
+                    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = JwtBearerDefaults.AuthenticationScheme
+                                }
+                            },
+                            Array.Empty<string>()
+                        }
+                    });
+                });
+                //Auth Filter
+                builder.Services.AddTransient<AuthFilter>();
+
+
                 var app = builder.Build();
                 app.UseMiddleware<ErrorHandlerExceptionMiddleware>();
+                
                 // Configure the HTTP request pipeline.
                 if (app.Environment.IsDevelopment())
                 {
@@ -107,6 +173,7 @@ namespace TripAgency
 
                 app.UseHttpsRedirection();
 
+                app.UseAuthentication();
                 app.UseAuthorization();
 
 

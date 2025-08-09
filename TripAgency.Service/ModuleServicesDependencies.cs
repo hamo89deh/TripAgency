@@ -52,6 +52,9 @@ namespace TripAgency.Service
             configuration.GetSection(nameof(jwtSettings)).Bind(jwtSettings);
             services.AddSingleton(jwtSettings);
 
+       
+
+
             return services;
         }
     }
