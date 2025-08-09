@@ -8,12 +8,12 @@ using TripAgency.Service.Feature.Activity.Commands;
 namespace TripAgency.Service.Abstracts
 {
     public interface IActivityService : IReadService<Activity, GetActivityByIdDto, GetActivitiesDto>,
-                                   IUpdateService<Activity, UpdateActivityDto>,
-                                   IAddService<Activity, AddActivityDto, GetActivityByIdDto>,
-                                   IDeleteService<Activity>
+                                        IUpdateService<Activity, UpdateActivityDto>,
+                                        IAddService<Activity, AddActivityDto, GetActivityByIdDto>,
+                                        IDeleteService<Activity>
     {
         Task<Result<GetActivityByIdDto>> GetActivityByNameAsync(string name);
-
+      
 
     }
 }

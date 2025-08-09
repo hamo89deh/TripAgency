@@ -13,10 +13,10 @@ namespace TripAgency.Service.Implementations
     {
         private IActivityRepositoryAsync _activityRepository { get; set; }
         public IMapper _mapper { get; }
-
+  
         public ActivityService(IActivityRepositoryAsync activityRepository,
-                           IMapper mapper
-                           ) : base(activityRepository, mapper)
+                               IMapper mapper
+                              ) : base(activityRepository, mapper)
         {
             _activityRepository = activityRepository;
             _mapper = mapper;
@@ -30,6 +30,6 @@ namespace TripAgency.Service.Implementations
             return Result<GetActivityByIdDto>.Success(activityResult);
 
         }
-
-    }
+     
+    } 
 }
