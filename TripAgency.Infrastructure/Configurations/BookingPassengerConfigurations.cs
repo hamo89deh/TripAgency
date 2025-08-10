@@ -30,11 +30,12 @@ namespace TripAgency.Infrastructure.Configurations
                        .HasForeignKey(a => a.BookingTripId)
                        .OnDelete(DeleteBehavior.Restrict);
 
-               
+
                 builder.ToTable("BookingPassengers");
 
             }
 
-        } 
+        }
 
+    }
 }
