@@ -40,6 +40,7 @@ namespace TripAgency.Infrastructure
             services.AddTransient < IPhobiaRepositoryAsync, PhobiaRepositoryAsync>();
             services.AddTransient < IActivityPhobiasRepositoryAsync, ActivityPhobiasRepositoryAsync>();
             services.AddTransient < IUserPhobiasRepositoryAsync, UserPhobiasRepositoryAsync>();
+            services.AddTransient < IBookingPassengerRepositoryAsync, BookingPassengerRepositoryAsync>();
             
 
             return services;

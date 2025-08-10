@@ -13,5 +13,5 @@ namespace TripAgency.Infrastructure.Abstracts
     {
         public IQueryable<BookingTrip> GetBookingTrips(int PackageTripDateId, PaymentStatus paymentStatus  );
        
-    }
+    } 
 }

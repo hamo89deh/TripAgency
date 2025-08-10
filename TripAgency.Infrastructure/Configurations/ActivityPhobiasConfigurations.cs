@@ -4,7 +4,7 @@ using TripAgency.Data.Entities;
 
 namespace TripAgency.Infrastructure.Configurations
 {
-    public class ActivityPhobiasConfigurations : IEntityTypeConfiguration<ActivityPhobias>
+    public partial class ActivityPhobiasConfigurations : IEntityTypeConfiguration<ActivityPhobias>
     {
         public void Configure(EntityTypeBuilder<ActivityPhobias> builder)
         {
@@ -13,9 +13,10 @@ namespace TripAgency.Infrastructure.Configurations
                 x.ActivityId,
                 x.PhobiaId
             });
-            builder.HasOne(ap=>ap.Activity)
-                   .WithMany(a=>a.ActivityPhobias)
-                   .HasForeignKey(a=>a.ActivityId)
+           
+            builder.HasOne(ap => ap.Activity)
+                   .WithMany(a => a.ActivityPhobias)
+                   .HasForeignKey(a => a.ActivityId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(ap => ap.Phobia)
@@ -27,6 +28,6 @@ namespace TripAgency.Infrastructure.Configurations
 
         }
 
-    } 
+    }
 
 }
