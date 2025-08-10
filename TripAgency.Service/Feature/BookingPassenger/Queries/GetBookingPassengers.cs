@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TripAgency.Service.Feature.BookingPassenger.Queries
 {
-    public class GetBookingPassengers
+    public class GetBookingPassengersDto
     {
         public int Id { get; set; } 
         public string FullName { get; set; }

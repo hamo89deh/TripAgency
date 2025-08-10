@@ -13,7 +13,7 @@ namespace TripAgency.Service.Abstracts
 {
     public interface IBookingPassengerService
     {
-        Task<Result<IEnumerable<GetBookingPassengers>>> GetBookingPassengers(int BookingTripId);
+        Task<Result<IEnumerable<GetBookingPassengersDto>>> GetBookingPassengers(int BookingTripId);
         Task<Result> AddBookingPassenger(AddBookingPassengerDto addBookingPassenger);
         Task<Result> AddBookingPassengers(AddBookingPassengersDto addBookingPassengers);
         Task<Result> UpdateBookingPassenger(UpdateBookingPassengerDto updateBookingPassengers);
