@@ -120,10 +120,9 @@ namespace TripAgency.Service.Implemetations
             return Result<string>.Success("Change Password Success");
 
         }
-
+        //TODO
         public async Task<Result> DeleteUser(int Id)
-        {
-            //TODO
+        {          
             //check if user is exist
             var User = await _userManager.FindByIdAsync(Id.ToString());
             //if Not Exist notfound

@@ -60,7 +60,9 @@ namespace TripAgency.Service.Implemetations
         public async Task<Result> AddBookingPassengers(AddBookingPassengersDto addBookingPassengers)
         {
             var BookingTrip = await _bookingTripRepositoryAsync.GetTableNoTracking()
-                                                           .FirstOrDefaultAsync(b => b.Id == addBookingPassengers.BookingTripId);
+                                                           .Where(b => b.Id == addBookingPassengers.BookingTripId)
+                                                           .Include(b=>b.PackageTripDate)
+                                                           .FirstOrDefaultAsync();
             if (BookingTrip is null)
                 return Result.NotFound($"Not Found Any BookingTrip With id : {addBookingPassengers.BookingTripId}");
 
@@ -74,7 +76,7 @@ namespace TripAgency.Service.Implemetations
                                                                          .ToListAsync();
             if (BookingPassenger.Count() != 0)
             {
-                return Result.BadRequest("Cann't Add List Of Passenger");//TODO Changer message
+                return Result.BadRequest("Cann't Add New Data because Ther is Previosly Addesd data");
             }
 
             if(BookingTrip.PassengerCount != addBookingPassengers.BookingPassengersDto.Count())
@@ -114,7 +116,9 @@ namespace TripAgency.Service.Implemetations
         public async Task<Result> AddBookingPassenger(AddBookingPassengerDto addBookingPassenger)
         {
             var BookingTrip = await _bookingTripRepositoryAsync.GetTableNoTracking()
-                                                           .FirstOrDefaultAsync(b => b.Id == addBookingPassenger.BookingTripId);
+                                                                      .Where(b => b.Id == addBookingPassenger.BookingTripId)
+                                                                      .Include(b => b.PackageTripDate)
+                                                                      .FirstOrDefaultAsync();
             if (BookingTrip is null)
                 return Result.NotFound($"Not Found Any BookingTrip With id : {addBookingPassenger.BookingTripId}");
           
@@ -152,9 +156,12 @@ namespace TripAgency.Service.Implemetations
             var BookingPassenger = await _bookingPassengerRepositoryAsync.GetByIdAsync(updateBookingPassengers.Id);
             if (BookingPassenger is null)         
                 return Result.NotFound($"Not Found BookingPassenger With Id :{updateBookingPassengers.Id}");
+         
             var BookingTrip = await _bookingTripRepositoryAsync.GetTableNoTracking()
-                                                                 .FirstOrDefaultAsync(x => x.Id == BookingPassenger.BookingTripId);
-           
+                                                                .Where(b => b.Id == BookingPassenger.BookingTripId)
+                                                                .Include(b => b.PackageTripDate)
+                                                                .FirstOrDefaultAsync();
+
             if (BookingTrip!.BookingStatus != BookingStatus.Completed)
             {
                 return Result.BadRequest("Cann't Update information for Passenger for Not Completed Booking");

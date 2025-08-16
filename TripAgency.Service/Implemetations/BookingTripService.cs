@@ -259,11 +259,8 @@ namespace TripAgency.Service.Implementations
             }           
             if (bookingTrip.BookingStatus == BookingStatus.Completed)
             {
-                //TODO
-                //CHECK time cancelling 
-                //check status Trip 
-                //Cancelling Boooking 
-                //Refund Payment 
+                //TODO  Chck time cancelling to decide how must refund
+
                 if(bookingTrip.PackageTripDate.Status == PackageTripDateStatus.Ongoing ||
                    bookingTrip.PackageTripDate.Status == PackageTripDateStatus.Completed)
                 {
@@ -291,7 +288,7 @@ namespace TripAgency.Service.Implementations
                 };
                 await _refundRepositoryAsync.AddAsync(refunded);
 
-                bookingTrip.Payment.PaymentStatus = PaymentStatus.Cancelled; //TODO refund or cancelling
+                bookingTrip.Payment.PaymentStatus = PaymentStatus.Cancelled; 
                 await _paymentRepositoryAsync.UpdateAsync(bookingTrip.Payment);
 
                 return Result.Success();

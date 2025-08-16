@@ -17,14 +17,20 @@ namespace TripAgency.Service.Implemetations
     public class RefundService : IRefundService
     {
         public IRefundRepositoryAsync _refundRepositoryAsync { get; }
+        public IPaymentRepositoryAsync _paymentRepositoryAsync { get; }
 
-        public RefundService(IRefundRepositoryAsync refundRepositoryAsync)
+        public RefundService(IRefundRepositoryAsync refundRepositoryAsync ,
+                             IPaymentRepositoryAsync paymentRepositoryAsync)
         {
             _refundRepositoryAsync = refundRepositoryAsync;
+            _paymentRepositoryAsync = paymentRepositoryAsync;
         }
         public  async Task<Result> ConfirmRefund(ConfirmRefundDto confirmRefundDto)
         {
-            var refund = await _refundRepositoryAsync.GetByIdAsync(confirmRefundDto.Id);
+            var refund = await _refundRepositoryAsync.GetTableNoTracking()
+                                                     .Where(x=>x.Id==confirmRefundDto.Id)
+                                                     .Include(x=>x.Payment)
+                                                     .FirstOrDefaultAsync();
             if (refund is null)
                 return Result.NotFound($"Not Found Refund by id : {confirmRefundDto.Id}");
            
@@ -33,7 +39,14 @@ namespace TripAgency.Service.Implemetations
             refund.TransactionRefunded = confirmRefundDto.TransactionRefunded;
             refund.AdminNotes = confirmRefundDto.AdminNotes;
 
-            await _refundRepositoryAsync.SaveChangesAsync();
+            await _refundRepositoryAsync.UpdateAsync(refund);
+
+            if (refund.Payment is not null)
+            {
+                refund.Payment.PaymentStatus = PaymentStatus.Refunded;
+                await _paymentRepositoryAsync.UpdateAsync(refund.Payment);
+            }
+            
             return Result.Success("Confirm Refund Success");
         }
 

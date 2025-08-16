@@ -43,9 +43,6 @@ namespace TripAgency.Infrastructure.Configurations
             builder.Property(td => td.IsAvailable)
                    .IsRequired()
                    .HasDefaultValue(true);
-            //TODO
-            // builder.HasCheckConstraint("CK_TripDate_TripDates", "[StartTripDate] < [EndTripDate]");
-
 
             builder.ToTable("PackageTripDates");
 

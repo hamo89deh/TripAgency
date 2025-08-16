@@ -133,17 +133,24 @@ namespace TripAgency.Service.Implementations
                 return Result.BadRequest("Cann't Pay For a Trip That has Ongoin Or Completed ");
             }
 
+            if (
+                bookingTrip.PackageTripDate.Status == PackageTripDateStatus.Cancelled )
+            {
+                //_logger.LogWarning("SubmitManualPaymentNotification: محاولة إشعار دفع يدوي للحجز {BookingId} لرحلة مكتملة بتاريخ {TripDate}.", notificationDto.BookingId, booking.TripDate.Date.ToShortDateString());
+                return Result.BadRequest("This Trip Canselling By adming if you pay Sent Report");
+            }
+
             if (bookingTrip.BookingStatus != BookingStatus.Pending || bookingTrip.Payment.PaymentStatus != PaymentStatus.Pending)
             {
-                //TODO   Send email and Notifecation
+                //TODO  Send email 
                 await _notificationService.CreateInAppNotificationAsync(
                         bookingTrip.UserId,
-                        "الحجز غير مؤهل للدفع",
-                        $"الحجز رقم {bookingTrip.Id} بحالة {bookingTrip.BookingStatus.ToString()} أو الدفعة بحالة {bookingTrip.Payment.PaymentStatus.ToString()}. لا يمكن تقديم إشعار دفع. يرجى الحجز مرة أخرى.",
+                        "Booking Not Eligible For Payment",
+                        $"Booking With id : {bookingTrip.Id} in {bookingTrip.BookingStatus.ToString()} Condition Or Payment in  {bookingTrip.Payment.PaymentStatus.ToString()} Condition. Cann't send a payment notice Please Booking again",
                         "BookingNotEligibleForPayment",
                         bookingTrip.Id.ToString());
 
-                return Result.BadRequest("ا يمكن إرسال إشعار دفع لحجز غير مؤهل. يرجى الحجز مرة أخرى");
+                return Result.BadRequest($"Booking With id : {bookingTrip.Id} in {bookingTrip.BookingStatus.ToString()} Condition Or Payment in  {bookingTrip.Payment.PaymentStatus.ToString()} Condition. Cann't send a payment notice Please Booking again");
             }
 
             var existingPaymentWithSameTransaction = await _paymentRepositoryAsync.GetTableNoTracking()
@@ -153,29 +160,20 @@ namespace TripAgency.Service.Implementations
             {
                 await _notificationService.CreateInAppNotificationAsync(
                        bookingTrip.UserId,
-                       "رقم العملية المرجعي مستخدم",
-                       $"رقم العملية المرجعي '{details.TransactionReference}' الذي قدمته للحجز رقم {bookingTrip.Id} مستخدم مسبقاً. يرجى مراجعة بياناتك.",
+                       "TransactionRef Used",
+                       $"Transaction Reference id :  '{details.TransactionReference}' For BookingTrip id: {bookingTrip.Id} is Previoysly used",
                        "TransactionRefUsed",
                        bookingTrip.Id.ToString());
 
-                return Result.BadRequest($"The Transaction With Id  : {details.TransactionReference} Previosly Used ");
+                return Result.BadRequest($"The Transaction With Id  : {details.TransactionReference} is Previosly Used ");
 
             }
 
             var payment = bookingTrip.Payment;
 
             if (!string.IsNullOrEmpty(payment.TransactionId))
-            {
-                await _notificationService.CreateInAppNotificationAsync(
-                                                        bookingTrip.UserId,
-                                                        "إشعار دفع متكرر",
-                                                        $"تم استلام إشعار دفع سابق للحجز رقم {bookingTrip.Id} برقم عملية '{bookingTrip.Payment.TransactionId}'. يرجى مراجعة سجلاتك أو تقديم بلاغ إذا كانت هناك مشكلة.",
-                                                        "DuplicatePaymentNotificationSubmitted",
-                                                        bookingTrip.Id.ToString());
-
-
+            { 
                 return Result.BadRequest(" Cann't send More Than one Notification Payment For the Same Booking");
-
             }
 
             payment.Amount = details.PaidAmount;                  // المبلغ المبلغ عنه
@@ -202,7 +200,6 @@ namespace TripAgency.Service.Implementations
 
         }
 
-        // 5. معالجة تأكيد/رفض الدفع اليدوي من قبل المسؤول
         public async Task<Result> ProcessManualPaymentConfirmationAsync(ManualPaymentConfirmationRequestDto request)
         {
             var bookingTrip = await _bookingTripRepository.GetTableNoTracking()
@@ -221,7 +218,6 @@ namespace TripAgency.Service.Implementations
                 return Result.BadRequest("The Booking is not Pending");
             }
 
-            // جلب طريقة الدفع اليدوية
             var paymentMethod = await _paymentMethodRepositoryAsync.GetTableNoTracking()
                                                                    .FirstOrDefaultAsync(pm => pm.Id == request.PaymentMethodId);
             if (paymentMethod == null)
@@ -237,7 +233,6 @@ namespace TripAgency.Service.Implementations
             {
                 if (!request.IsConfirmed)
                 {
-                    // رفض الدفع اليدوي: إلغاء الحجز والمقاعد
 
                     bookingTrip.BookingStatus = BookingStatus.Cancelled;
                     await _bookingTripRepository.UpdateAsync(bookingTrip);
@@ -267,7 +262,7 @@ namespace TripAgency.Service.Implementations
                         };
 
                         await _refundRepositoryAsync.AddAsync(refunded);
-                        //TODO
+                        //TODO send email
                         await _notificationService.CreateInAppNotificationAsync(
                             bookingTrip.UserId,
                             "تم رفض طلب الدفع",
@@ -658,6 +653,7 @@ namespace TripAgency.Service.Implementations
             var paymnetsPending = await _paymentRepositoryAsync.GetTableNoTracking()
                                                                .Where(p => p.PaymentStatus == PaymentStatus.Pending)
                                                                .ToListAsync();
+
             paymnetsPending = paymnetsPending.Where(p =>! string.IsNullOrEmpty(p.TransactionId)).ToList();
             if (!paymnetsPending.Any())
             {

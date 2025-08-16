@@ -7,7 +7,7 @@ namespace TripAgency.Data.Entities
     {
         public int Id { get; set; }
         public int? PaymentId { get; set; } // معرف الحجز الذي أبلغ عنه العميل (FK)
-        public int UserId { get; set; } // معرف المستخدم الذي قدم البلاغ (FK)
+        public int UserId { get; set; }     // معرف المستخدم الذي قدم البلاغ (FK)
 
         public string ReportedTransactionRef { get; set; } = string.Empty; // رقم العملية المرجعي الذي أبلغ عنه العميل
         public DateTime ReportedPaymentDateTime { get; set; } // تاريخ الدفع المبلغ عنه
