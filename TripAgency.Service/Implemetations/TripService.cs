@@ -131,11 +131,11 @@ namespace TripAgency.Service.Implementations
 
         public async Task<Result> DeleteTripDestination(int tripId, int destinationId)
         {
-            var trip = await _tripRepository.GetTableNoTracking().FirstOrDefaultAsync(x=>x.Id==tripId);
+            var trip = await _tripRepository.GetTableNoTracking().FirstOrDefaultAsync(x=>x.Id == tripId);
             if (trip is null)
                 return Result.NotFound($"Not Found Trip With Id : {tripId}");
 
-            var destination = await _destinationRepositoryAsync.GetTableNoTracking().FirstOrDefaultAsync(x => x.Id == tripId);
+            var destination = await _destinationRepositoryAsync.GetTableNoTracking().FirstOrDefaultAsync(x => x.Id == destinationId);
             if (destination is null)
                 return Result.NotFound($"Not Found Destination With Id : {destinationId}");
 
