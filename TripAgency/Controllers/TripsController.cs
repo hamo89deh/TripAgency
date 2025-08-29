@@ -29,18 +29,18 @@ namespace TripAgency.Controllers
                 return this.ToApiResult(tripsResult);
             return ApiResult<IEnumerable<GetTripsDto>>.Ok(tripsResult.Value!);
         }
-        [HttpGet("{id}")]
-        public async Task<ApiResult<GetTripByIdDto>> GetTripById(int id)
+        [HttpGet("{Id}")]
+        public async Task<ApiResult<GetTripByIdDto>> GetTripById(int Id)
         {
-            var tripResult = await _tripService.GetByIdAsync(id);
+            var tripResult = await _tripService.GetByIdAsync(Id);
             if (!tripResult.IsSuccess)
                 return this.ToApiResult(tripResult);
             return ApiResult<GetTripByIdDto>.Ok(tripResult.Value!);
         }
-        [HttpGet("{id}/Destinations")]
-        public async Task<ApiResult<GetTripDestinationsDto>> GetTripDestinationsById(int id)
+        [HttpGet("{Id}/Destinations")]
+        public async Task<ApiResult<GetTripDestinationsDto>> GetTripDestinationsById(int Id)
         {
-            var tripResult = await _tripService.GetTripDestinationsById(id);
+            var tripResult = await _tripService.GetTripDestinationsById(Id);
             if (!tripResult.IsSuccess)
                 return this.ToApiResult(tripResult);
             return ApiResult<GetTripDestinationsDto>.Ok(tripResult.Value!);
@@ -74,19 +74,19 @@ namespace TripAgency.Controllers
             }
             return ApiResult<GetTripDestinationsDto>.Created(tripResult.Value!);
         }
-        [HttpPut]
-        public async Task<ApiResult<string>> UpdateTrip(UpdateTripDto updateTrip)
+        [HttpPut("{Id}")]
+        public async Task<ApiResult<string>> UpdateTrip(int Id,UpdateTripDto updateTrip)
         {
-            var tripResult = await _tripService.UpdateAsync(updateTrip.Id, updateTrip);
+            var tripResult = await _tripService.UpdateAsync(Id, updateTrip);
             if (!tripResult.IsSuccess)
                 return this.ToApiResult<string>(tripResult);
             return ApiResult<string>.Ok("Success Updated");
 
         }
-        [HttpDelete]
-        public async Task<ApiResult<string>> DeleteTrip(int id)
+        [HttpDelete("{Id}")]
+        public async Task<ApiResult<string>> DeleteTrip(int Id)
         {
-            var tripResult = await _tripService.DeleteAsync(id);
+            var tripResult = await _tripService.DeleteAsync(Id);
             if (!tripResult.IsSuccess)
                 return this.ToApiResult<string>(tripResult);
             return ApiResult<string>.Ok("Success Delete");

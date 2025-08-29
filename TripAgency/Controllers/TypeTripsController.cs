@@ -29,10 +29,10 @@ namespace TripAgency.Controllers
                 return this.ToApiResult(typetripsResult);
             return ApiResult<IEnumerable<GetTripTypesDto>>.Ok(typetripsResult.Value!);
         }
-        [HttpGet("{id}")]
-        public async Task<ApiResult<GetTypeTripByIdDto>> GetTypeTripById(int id)
+        [HttpGet("{Id}")]
+        public async Task<ApiResult<GetTypeTripByIdDto>> GetTypeTripById(int Id)
         {
-            var typetripResult = await _typeTripService.GetByIdAsync(id);
+            var typetripResult = await _typeTripService.GetByIdAsync(Id);
             if (!typetripResult.IsSuccess)
                 return this.ToApiResult(typetripResult);
             return ApiResult<GetTypeTripByIdDto>.Ok(typetripResult.Value!);
@@ -56,19 +56,19 @@ namespace TripAgency.Controllers
             }
             return ApiResult<GetTypeTripByIdDto>.Created(typetripResult.Value!);
         }
-        [HttpPut]
-        public async Task<ApiResult<string>> UpdateTypeTrip(UpdateTypeTripDto updateTypeTrip)
+        [HttpPut("{Id}")]
+        public async Task<ApiResult<string>> UpdateTypeTrip(int Id, UpdateTypeTripDto updateTypeTrip)
         {
-            var typetripResult = await _typeTripService.UpdateAsync(updateTypeTrip.Id, updateTypeTrip);
+            var typetripResult = await _typeTripService.UpdateAsync(Id, updateTypeTrip);
             if (!typetripResult.IsSuccess)
                 return this.ToApiResult<string>(typetripResult);
             return ApiResult<string>.Ok("Success Updated");
 
         }
-        [HttpDelete]
-        public async Task<ApiResult<string>> DeleteTypeTrip(int id)
+        [HttpDelete("{Id}")]
+        public async Task<ApiResult<string>> DeleteTypeTrip(int Id)
         {
-            var typetripResult = await _typeTripService.DeleteAsync(id);
+            var typetripResult = await _typeTripService.DeleteAsync(Id);
             if (!typetripResult.IsSuccess)
                 return this.ToApiResult<string>(typetripResult);
             return ApiResult<string>.Ok("Success Delete");

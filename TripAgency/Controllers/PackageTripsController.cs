@@ -66,20 +66,20 @@ namespace TripAgency.Api.Controllers
 
       
 
-        [HttpPut]
-        public async Task<ApiResult<string>> UpdatePackageTrip(UpdatePackageTripDto updatePackageTrip)
+        [HttpPut("{Id}")]
+        public async Task<ApiResult<string>> UpdatePackageTrip(int Id ,UpdatePackageTripDto updatePackageTrip)
         {
-            var packageTripResult = await _packageTripService.UpdateAsync(updatePackageTrip.Id, updatePackageTrip);
+            var packageTripResult = await _packageTripService.UpdateAsync(Id, updatePackageTrip);
             if (!packageTripResult.IsSuccess)
                 return this.ToApiResult<string>(packageTripResult);
             return ApiResult<string>.Ok("Success Updated");
 
         }
       
-        [HttpDelete]
-        public async Task<ApiResult<string>> DeletePackageTrip(int id)
+        [HttpDelete("{Id}")]
+        public async Task<ApiResult<string>> DeletePackageTrip(int Id)
         {
-            var packageTripResult = await _packageTripService.DeleteAsync(id);
+            var packageTripResult = await _packageTripService.DeleteAsync(Id);
             if (!packageTripResult.IsSuccess)
                 return this.ToApiResult<string>(packageTripResult);
             return ApiResult<string>.Ok("Success Delete");
@@ -180,7 +180,6 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult(packageTripsResult);
             return ApiResult<GetPackageTripDestinationsActivitiesDatesDto>.Ok(packageTripsResult.Value!);
         }
-
 
     }
 

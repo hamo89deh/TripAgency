@@ -1,4 +1,3 @@
-
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -96,7 +95,8 @@ namespace TripAgency
                     option.User.AllowedUserNameCharacters =
                     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                     option.User.RequireUniqueEmail = true;
-                    option.SignIn.RequireConfirmedEmail = true;
+                    option.SignIn.RequireConfirmedEmail = false;
+                    
 
                 }).AddEntityFrameworkStores<TripAgencyDbContext>().AddDefaultTokenProviders();
                 #endregion
@@ -126,7 +126,27 @@ namespace TripAgency
                    };
                });
 
+                // CORS 
+                builder.Services.AddCors(options =>
+                {
+                    options.AddPolicy("AllowReactApp",
+                        policy =>
+                        {
+                            policy.AllowAnyOrigin() // ????? React app ????? ??
+                                  .AllowAnyHeader()
+                                  .AllowAnyMethod();
+                            //.AllowCredentials(); // ??? ??? ?????? authentication
+                        });
 
+                    // ?? ?????? ??? origin (??????? ???)
+                    options.AddPolicy("AllowAll",
+                        policy =>
+                        {
+                            policy.AllowAnyOrigin()
+                                  .AllowAnyHeader()
+                                  .AllowAnyMethod();
+                        });
+                });
                 //Swagger Gn
                 builder.Services.AddSwaggerGen(c =>
                 {
@@ -172,7 +192,7 @@ namespace TripAgency
                 }
 
                 app.UseHttpsRedirection();
-
+                app.UseCors("AllowReactApp");
                 app.UseAuthentication();
                 app.UseAuthorization();
 

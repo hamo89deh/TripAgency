@@ -40,14 +40,88 @@ namespace TripAgency.Data.Helping
                 if (!QueryValidationHelper.PropertyExists<T>(filter.Key)) continue;
                 var propertyName = filter.Key;
                 var filterValue = filter.Value;
+                var propertyType = typeof(T).GetProperty(propertyName)?.PropertyType;
+                if (propertyType == null) continue;
+
                 var parameter = Expression.Parameter(typeof(T), "x");
                 var property = Expression.Property(parameter, propertyName);
-                var constant = Expression.Constant(filterValue);
+
+                // تحويل القيمة إلى النوع المناسب
+                var convertedValue = ConvertValue(filterValue, propertyType);
+                if (convertedValue == null) continue; // إذا فشل التحويل، نتخطى هذا الفلتر
+                var constant = Expression.Constant(convertedValue);
                 var equals = Expression.Equal(property, constant);
                 var lambda = Expression.Lambda<Func<T, bool>>(equals, parameter);
                 query = query.Where(lambda);
             }
             return query;
+        }
+        private static object ConvertValue(string value, Type targetType)
+        {
+            if (string.IsNullOrEmpty(value))
+                return null;
+
+            try
+            {
+                if (targetType == typeof(string))
+                    return value;
+
+                if (targetType == typeof(int) || targetType == typeof(int?))
+                    return int.Parse(value);
+
+                if (targetType == typeof(decimal) || targetType == typeof(decimal?))
+                    return decimal.Parse(value);
+
+                if (targetType == typeof(double) || targetType == typeof(double?))
+                    return double.Parse(value);
+
+                if (targetType == typeof(float) || targetType == typeof(float?))
+                    return float.Parse(value);
+
+                if (targetType == typeof(bool) || targetType == typeof(bool?))
+                {
+                    if (bool.TryParse(value, out bool boolResult))
+                        return boolResult;
+
+                    // دعم لـ "true"/"false" أو "1"/"0"
+                    if (value == "1") return true;
+                    if (value == "0") return false;
+
+                    return null;
+                }
+
+                if (targetType == typeof(DateTime) || targetType == typeof(DateTime?))
+                {
+                    if (DateTime.TryParse(value, out DateTime dateResult))
+                        return dateResult;
+
+                    return null;
+                }
+
+                if (targetType == typeof(Guid) || targetType == typeof(Guid?))
+                {
+                    if (Guid.TryParse(value, out Guid guidResult))
+                        return guidResult;
+
+                    return null;
+                }
+
+                if (targetType.IsEnum)
+                {
+                    if (int.TryParse(value, out int enumIntValue))
+                        return Enum.ToObject(targetType, enumIntValue);
+
+                    return Enum.Parse(targetType, value, true);
+                }
+
+                // للأنواع الأخرى، حاول استخدام Convert.ChangeType
+                return Convert.ChangeType(value, Nullable.GetUnderlyingType(targetType) ?? targetType);
+            }
+            catch
+            {
+                // في حالة فشل التحويل، نعود بقيمة null
+                return null;
+            }
         }
         public static IQueryable<T> ApplySorting<T>(this IQueryable<T> query, string sortColumn, string sortDirection, string[] allowedSortProperties = null)
              where T : class

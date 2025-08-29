@@ -48,19 +48,19 @@ namespace TripAgency.Api.Controllers
             }
             return ApiResult<GetPhobiaByIdDto>.Created(phobiaResult.Value!);
         }
-        [HttpPut]
-        public async Task<ApiResult<string>> UpdatePhobia(UpdatePhobiaDto updatePhobia)
+        [HttpPut("Id")]
+        public async Task<ApiResult<string>> UpdatePhobia(int Id ,UpdatePhobiaDto updatePhobia)
         {
-            var phobiaResult = await _phobiaService.UpdateAsync(updatePhobia.Id, updatePhobia);
+            var phobiaResult = await _phobiaService.UpdateAsync(Id, updatePhobia);
             if (!phobiaResult.IsSuccess)
                 return this.ToApiResult<string>(phobiaResult);
             return ApiResult<string>.Ok("Success Updated");
 
         }
-        [HttpDelete]
-        public async Task<ApiResult<string>> DeletePhobia(int id)
+        [HttpDelete("{Id}")]
+        public async Task<ApiResult<string>> DeletePhobia(int Id)
         {
-            var phobiaResult = await _phobiaService.DeleteAsync(id);
+            var phobiaResult = await _phobiaService.DeleteAsync(Id);
             if (!phobiaResult.IsSuccess)
                 return this.ToApiResult<string>(phobiaResult);
             return ApiResult<string>.Ok("Success Delete");

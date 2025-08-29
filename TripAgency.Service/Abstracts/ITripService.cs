@@ -15,7 +15,6 @@ namespace TripAgency.Service.Abstracts
         Task<Result<GetTripByIdDto>> GetTripByNameAsync(string name);
         Task<Result<GetTripDestinationsDto>> AddTripDestinations(AddTripDestinationsDto addTripDestinationsDto);
         Task<Result<GetTripDestinationsDto>> GetTripDestinationsById(int TripId);
-
-
+        Task<Result<GetTripByIdDto>> GetByIdAsync(int id);
     }
 }

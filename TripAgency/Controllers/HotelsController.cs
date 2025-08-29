@@ -32,10 +32,10 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult(hotelsResult);
             return ApiResult<IEnumerable<GetHotelsDto>>.Ok(hotelsResult.Value!);
         }
-        [HttpGet("{id}")]
-        public async Task<ApiResult<GetHotelByIdDto>> GetHotelById(int id)
+        [HttpGet("{Id}")]
+        public async Task<ApiResult<GetHotelByIdDto>> GetHotelById(int Id)
         {
-            var hotelResult = await _hotelService.GetByIdAsync(id);
+            var hotelResult = await _hotelService.GetByIdAsync(Id);
             if (!hotelResult.IsSuccess)
                 return this.ToApiResult(hotelResult);
             return ApiResult<GetHotelByIdDto>.Ok(hotelResult.Value!);
@@ -59,19 +59,19 @@ namespace TripAgency.Api.Controllers
             }
             return ApiResult<GetHotelByIdDto>.Created(hotelResult.Value!);
         }
-        [HttpPut]
-        public async Task<ApiResult<string>> UpdateHotel(UpdateHotelDto updateHotel)
+        [HttpPut("{Id}")]
+        public async Task<ApiResult<string>> UpdateHotel(int Id ,UpdateHotelDto updateHotel)
         {
-            var hotelResult = await _hotelService.UpdateAsync(updateHotel.Id, updateHotel);
+            var hotelResult = await _hotelService.UpdateAsync(Id, updateHotel);
             if (!hotelResult.IsSuccess)
                 return this.ToApiResult<string>(hotelResult);
             return ApiResult<string>.Ok("Success Updated");
 
         }
-        [HttpDelete]
-        public async Task<ApiResult<string>> DeleteHotel(int id)
+        [HttpDelete("{Id}")]
+        public async Task<ApiResult<string>> DeleteHotel(int Id)
         {
-            var hotelResult = await _hotelService.DeleteAsync(id);
+            var hotelResult = await _hotelService.DeleteAsync(Id);
             if (!hotelResult.IsSuccess)
                 return this.ToApiResult<string>(hotelResult);
             return ApiResult<string>.Ok("Success Delete");

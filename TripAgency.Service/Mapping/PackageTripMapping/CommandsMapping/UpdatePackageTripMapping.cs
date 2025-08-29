@@ -8,7 +8,6 @@ namespace TripAgency.Service.Mapping.PackageTripMapping
         public void UpdatePackageTripMpping()
         {
             CreateMap<UpdatePackageTripDto, PackageTrip>()
-                .ForMember(s => s.Id, op => op.MapFrom(s => s.Id))
                 .ForMember(s => s.Name, op => op.MapFrom(s => s.Name))
                 .ForMember(s => s.Description, op => op.MapFrom(s => s.Description))
                 .ForMember(s => s.TripId, op => op.MapFrom(s => s.TripId))

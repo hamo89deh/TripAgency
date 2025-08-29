@@ -8,7 +8,6 @@ namespace TripAgency.Service.Mapping.Hotel_Entity
         public void EditHotelMapping()
         {
             CreateMap<UpdateHotelDto, Hotel>().
-               ForMember(d => d.Id, op => op.MapFrom(s => s.Id)).
                ForMember(d => d.Name, op => op.MapFrom(s => s.Name)).
                ForMember(d => d.Location, op => op.MapFrom(s => s.Location)).
                ForMember(d => d.Email, op => op.MapFrom(s => s.Email)).

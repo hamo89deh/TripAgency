@@ -8,7 +8,6 @@ namespace TripAgency.Service.Mapping.TypeTrip_Entity
         public void UpdateTypeTripMapping()
         {
             CreateMap<UpdateTypeTripDto, TypeTrip>()
-                .ForMember(s => s.Id, op => op.MapFrom(s => s.Id))
                 .ForMember(s => s.Name, op => op.MapFrom(s => s.Name));
 
         }

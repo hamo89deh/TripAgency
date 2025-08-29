@@ -39,9 +39,9 @@ namespace TripAgency.Service.Implementations
         public async Task<Result<PaginatedResult<GetActivitiesDto>>> GetActivityPagination(string searchItem, Dictionary<string, string> filters, string sortColumn, string sortDirection, int PageNumber, int pageSize)
         {
             var activity = _activityRepository.GetTableNoTracking();
-            activity.ApplySearch(searchItem, new string[] { "Name", "Description" });
-            activity.ApplyFilter(filters);
-            activity.ApplySorting(sortColumn, sortDirection);
+            activity = activity.ApplySearch(searchItem, new string[] { "Name", "Description" });
+            activity = activity.ApplyFilter(filters, new string[]{"Price"}) ;
+            activity = activity.ApplySorting(sortColumn, sortDirection, new string[] { "Price" });
             var activityMapping = activity.Select(item => new GetActivitiesDto
             {
                 Id = item.Id,

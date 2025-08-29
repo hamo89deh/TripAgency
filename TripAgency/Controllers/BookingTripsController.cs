@@ -32,10 +32,10 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult(bookingTripsResult);
             return ApiResult<IEnumerable<GetBookingTripsDto>>.Ok(bookingTripsResult.Value!);
         }
-        [HttpGet("{id}")]
-        public async Task<ApiResult<GetBookingTripByIdDto>> GetBookingTripById(int id)
+        [HttpGet("{Id}")]
+        public async Task<ApiResult<GetBookingTripByIdDto>> GetBookingTripById(int Id)
         {
-            var bookingTripResult = await _bookingTripService.GetByIdAsync(id);
+            var bookingTripResult = await _bookingTripService.GetByIdAsync(Id);
             if (!bookingTripResult.IsSuccess)
                 return this.ToApiResult(bookingTripResult);
             return ApiResult<GetBookingTripByIdDto>.Ok(bookingTripResult.Value!);
@@ -52,27 +52,27 @@ namespace TripAgency.Api.Controllers
             return ApiResult<PaymentInitiationResponseDto>.Created(bookingTripResult.Value!);
         }
              
-        [HttpPut]
-        public async Task<ApiResult<string>> UpdateBookingTrip(UpdateBookingTripDto updateBookingTrip)
+        [HttpPut("{Id}")]
+        public async Task<ApiResult<string>> UpdateBookingTrip(int Id , UpdateBookingTripDto updateBookingTrip)
         {
-            var bookingTripResult = await _bookingTripService.UpdateAsync(updateBookingTrip.Id, updateBookingTrip);
+            var bookingTripResult = await _bookingTripService.UpdateAsync(Id, updateBookingTrip);
             if (!bookingTripResult.IsSuccess)
                 return this.ToApiResult<string>(bookingTripResult);
             return ApiResult<string>.Ok("Success Updated");
 
         }
-        [HttpPut("CancellingBookingTrip")]
-        public async Task<ApiResult<string>> CansellingBookingTrip(int BookingId)
+        [HttpPut("CancellingBookingTrip/{Id}")]
+        public async Task<ApiResult<string>> CansellingBookingTrip(int Id)
         {
-            var bookingTripResult = await _bookingTripService.CancellingBookingAndRefundPayemntAsync(BookingId);
+            var bookingTripResult = await _bookingTripService.CancellingBookingAndRefundPayemntAsync(Id);
             if (!bookingTripResult.IsSuccess)
                 return this.ToApiResult<string>(bookingTripResult);
             return ApiResult<string>.Ok("Success Delete");
         } 
-        [HttpDelete]
-        public async Task<ApiResult<string>> DeleteBookingTrip(int BookingId)
+        [HttpDelete("{Id}")]
+        public async Task<ApiResult<string>> DeleteBookingTrip(int Id)
         {
-            var bookingTripResult = await _bookingTripService.DeleteAsync(BookingId);
+            var bookingTripResult = await _bookingTripService.DeleteAsync(Id);
             if (!bookingTripResult.IsSuccess)
                 return this.ToApiResult<string>(bookingTripResult);
             return ApiResult<string>.Ok("Success Delete");

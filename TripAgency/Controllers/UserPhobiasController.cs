@@ -40,8 +40,8 @@ namespace TripAgency.Api.Controllers
             return ApiResult<string>.Created(AddUserPhobiasResult.Message!);
         }
 
-        [HttpDelete]
-        public async Task<ApiResult<string>> DeleteUserPhobia( int PhobiaId)
+        [HttpDelete("{PhobiaId}")]
+        public async Task<ApiResult<string>> DeleteUserPhobia(int PhobiaId)
         {
             var DeleteUserPhobiaResult = await _userPhobiaService.DeleteUserPhobia(PhobiaId);
             if (!DeleteUserPhobiaResult.IsSuccess)

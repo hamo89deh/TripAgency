@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
+using TripAgency.Data.Helping;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.Activity.Commands;
 using TripAgency.Service.Feature.Activity.Queries;
@@ -28,6 +29,14 @@ namespace TripAgency.Api.Controllers
             if (!activitiesResult.IsSuccess)
                 return this.ToApiResult(activitiesResult);
             return ApiResult<IEnumerable<GetActivitiesDto>>.Ok(activitiesResult.Value!);
+        }
+        [HttpPost("pagination")]
+        public async Task<ApiResult<PaginatedResult<GetActivitiesDto>>> GetActivitiesaPagination(QueryParameters queryParameters)
+        {
+            var activitiesResult = await _activityService.GetActivityPagination(queryParameters.SearchTerm ,queryParameters.Filters,queryParameters.SortColumn,queryParameters.SortDirection,queryParameters.PageNumber,queryParameters.PageSize);
+            if (!activitiesResult.IsSuccess)
+                return this.ToApiResult(activitiesResult);
+            return ApiResult<PaginatedResult<GetActivitiesDto>>.Ok(activitiesResult.Value!);
         }
         [HttpGet("{id}")]
         public async Task<ApiResult<GetActivityByIdDto>> GetActivityById(int id)
@@ -56,19 +65,19 @@ namespace TripAgency.Api.Controllers
             }
             return ApiResult<GetActivityByIdDto>.Created(activityResult.Value!);
         }
-        [HttpPut]
-        public async Task<ApiResult<string>> UpdateActivity(UpdateActivityDto updateActivity)
+        [HttpPut("{Id}")]
+        public async Task<ApiResult<string>> UpdateActivity(int Id,UpdateActivityDto updateActivity)
         {
-            var activityResult = await _activityService.UpdateAsync(updateActivity.Id, updateActivity);
+            var activityResult = await _activityService.UpdateAsync(Id, updateActivity);
             if (!activityResult.IsSuccess)
                 return this.ToApiResult<string>(activityResult);
             return ApiResult<string>.Ok("Success Updated");
 
         }
-        [HttpDelete]
-        public async Task<ApiResult<string>> DeleteActivity(int id)
+        [HttpDelete("{Id}")]
+        public async Task<ApiResult<string>> DeleteActivity(int Id)
         {
-            var activityResult = await _activityService.DeleteAsync(id);
+            var activityResult = await _activityService.DeleteAsync(Id);
             if (!activityResult.IsSuccess)
                 return this.ToApiResult<string>(activityResult);
             return ApiResult<string>.Ok("Success Delete");

@@ -68,20 +68,20 @@ namespace TripAgency.Controllers
             }
             return ApiResult<GetDestinationByIdDto>.Created(result.Value!);
         }
-        [HttpPut]
-        public async Task<ApiResult<string>> UpdateDestination(UpdateDestinationDto destinationDto)
+        [HttpPut("{Id}")]
+        public async Task<ApiResult<string>> UpdateDestination(int Id ,UpdateDestinationDto destinationDto)
         {
-            var result = await _destinationService.UpdateAsync(destinationDto.Id,destinationDto);
+            var result = await _destinationService.UpdateAsync(Id,destinationDto);
             if (!result.IsSuccess)
             {
                 return this.ToApiResult<string>(result);
             }
             return ApiResult<string>.Ok("Success Updated");
         }
-        [HttpDelete("{id}")]
-        public async Task<ApiResult<string>> DeleteDestination(int id)
+        [HttpDelete("{Id}")]
+        public async Task<ApiResult<string>> DeleteDestination(int Id)
         {
-            var result = await _destinationService.DeleteAsync(id);
+            var result = await _destinationService.DeleteAsync(Id);
             if (!result.IsSuccess)
             {
                 return this.ToApiResult<string>(result);

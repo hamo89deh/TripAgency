@@ -23,16 +23,24 @@ namespace TripAgency.Infrastructure.Configurations
             builder.Property(x => x.Country)
                     .HasColumnType("nvarchar")
                    .HasMaxLength(200)
-                   .IsRequired();
+                   .IsRequired(false);
 
             builder.Property(x => x.Code)
                    .HasColumnType("nvarchar")
                   .HasMaxLength(25)
                   .IsRequired(false);
 
-            
 
+            builder.HasIndex(u => u.UserName)
+               .HasDatabaseName("IX_User_UserName")
+               .IsUnique(false);
+
+            builder.HasIndex(u => u.NormalizedUserName)
+                   .HasDatabaseName("IX_User_NormalizedUserName")
+                   .IsUnique(false);
 
         }
+
     }
+    
 }

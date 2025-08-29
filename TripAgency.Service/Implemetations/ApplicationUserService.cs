@@ -29,6 +29,7 @@ namespace TripAgency.Service.Implemetations
                                       TripAgencyDbContext dBContext,
                                       IHttpContextAccessor httpContextAccessor,
                                       IEmailService emailService,
+                                      ICurrentUserService currentUserService,
                                       IUrlHelper urlHelper
             ) 
         {
@@ -36,6 +37,7 @@ namespace TripAgency.Service.Implemetations
 
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
+            _currentUserService = currentUserService;
             _urlHelper = urlHelper;
             _userManager = userManager;
         }
@@ -43,22 +45,16 @@ namespace TripAgency.Service.Implemetations
         public UserManager<User> _userManager { get; }
         public IHttpContextAccessor _httpContextAccessor { get; }
         public IEmailService _emailService { get; }
-
+        public ICurrentUserService _currentUserService { get; }
 
         public async Task<Result> AddUser(AddUserDto userDtos)
         {
             var user = new User
             {
-
-                Address = userDtos.Address,
-                Country = userDtos.Country,
+                UserName= userDtos.UserName,
                 Email = userDtos.Email,
-                FullName = userDtos.FullName ?? userDtos.UserName,
-                LoyaltyPoints = 0,
-                PhoneNumber = userDtos.PhoneNumber,
-                UserName = userDtos.UserName
-
-
+                FullName = userDtos.FirstName + userDtos.LastName,
+                LoyaltyPoints = 0
             };
             var trans = await _dBContext.Database.BeginTransactionAsync();
             try
@@ -69,10 +65,13 @@ namespace TripAgency.Service.Implemetations
                 if (existUser != null) 
                     return Result.BadRequest("Email is Exist");
 
-                //if username is Exist
-                var userByUserName = await _userManager.FindByNameAsync(user.UserName);
-                //username is Exist
-                if (userByUserName != null) return Result.BadRequest("UserName Is Exist");
+
+                //if User is Exist
+                var existUserName = await _userManager.FindByEmailAsync(user.Email);
+                //email is Exist
+                if (existUserName != null)
+                    return Result.BadRequest("UserName is Exist");
+
                 //Create
                 var createResult = await _userManager.CreateAsync(user, userDtos.Password);
                 //Failed
@@ -83,14 +82,14 @@ namespace TripAgency.Service.Implemetations
 
                 //Send Confirm Email
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var resquestAccessor = _httpContextAccessor.HttpContext.Request;
+                var resquestAccessor = _httpContextAccessor.HttpContext!.Request;
                 var returnUrl = resquestAccessor.Scheme + "://" + resquestAccessor.Host +
                    _urlHelper.Action("ConfirmEmail", "Authentications", new { userId = user.Id, code = code });
                 var message = $"To Confirm Email Click Link: <a href='{returnUrl}'>Link Of Confirmation</a>";
                 //$"/Api/Authentication/ConfirmEmail?userId={user.Id}&code={code}";
 
                 //message or body
-             //   await _emailService.SendEmailAsync(user.Email, message, "ConFirm Email");
+             //  await _emailService.SendEmailAsync(user.Email, message, "ConFirm Email");
             
                 await trans.CommitAsync();
                 return Result.Success();
@@ -109,7 +108,7 @@ namespace TripAgency.Service.Implemetations
             var user = await _userManager.FindByIdAsync(changeUserPassword.UserId.ToString());
             //if Not Exist notfound
             if (user == null)
-                return Result<string>.NotFound($"Not FOund User With Id : {changeUserPassword.UserId}");
+                return Result<string>.NotFound($"Not Found User With Id : {changeUserPassword.UserId}");
 
             //Change User Password
             var result = await _userManager.ChangePasswordAsync(user, changeUserPassword.CurrentPassword, changeUserPassword.NewPassword);
@@ -140,28 +139,29 @@ namespace TripAgency.Service.Implemetations
         public async Task<Result> UpdateUser(UpdateUserDto userDtos)
         {
             //check if user is exist
-            var oldUser = await _userManager.FindByIdAsync(userDtos.Id.ToString());
-            //if Not Exist notfound
-            if (oldUser == null) return Result.NotFound($"Not Found User By Id : {userDtos.Id}");
-            //mapping
-            oldUser.UserName = userDtos.UserName;
-            oldUser.FullName = userDtos.FullName;
+            var oldUser = await _currentUserService.GetUserAsync();
+          
+            oldUser.FullName = userDtos.FirstName + userDtos.LastName;
             oldUser.Email = userDtos.Email;
             oldUser.PhoneNumber = userDtos.PhoneNumber;
             oldUser.Address =   userDtos.Address;
             oldUser.Country = userDtos.Country;
 
             //if username is Exist
-            var userByUserName = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == userDtos.UserName && x.Id != userDtos.Id);
-            //username is Exist
-            if (userByUserName != null) 
-                return Result.BadRequest("User Name Is exist ");
-
+            var userByUserName = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == userDtos.UserName && x.Id != oldUser.Id);
+           // username is Exist
+            if (userByUserName != null)
+                return Result.BadRequest("User Name Is Already Token ");
+            //if Eamil is Exist
+            var userByEmail = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == userDtos.Email && x.Id != oldUser.Id);
+            // username is Exist
+            if (userByEmail != null)
+                return Result.BadRequest("Email Is Already Token ");
             //update
             var result = await _userManager.UpdateAsync(oldUser);
             //result is not success
             if (!result.Succeeded)
-                return Result.BadRequest("Error When Upadate User Information ");
+                return Result.BadRequest(string.Join(",", result.Errors.Select(x => x.Description).ToList()));
             //message
             return Result.Success();
 
@@ -178,7 +178,7 @@ namespace TripAgency.Service.Implemetations
                 Id = Id,
                 Address = user.Address,
                 Country = user.Country,
-                Email = user.Email,
+                Email = user.Email!,
                 PhoneNumber = user.PhoneNumber,
                 FullName = user.FullName
             };
@@ -200,10 +200,9 @@ namespace TripAgency.Service.Implemetations
                     Id = user.Id,
                     Address = user.Address,
                     Country = user.Country,
-                    Email = user.Email,
+                    Email = user.Email!,
                     PhoneNumber = user.PhoneNumber,
                     FullName = user.FullName
-
                 });
             }
 
