@@ -91,5 +91,13 @@ namespace TripAgency.Controllers
                 return this.ToApiResult<string>(tripResult);
             return ApiResult<string>.Ok("Success Delete");
         }
+        [HttpDelete("{TripId}/Destinaation/{DestinationId}")]
+        public async Task<ApiResult<string>> DeleteTripDestination(int TripId , int DestinationId)
+        {
+            var tripResult = await _tripService.DeleteTripDestination(TripId, DestinationId);
+            if (!tripResult.IsSuccess)
+                return this.ToApiResult<string>(tripResult);
+            return ApiResult<string>.Ok("Success Delete");
+        }
     }
 }

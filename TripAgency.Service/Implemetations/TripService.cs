@@ -128,5 +128,26 @@ namespace TripAgency.Service.Implementations
             };
             return Result<GetTripDestinationsDto>.Success(resultDto);
         }
+
+        public async Task<Result> DeleteTripDestination(int tripId, int destinationId)
+        {
+            var trip = await _tripRepository.GetTableNoTracking().FirstOrDefaultAsync(x=>x.Id==tripId);
+            if (trip is null)
+                return Result.NotFound($"Not Found Trip With Id : {tripId}");
+
+            var destination = await _destinationRepositoryAsync.GetTableNoTracking().FirstOrDefaultAsync(x => x.Id == tripId);
+            if (destination is null)
+                return Result.NotFound($"Not Found Destination With Id : {destinationId}");
+
+            var tripDestination = await _tripDestinationRepositoryAsync.GetTableNoTracking()
+                                                                        .FirstOrDefaultAsync(td => td.TripId == trip.Id && td.DestinationId == destination.Id);
+            if(tripDestination is null)
+                return Result.NotFound($"Not Found Trip Destination relationship between Trip Id: {tripId} and Destination Id: {destinationId}");
+
+            await _tripDestinationRepositoryAsync.DeleteAsync(tripDestination);
+            return Result.Success("Deleted successfully");
+
+
+        }
     }
 }
