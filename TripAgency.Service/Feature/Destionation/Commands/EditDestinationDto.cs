@@ -1,4 +1,6 @@
-﻿namespace TripAgency.Service.Feature.Destination.Commands
+﻿using Microsoft.AspNetCore.Http;
+
+namespace TripAgency.Service.Feature.Destination.Commands
 {
     public class UpdateDestinationDto
     {
@@ -6,5 +8,6 @@
         public string Description { get; set; }
         public string Location { get; set; }
         public int CityId { get; set; }
+        public IFormFile ImageUrl {  get; set; }
     }
 }

@@ -197,12 +197,12 @@ namespace TripAgency.Service.Implementations
                     PackageTripId = packageTripId,
                     DestinationDto = PackageTrip.PackageTripDestinations.Select(d => new PackageTripDestinationDto
                     {
-                        DayNumber = d.DayNumber,
-                        Description = d.Description,
-                        Duration = d.Duration,
-                        EndTime = d.EndTime,
-                        StartTime = d.StartTime,
-                        OrderDestination = d.OrderDestination,
+                        //DayNumber = d.DayNumber,
+                        //Duration = d.Duration,
+                        //EndTime = d.EndTime,
+                        //StartTime = d.StartTime,
+                        //OrderDestination = d.OrderDestination,
+                        //Description = d.Description,
                         DestinationId = d.DestinationId,
                     })
                  };
@@ -251,13 +251,13 @@ namespace TripAgency.Service.Implementations
                     PackageTripId = PackageTripDestination.PackageTripId,
                     ActivitiesDtos = PackageTripDestination.PackageTripDestinationActivities.Select(a => new PackageTripDestinationActivitiesDto
                     {
+                        //Description = a.Description,
+                        //Duration = a.Duration,
+                        //EndTime = a.EndTime,
+                        //OrderActivity = a.OrderActivity,
+                        //StartTime = a.StartTime,
                         ActivityId = a.ActivityId,
-                        Description = a.Description,
-                        Duration = a.Duration,
-                        EndTime = a.EndTime,
-                        OrderActivity = a.OrderActivity,
                         Price = a.Price,
-                        StartTime = a.StartTime,
 
                     })
                 };
@@ -297,22 +297,22 @@ namespace TripAgency.Service.Implementations
                         PackageTripId = packageTripId,
                         DestinationsActivitiesDtos = PackageTrip.PackageTripDestinations.Select(d => new PackageTripDestinationsActivitiesDto
                         {
-                            DayNumber = d.DayNumber,
-                            Description = d.Description,
-                            Duration = d.Duration,
-                            EndTime = d.EndTime,
-                            StartTime = d.StartTime,
-                            OrderDestination = d.OrderDestination,
+                            //DayNumber = d.DayNumber,
+                            //Description = d.Description,
+                            //Duration = d.Duration,
+                            //EndTime = d.EndTime,
+                            //StartTime = d.StartTime,
+                            //OrderDestination = d.OrderDestination,
                             DestinationId = d.DestinationId,
                             ActivitiesDtos = d.PackageTripDestinationActivities.Select(a => new PackageTripDestinationActivitiesDto
                             {
-                                ActivityId = a.ActivityId,
-                                Description = a.Description,
-                                Duration = a.Duration,
-                                EndTime = a.EndTime,
-                                OrderActivity = a.OrderActivity,
+                                //Description = a.Description,
+                                //Duration = a.Duration,
+                                //EndTime = a.EndTime,
+                                //OrderActivity = a.OrderActivity,
+                                //StartTime = d.StartTime,
                                 Price = a.Price,
-                                StartTime = d.StartTime,
+                                ActivityId = a.ActivityId,
                             })
                         })
                     };
@@ -324,12 +324,12 @@ namespace TripAgency.Service.Implementations
                         PackageTripId = packageTripId,
                         DestinationsActivitiesDtos = PackageTrip.PackageTripDestinations.Select(d => new PackageTripDestinationsActivitiesDto
                         {
-                            DayNumber = d.DayNumber,
-                            Description = d.Description,
-                            Duration = d.Duration,
-                            EndTime = d.EndTime,
-                            StartTime = d.StartTime,
-                            OrderDestination = d.OrderDestination,
+                            //DayNumber = d.DayNumber,
+                            //Description = d.Description,
+                            //Duration = d.Duration,
+                            //EndTime = d.EndTime,
+                            //StartTime = d.StartTime,
+                            //OrderDestination = d.OrderDestination,
                             DestinationId = d.DestinationId,
                             ActivitiesDtos = []
                             

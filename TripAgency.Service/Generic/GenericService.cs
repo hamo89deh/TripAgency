@@ -43,7 +43,7 @@ namespace TripAgency.Service.Generic
             return Result.Success();
         }
 
-        public async Task<Result<IEnumerable<GetALlDto>>> GetAllAsync()
+        public virtual async Task<Result<IEnumerable<GetALlDto>>> GetAllAsync()
         {
             var entities = await _repoAsync.GetTableNoTracking().ToListAsync();
             if (entities.Count == 0)

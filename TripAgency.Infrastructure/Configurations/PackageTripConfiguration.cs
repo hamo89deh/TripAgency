@@ -16,7 +16,7 @@ namespace TripAgency.Infrastructure.Configurations
                 .HasMaxLength(100);
 
             builder.Property(h => h.Description)
-                .IsRequired(false)
+                .IsRequired()
                 .HasMaxLength(200);
 
             builder.Property(h => h.MaxCapacity)
@@ -31,10 +31,6 @@ namespace TripAgency.Infrastructure.Configurations
 
             builder.Property(h => h.Duration)
                 .IsRequired();
-
-            builder.Property(h => h.CancellationPolicy)
-               .IsRequired(false)
-               .HasMaxLength(200);
 
             builder.Property(h => h.ImageUrl)
               .IsRequired()

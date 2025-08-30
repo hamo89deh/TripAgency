@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,8 +11,9 @@ namespace TripAgency.Service.Feature.PackageTrip.Commands
     {
         public string Name { get; set; }
         public string Description { get; set; }
-        public string CancellationPolicy { get; set; }
         public int Duration { get; set; }
+
+        public IFormFile Image { get; set; }
         public int MaxCapacity { get; set; }
         public int MinCapacity { get; set; }
         public decimal Price { get; set; }       
