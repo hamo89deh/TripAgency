@@ -19,15 +19,18 @@ namespace TripAgency.Service.Implementations
     {
         private IPackageTripRepositoryAsync _packageTripRepositoryAsync { get; set; }
         public ITripRepositoryAsync _tripRepositoryAsync { get; }
+        public IMediaService _mediaService { get; }
         public IMapper _mapper { get; }
 
         public PackageTripService(IPackageTripRepositoryAsync packagetripRepository, 
                                   ITripRepositoryAsync tripRepository,
+                                  IMediaService mediaService,
                                   IMapper mapper
                                   ) : base(packagetripRepository, mapper)
         {
             _packageTripRepositoryAsync = packagetripRepository;
             _tripRepositoryAsync = tripRepository;
+            _mediaService = mediaService;
             _mapper = mapper;
         }
 
@@ -36,14 +39,40 @@ namespace TripAgency.Service.Implementations
             var trip = await _tripRepositoryAsync.GetByIdAsync(AddDto.TripId);
             if (trip is null)
                 return Result<GetPackageTripByIdDto>.NotFound($"Not Found Trip By Id : {AddDto.TripId}");
-            return await base.CreateAsync(AddDto);
+            var mapPackageTrip = _mapper.Map<PackageTrip>(AddDto);
+            mapPackageTrip.ImageUrl = await _mediaService.UploadMediaAsync("PackageTrip", AddDto.Image);
+            await _packageTripRepositoryAsync.AddAsync(mapPackageTrip);
+            var result = new GetPackageTripByIdDto() 
+            {
+                Id= mapPackageTrip.Id,
+                Duration = AddDto.Duration,
+                ImageUrl=mapPackageTrip.ImageUrl ,
+                MaxCapacity=AddDto.MaxCapacity,
+                Description= AddDto.Description,
+                MinCapacity=AddDto.MinCapacity,
+                Name=AddDto.Name,
+                Price=AddDto.Price,
+                TripId=AddDto.TripId
+            }
+            ;
+            return Result<GetPackageTripByIdDto>.Success(result);
         }
         public override async Task<Result> UpdateAsync(int id, UpdatePackageTripDto UpdateDto)
         {
             var trip = await _tripRepositoryAsync.GetByIdAsync(UpdateDto.TripId);
             if (trip is null)
                 return Result.NotFound($"Not Found Trip By Id : {UpdateDto.TripId}");
-            return await base.UpdateAsync(id, UpdateDto);
+            var packageTrip = await _packageTripRepositoryAsync.GetByIdAsync(id);
+            if (packageTrip is null)
+                return Result.NotFound($"Not Found PackageTrip By Id : {id}");
+            packageTrip.Duration = UpdateDto.Duration;
+            packageTrip.TripId = UpdateDto.TripId;
+            packageTrip.Name = UpdateDto.Name;
+            packageTrip.MaxCapacity = UpdateDto.MaxCapacity;
+            packageTrip.MinCapacity = UpdateDto.MinCapacity;
+            packageTrip.ImageUrl = await _mediaService.UploadMediaAsync("PackageTrip", UpdateDto.Image);
+            await _packageTripRepositoryAsync.UpdateAsync(packageTrip);
+            return Result.Success("Update Successfully");
         }
 
         public async Task<Result<GetPackageTripDestinationsActivitiesDatesDto>> GetPackageTripDestinationsActivitiesDates(int packageTripId , enPackageTripDataStatusDto status)
@@ -81,22 +110,22 @@ namespace TripAgency.Service.Implementations
                 PackageTripId = packageTripId,
                 DestinationsActivitiesDtos = PackageTrip.PackageTripDestinations.Select(d => new PackageTripDestinationsActivitiesDto
                 {
-                    DayNumber = d.DayNumber,
-                    Description = d.Description,
-                    Duration = d.Duration,
-                    EndTime = d.EndTime,
-                    StartTime = d.StartTime,
-                    OrderDestination = d.OrderDestination,
+                    //DayNumber = d.DayNumber,
+                    //Description = d.Description,
+                    //Duration = d.Duration,
+                    //EndTime = d.EndTime,
+                    //StartTime = d.StartTime,
+                    //OrderDestination = d.OrderDestination,
                     DestinationId = d.DestinationId,
                     ActivitiesDtos = d.PackageTripDestinationActivities.Select(a => new PackageTripDestinationActivitiesDto
                     {
-                        ActivityId = a.ActivityId,
-                        Description = a.Description,
-                        Duration = a.Duration,
-                        EndTime = a.EndTime,
-                        OrderActivity = a.OrderActivity,
+                        //Description = a.Description,
+                        //Duration = a.Duration,
+                        //EndTime = a.EndTime,
+                        //OrderActivity = a.OrderActivity,
+                        //StartTime = d.StartTime,
                         Price = a.Price,
-                        StartTime = d.StartTime,
+                        ActivityId = a.ActivityId,
                     })
                 }),
                 PackageTripDatesDtos = PackageTrip.PackageTripDates.Where(ptd=>ptd.Status== Global.ConvertEnPackageTripDataStatusDtoToPackageTripDataStatus(status)).Select(d => new PackageTripDatesDto

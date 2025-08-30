@@ -7,5 +7,6 @@
         public string Description { get; set; }
         public string Location { get; set; }
         public int CityId { get; set; }
+        public string ImageUrl { get; set; }
     }
 }

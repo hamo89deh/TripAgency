@@ -69,7 +69,7 @@ namespace TripAgency.Controllers
             return ApiResult<GetDestinationByIdDto>.Created(result.Value!);
         }
         [HttpPut("{Id}")]
-        public async Task<ApiResult<string>> UpdateDestination(int Id ,UpdateDestinationDto destinationDto)
+        public async Task<ApiResult<string>> UpdateDestination(int Id ,[FromForm]UpdateDestinationDto destinationDto)
         {
             var result = await _destinationService.UpdateAsync(Id,destinationDto);
             if (!result.IsSuccess)

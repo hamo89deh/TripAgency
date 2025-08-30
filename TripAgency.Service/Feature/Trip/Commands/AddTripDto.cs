@@ -1,4 +1,5 @@
-﻿using TripAgency.Service.Feature.Destination.Commands;
+﻿using Microsoft.AspNetCore.Http;
+using TripAgency.Service.Feature.Destination.Commands;
 
 namespace TripAgency.Service.Feature.Trip.Commands
 {
@@ -6,6 +7,7 @@ namespace TripAgency.Service.Feature.Trip.Commands
     {
         public string Name { get; set; }
         public string Description { get; set; }
+        public IFormFile Image { get; set; }
 
     }
 }

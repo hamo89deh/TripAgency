@@ -13,6 +13,7 @@ namespace TripAgency.Service.Mapping.Destination_Entity
                 .ForMember(d => d.Description, op => op.MapFrom(s => s.Description))
                 .ForMember(d => d.Location, op => op.MapFrom(s => s.Location))
                 .ForMember(d => d.CityId, op => op.MapFrom(s => s.CityId))
+                .ForMember(d => d.ImageUrl, op => op.MapFrom(s => s.ImageUrl))
                 .ForMember(d => d.CityName, op => op.MapFrom(s => s.City.Name));
         }
     }

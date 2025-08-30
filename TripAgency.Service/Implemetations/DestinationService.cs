@@ -85,6 +85,7 @@ namespace TripAgency.Service.Implementations
             destination.CityId = city.Id;
             destination.Description = updateDestinationDto.Description;
             destination.Location = updateDestinationDto.Location;
+            destination.ImageUrl = await _mediaService.UploadMediaAsync("Destination",updateDestinationDto.ImageUrl);
 
             await _destinationRepository.UpdateAsync(destination);
             return Result.Success();

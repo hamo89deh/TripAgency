@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TripAgency.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using TripAgency.Infrastructure.Context;
 namespace TripAgency.Infrastructure.Migrations
 {
     [DbContext(typeof(TripAgencyDbContext))]
-    partial class TripAgencyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250830130159_addImageUrlColumnAndAddConfiguration")]
+    partial class addImageUrlColumnAndAddConfiguration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -596,8 +599,11 @@ namespace TripAgency.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CancellationPolicy")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 

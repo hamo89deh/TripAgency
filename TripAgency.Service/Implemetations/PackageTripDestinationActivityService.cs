@@ -116,12 +116,12 @@ namespace TripAgency.Service.Implementations
                 {
                     PackageTripDestinationActivitiesToAdd.Add(new PackageTripDestinationActivity
                     {
+                        //Description = activity.Description,
+                        //OrderActivity = activity.OrderActivity,
+                        //Duration = activity.Duration,
+                        //StartTime = activity.StartTime,
+                        //EndTime = activity.EndTime,
                         ActivityId = activity.ActivityId,
-                        Description = activity.Description,
-                        OrderActivity = activity.OrderActivity,
-                        Duration = activity.Duration,
-                        StartTime = activity.StartTime,
-                        EndTime = activity.EndTime,
                         Price = activity.Price,
                         PackageTripDestinationId = PackageTripDestination.Id
 
@@ -143,14 +143,14 @@ namespace TripAgency.Service.Implementations
                     DestinationId = PackageTripDestination.DestinationId,
                     ActivitiesDtos = destinationActivities.Select(da => new PackageTripDestinationActivitiesDto
                     {
+                        //Description = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.Description,
+                        //// Name =da.Activity.Name,
+                        //Duration = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.Duration,
+                        //StartTime = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.StartTime,
+                        //EndTime = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.EndTime,
+                        //OrderActivity = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.OrderActivity,
                         ActivityId = da.Activity.Id,
-                        Description = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.Description,
-                        // Name =da.Activity.Name,
-                        Price = da.Activity.Price,
-                        Duration = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.Duration,
-                        StartTime = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.StartTime,
-                        EndTime = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.EndTime,
-                        OrderActivity = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.OrderActivity
+                        Price = da.Activity.Price
                     })
                 };
             }
@@ -309,16 +309,16 @@ namespace TripAgency.Service.Implementations
             }
             var resultDto = new GetPackageTripDestinationActivityByIdDto
             {
+                Id = PackageTripDestinationActivity.Id,
                 ActivityId = PackageTripDestinationActivity.ActivityId,
                 DestinationId = PackageTripDestination.DestinationId,
                 PackageTripId = PackageTripDestination.PackageTripId,
-                Description = PackageTripDestinationActivity.Description,
-                Duration = PackageTripDestinationActivity.Duration,
-                EndTime = PackageTripDestinationActivity.EndTime,
-                StartTime = PackageTripDestinationActivity.StartTime,
-                Id = PackageTripDestinationActivity.Id,
-                OrderActivity = PackageTripDestinationActivity.OrderActivity,
-                Price = PackageTripDestinationActivity.Price
+                Price = PackageTripDestinationActivity.Price,
+                //Description = PackageTripDestinationActivity.Description,
+                //Duration = PackageTripDestinationActivity.Duration,
+                //EndTime = PackageTripDestinationActivity.EndTime,
+                //StartTime = PackageTripDestinationActivity.StartTime,
+                //OrderActivity = PackageTripDestinationActivity.OrderActivity,
 
             };
             return Result<GetPackageTripDestinationActivityByIdDto>.Success(resultDto);

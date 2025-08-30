@@ -19,6 +19,7 @@ namespace TripAgency.Api.Controllers
     [ApiController]
     public class PackageTripsController : ControllerBase
     {
+
         public PackageTripsController(IPackageTripService packageTripService,
                                       IPackageTripDestinationService packageTripDestinationService,
                                       IPackageTripDestinationActivityService packageTripDestinationActivityService,
@@ -54,7 +55,7 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ApiResult<GetPackageTripByIdDto>> AddPackageTrip(AddPackageTripDto packageTripdto)
+        public async Task<ApiResult<GetPackageTripByIdDto>> AddPackageTrip([FromForm] AddPackageTripDto packageTripdto)
         {
             var packageTripResult = await _packageTripService.CreateAsync(packageTripdto);
             if (!packageTripResult.IsSuccess)
@@ -67,7 +68,7 @@ namespace TripAgency.Api.Controllers
       
 
         [HttpPut("{Id}")]
-        public async Task<ApiResult<string>> UpdatePackageTrip(int Id ,UpdatePackageTripDto updatePackageTrip)
+        public async Task<ApiResult<string>> UpdatePackageTrip(int Id , [FromForm] UpdatePackageTripDto updatePackageTrip)
         {
             var packageTripResult = await _packageTripService.UpdateAsync(Id, updatePackageTrip);
             if (!packageTripResult.IsSuccess)
