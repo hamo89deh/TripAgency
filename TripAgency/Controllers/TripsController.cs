@@ -55,7 +55,7 @@ namespace TripAgency.Controllers
             return ApiResult<GetTripByIdDto>.Ok(tripResult.Value!);
         }
         [HttpPost]
-        public async Task<ApiResult<GetTripByIdDto>> AddTrip(AddTripDto trip)
+        public async Task<ApiResult<GetTripByIdDto>> AddTrip([FromForm] AddTripDto trip)
         {
             var tripResult = await _tripService.CreateAsync(trip);
             if (!tripResult.IsSuccess)
@@ -75,7 +75,7 @@ namespace TripAgency.Controllers
             return ApiResult<GetTripDestinationsDto>.Created(tripResult.Value!);
         }
         [HttpPut("{Id}")]
-        public async Task<ApiResult<string>> UpdateTrip(int Id,UpdateTripDto updateTrip)
+        public async Task<ApiResult<string>> UpdateTrip(int Id, [FromForm] UpdateTripDto updateTrip)
         {
             var tripResult = await _tripService.UpdateAsync(Id, updateTrip);
             if (!tripResult.IsSuccess)
