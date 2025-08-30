@@ -20,49 +20,49 @@ namespace TripAgency.Service.Implemetations
             _logger = logger;
         }
 
-        //public async Task<Media> UploadMediaAsync(IFormFile file, string altText = null)
-        //{
-        //    try
-        //    {
-        //        // إنشاء اسم فريد للملف
-        //        var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-        //        var uploadPath = Path.Combine("uploads", "media");
-        //        var fullPath = Path.Combine(_environment.WebRootPath, uploadPath);
+        public async Task<Media> UploadMediaAsync(IFormFile file, string altText = null)
+        {
+            try
+            {
+                // إنشاء اسم فريد للملف
+                var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                var uploadPath = Path.Combine("uploads", "media");
+                var fullPath = Path.Combine(_environment.WebRootPath, uploadPath);
 
-        //        // إنشاء المجلد إذا لم يكن موجوداً
-        //        if (!Directory.Exists(fullPath))
-        //            Directory.CreateDirectory(fullPath);
+                // إنشاء المجلد إذا لم يكن موجوداً
+                if (!Directory.Exists(fullPath))
+                    Directory.CreateDirectory(fullPath);
 
-        //        var filePath = Path.Combine(fullPath, fileName);
+                var filePath = Path.Combine(fullPath, fileName);
 
-        //        // حفظ الملف
-        //        using (var stream = new FileStream(filePath, FileMode.Create))
-        //        {
-        //            await file.CopyToAsync(stream);
-        //        }
+                // حفظ الملف
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
 
-        //        // حفظ المعلومات في قاعدة البيانات
-        //        var media = new Media
-        //        {
-        //            FileName = fileName,
-        //            FilePath = filePath,
-        //            PublicUrl = $"/uploads/media/{fileName}",
-        //            FileSize = file.Length,
-        //            ContentType = file.ContentType,
-        //            AltText = altText
-        //        };
+                // حفظ المعلومات في قاعدة البيانات
+                var media = new Media
+                {
+                    FileName = fileName,
+                    FilePath = filePath,
+                    PublicUrl = $"/uploads/media/{fileName}",
+                    FileSize = file.Length,
+                    ContentType = file.ContentType,
+                    AltText = altText
+                };
 
-        //        _context.Media.Add(media);
-        //        await _context.SaveChangesAsync();
+                _context.Medias.Add(media);
+                await _context.SaveChangesAsync();
 
-        //        return media;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error uploading media");
-        //        throw;
-        //    }
-        //}
+                return media;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading media");
+                throw;
+            }
+        }
 
         //public async Task<bool> AssociateWithPackageTripAsync(Guid mediaId, Guid packageTripId, int displayOrder = 0, bool isMain = false, string customAltText = null)
         //{

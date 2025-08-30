@@ -79,9 +79,12 @@ namespace TripAgency.Service.Implementations
             if (city is null)
                 return Result.NotFound($"Not Found City with Id : {updateDestinationDto.CityId}");
 
+            destination.Name = updateDestinationDto.Name;
+            destination.CityId = city.Id;  
+            destination.Description = updateDestinationDto.Description;
+            destination.Location = updateDestinationDto.Location;
 
-            var destinationsResult = _mapper.Map<Destination>(updateDestinationDto);
-            await _destinationRepository.UpdateAsync(destinationsResult);
+            await _destinationRepository.UpdateAsync(destination);
             return Result.Success();
         }
 
