@@ -49,9 +49,6 @@ namespace TripAgency.Infrastructure.Context
         public DbSet<ActivityPhobias> ActivityPhobias { get; set; }
         public DbSet<UserPhobias> UserPhobias { get; set; }
         public DbSet<BookingPassenger> BookingPassengers { get; set; }
-        public DbSet<Media> Medias { get; set; }
-        public DbSet<PackageTripMedia> PackageTripMedias { get; set; }
-        public DbSet<DestinationMedia> DestinationMedias { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

@@ -15,20 +15,20 @@ namespace TripAgency.Infrastructure.Configurations
                    .IsRequired();
 
             builder.Property(x => x.StartTime)
-                 .IsRequired();
+                 .IsRequired(false);
 
             builder.Property(x => x.EndTime)
-                 .IsRequired();
+                 .IsRequired(false);
 
             builder.Property(x => x.OrderActivity)
-               .IsRequired();
+               .IsRequired(false);
 
             builder.Property(x => x.Duration)
-            .IsRequired();
+            .IsRequired();    
 
             builder.Property(x => x.Description)
                 .HasMaxLength(250)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.ToTable("PackageTripDestinationActivities");
 

@@ -30,6 +30,10 @@ namespace TripAgency.Infrastructure.Configurations
                    .HasForeignKey(x => x.CityId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Property(h => h.ImageUrl)
+             .IsRequired()
+             .HasMaxLength(300);
+
             builder.ToTable("Destinations");
 
 

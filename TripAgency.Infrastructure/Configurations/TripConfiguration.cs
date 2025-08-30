@@ -18,6 +18,9 @@ namespace TripAgency.Infrastructure.Configurations
                 .IsRequired()
                 .HasMaxLength(200);
 
+            builder.Property(h => h.ImageUrl)
+              .IsRequired()
+              .HasMaxLength(300);
 
             builder.ToTable("Trips");          
 

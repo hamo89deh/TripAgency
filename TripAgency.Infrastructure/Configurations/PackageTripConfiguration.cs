@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Security.Cryptography.X509Certificates;
 using TripAgency.Data.Entities;
 
 namespace TripAgency.Infrastructure.Configurations
@@ -15,7 +16,7 @@ namespace TripAgency.Infrastructure.Configurations
                 .HasMaxLength(100);
 
             builder.Property(h => h.Description)
-                .IsRequired()
+                .IsRequired(false)
                 .HasMaxLength(200);
 
             builder.Property(h => h.MaxCapacity)
@@ -32,9 +33,12 @@ namespace TripAgency.Infrastructure.Configurations
                 .IsRequired();
 
             builder.Property(h => h.CancellationPolicy)
-               .IsRequired()
+               .IsRequired(false)
                .HasMaxLength(200);
 
+            builder.Property(h => h.ImageUrl)
+              .IsRequired()
+              .HasMaxLength(300);
             builder.ToTable("PackageTrips");
 
             builder.HasOne(c => c.Trip)

@@ -14,7 +14,7 @@ namespace TripAgency.Data.Entities
         public string Location { get; set; }
         public int CityId { get; set; }
         public City City { get; set; }
-
+        public string ImageUrl{ get; set; }
         public IEnumerable<PackageTripDestination> PackageTripDestinations{ get; set; }
         public IEnumerable<TripDestination> TripDestinations { get; set; }
         public IEnumerable<DestinationActivity> DestinationActivities { get; set; }

@@ -2,33 +2,53 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using TripAgency.Data.Entities;
-using TripAgency.Infrastructure.Context;
+using TripAgency.Infrastructure.Abstracts;
 using TripAgency.Service.Abstracts;
 
 namespace TripAgency.Service.Implemetations
 {
     public class MediaService : IMediaService
     {
-        private readonly TripAgencyDbContext _context;
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<MediaService> _logger;
 
-        public MediaService(TripAgencyDbContext context, IWebHostEnvironment environment, ILogger<MediaService> logger)
+        public MediaService(IWebHostEnvironment environment, ILogger<MediaService> logger)
         {
-            _context = context;
+
             _environment = environment;
             _logger = logger;
         }
 
-        public async Task<Media> UploadMediaAsync(IFormFile file, string altText = null)
+        public string GetOrCreateWwwRootPath()
+        {
+            // إذا كان WebRootPath موجوداً، استخدمه
+            if (!string.IsNullOrEmpty(_environment.WebRootPath))
+            {
+                return _environment.WebRootPath;
+            }
+
+            // إذا لم يكن موجوداً، قم بإنشائه في ContentRootPath
+            var wwwRootPath = Path.Combine(_environment.ContentRootPath, "wwwroot");
+
+            if (!Directory.Exists(wwwRootPath))
+            {
+                Directory.CreateDirectory(wwwRootPath);
+                Console.WriteLine($"تم إنشاء مجلد wwwroot في: {wwwRootPath}");
+            }
+
+            return wwwRootPath;
+        }
+
+        public async Task<string> UploadMediaAsync(string Location, IFormFile file)
         {
             try
             {
+                if(_environment.WebRootPath is null)
+                    GetOrCreateWwwRootPath();
                 // إنشاء اسم فريد للملف
+                var fullPath = Path.Combine(_environment.WebRootPath!, Location);
+                
                 var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-                var uploadPath = Path.Combine("uploads", "media");
-                var fullPath = Path.Combine(_environment.WebRootPath, uploadPath);
-
                 // إنشاء المجلد إذا لم يكن موجوداً
                 if (!Directory.Exists(fullPath))
                     Directory.CreateDirectory(fullPath);
@@ -36,26 +56,12 @@ namespace TripAgency.Service.Implemetations
                 var filePath = Path.Combine(fullPath, fileName);
 
                 // حفظ الملف
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                using (var stream = File.Create(filePath))
                 {
                     await file.CopyToAsync(stream);
+                    await stream.FlushAsync();
                 }
-
-                // حفظ المعلومات في قاعدة البيانات
-                var media = new Media
-                {
-                    FileName = fileName,
-                    FilePath = filePath,
-                    PublicUrl = $"/uploads/media/{fileName}",
-                    FileSize = file.Length,
-                    ContentType = file.ContentType,
-                    AltText = altText
-                };
-
-                _context.Medias.Add(media);
-                await _context.SaveChangesAsync();
-
-                return media;
+                return $"/{Location}/{fileName}";
             }
             catch (Exception ex)
             {
@@ -63,6 +69,7 @@ namespace TripAgency.Service.Implemetations
                 throw;
             }
         }
+      
 
         //public async Task<bool> AssociateWithPackageTripAsync(Guid mediaId, Guid packageTripId, int displayOrder = 0, bool isMain = false, string customAltText = null)
         //{

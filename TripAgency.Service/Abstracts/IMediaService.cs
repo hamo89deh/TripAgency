@@ -5,7 +5,7 @@ namespace TripAgency.Service.Abstracts
 {
     public interface IMediaService
     {
-        Task<Media> UploadMediaAsync(IFormFile file, string altText = null);
+        Task<string> UploadMediaAsync(string Location,IFormFile file);
         //Task<bool> AssociateWithPackageTripAsync(Guid mediaId, Guid packageTripId, int displayOrder = 0, bool isMain = false, string customAltText = null);
         //Task<bool> AssociateWithDestinationAsync(Guid mediaId, Guid destinationId, int displayOrder = 0, bool isMain = false, string customAltText = null);
         //Task<bool> DisassociateFromPackageTripAsync(Guid mediaId, Guid packageTripId);

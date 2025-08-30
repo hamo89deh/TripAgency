@@ -12,6 +12,7 @@ namespace TripAgency.Data.Entities
         public int MaxCapacity { get; set; }
         public int MinCapacity { get; set; }
         public decimal Price { get; set; }
+        public string ImageUrl { get; set; }
 
         public Trip Trip { get; set; }
         public int TripId { get; set; }

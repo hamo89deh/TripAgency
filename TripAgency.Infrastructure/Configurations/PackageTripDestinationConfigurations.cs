@@ -11,23 +11,23 @@ namespace TripAgency.Infrastructure.Configurations
             builder.HasKey(x => x.Id);
 
             builder.Property(x => x.StartTime)
-                   .IsRequired();
+                   .IsRequired(false);
 
             builder.Property(x => x.EndTime)
-                 .IsRequired();
+                 .IsRequired(false);
 
             builder.Property(x => x.DayNumber)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(x => x.OrderDestination)
-               .IsRequired();
+               .IsRequired(false);
 
             builder.Property(x => x.Duration)
-            .IsRequired();
+            .IsRequired(false);
 
             builder.Property(x => x.Description)
                 .HasMaxLength(250)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.ToTable("PackageTripDestinations");
 

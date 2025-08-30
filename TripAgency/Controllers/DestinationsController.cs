@@ -59,7 +59,7 @@ namespace TripAgency.Controllers
             return ApiResult<IEnumerable<GetDestinationsByCityNameDto>>.Ok(result.Value!);
         }
         [HttpPost]
-        public async Task<ApiResult<GetDestinationByIdDto>> AddDestination(AddDestinationDto destinationDto)
+        public async Task<ApiResult<GetDestinationByIdDto>> AddDestination([FromForm]AddDestinationDto destinationDto)
         {
             var result = await _destinationService.CreateAsync(destinationDto);
             if (!result.IsSuccess)
