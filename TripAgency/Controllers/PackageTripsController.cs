@@ -44,7 +44,17 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult(packageTripsResult);
             return ApiResult<IEnumerable<GetPackageTripsDto>>.Ok(packageTripsResult.Value!);
         }
-       
+
+        [HttpGet("Trip/{TripId}")]
+        public async Task<ApiResult<GetPackageTripsForTripDto>> GetPackageTripsForTrip(int TripId)
+        {
+            var packageTripsResult = await _packageTripService.GetPackageTripsForTrip(TripId);
+            if (!packageTripsResult.IsSuccess)
+                return this.ToApiResult<GetPackageTripsForTripDto>(packageTripsResult);
+            return ApiResult<GetPackageTripsForTripDto>.Ok(packageTripsResult.Value!);
+        }
+
+
         [HttpGet("{id}")]
         public async Task<ApiResult<GetPackageTripByIdDto>> GetPackageTripById(int id)
         {
@@ -87,14 +97,14 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpPost("Destination")]
-        public async Task<ApiResult<GetPackageTripDestinationByIdDto>> AddPackageTripDestination([FromForm]AddPackageTripDestinationDto packageTripDestination)
+        public async Task<ApiResult<GetPackageTripDestinationsDto>> AddPackageTripDestination(AddPackageTripDestinationDto packageTripDestination)
         {
             var packageTripDestinationResult = await _packageTripDestinationService.CreateAsync(packageTripDestination);
             if (!packageTripDestinationResult.IsSuccess)
             {
                 return this.ToApiResult(packageTripDestinationResult);
             }
-            return ApiResult<GetPackageTripDestinationByIdDto>.Created(packageTripDestinationResult.Value!);
+            return ApiResult<GetPackageTripDestinationsDto>.Created(packageTripDestinationResult.Value!);
         }
         //[HttpPut("Destination")]
         //public async Task<ApiResult<string>> UpdatePackageTripDestination([FromForm] UpdatePackageTripDestinationDto updatePackageTripDestination)

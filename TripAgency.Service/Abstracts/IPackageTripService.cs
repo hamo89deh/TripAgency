@@ -16,6 +16,7 @@ namespace TripAgency.Service.Abstracts
     public interface IPackageTripService : IGenericService  <PackageTrip , GetPackageTripByIdDto, GetPackageTripsDto ,AddPackageTripDto ,UpdatePackageTripDto>
     {
        public Task<Result<GetPackageTripDestinationsActivitiesDatesDto>> GetPackageTripDestinationsActivitiesDates(int packageTripId , enPackageTripDataStatusDto status);
+       public Task<Result<GetPackageTripsForTripDto>> GetPackageTripsForTrip(int TripId);
 
     }
 }

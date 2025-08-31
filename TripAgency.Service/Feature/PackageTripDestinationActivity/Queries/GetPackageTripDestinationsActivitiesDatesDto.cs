@@ -1,4 +1,6 @@
-﻿using TripAgency.Service.Feature.TripDate.Queries;
+﻿using TripAgency.Service.Feature.PackageTrip.Queries;
+using TripAgency.Service.Feature.TripDate.Queries;
+using TripAgency.Service.Feature.TypeTrip_Entity.Queries;
 
 namespace TripAgency.Service.Feature.PackageTripDestinationActivity.Queries
 {

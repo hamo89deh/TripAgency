@@ -8,8 +8,8 @@ namespace TripAgency.Service.Mapping.PackageTripDestination_Entity
         public void AddPackageTripDestinationMapping()
         {
             CreateMap<AddPackageTripDestinationDto, PackageTripDestination>()
-                .ForMember(d => d.PackageTripId, op => op.MapFrom(s => s.PackageTripId))
-                .ForMember(d => d.DestinationId, op => op.MapFrom(s => s.DestinationId));
+                .ForMember(d => d.PackageTripId, op => op.MapFrom(s => s.PackageTripId));
+                //.ForMember(d => d.DestinationId, op => op.MapFrom(s => s.DestinationId))
                 //.ForMember(d => d.DayNumber, op => op.MapFrom(s => s.DayNumber))
                 //.ForMember(d => d.StartTime, op => op.MapFrom(s => s.StartTime))
                 //.ForMember(d => d.EndTime, op => op.MapFrom(s => s.EndTime))
