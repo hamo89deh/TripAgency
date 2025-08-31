@@ -120,6 +120,8 @@ namespace TripAgency.Service.Implementations
 
                 // 1.4. نقصان المقاعد المتاحة (وحفظ)
                 packageTripDate.AvailableSeats -= bookPackageDto.PassengerCount;
+                if (packageTripDate.AvailableSeats == 0) 
+                    packageTripDate.Status = PackageTripDateStatus.Full;
                 await _packageTripDateRepository.UpdateAsync(packageTripDate);
 
                 // 1.5. جلب خدمة بوابة الدفع المناسبة من المصنع

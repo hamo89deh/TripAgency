@@ -5,7 +5,6 @@ using TripAgency.Data.Enums;
 using TripAgency.Data.NewFolder1;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Infrastructure.Abstracts;
-using TripAgency.Infrastructure.Repositories;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.PackageTrip.Commands;
 using TripAgency.Service.Feature.PackageTrip.Queries;
@@ -18,17 +17,20 @@ namespace TripAgency.Service.Implementations
     public class PackageTripService : GenericService<PackageTrip, GetPackageTripByIdDto, GetPackageTripsDto, AddPackageTripDto, UpdatePackageTripDto>, IPackageTripService
     {
         private IPackageTripRepositoryAsync _packageTripRepositoryAsync { get; set; }
+        public IPackageTripDateRepositoryAsync _packagetripDateRepository { get; }
         public ITripRepositoryAsync _tripRepositoryAsync { get; }
         public IMediaService _mediaService { get; }
         public IMapper _mapper { get; }
 
-        public PackageTripService(IPackageTripRepositoryAsync packagetripRepository, 
+        public PackageTripService(IPackageTripRepositoryAsync packagetripRepository,
+                                  IPackageTripDateRepositoryAsync packagetripDateRepository,
                                   ITripRepositoryAsync tripRepository,
                                   IMediaService mediaService,
                                   IMapper mapper
                                   ) : base(packagetripRepository, mapper)
         {
             _packageTripRepositoryAsync = packagetripRepository;
+            _packagetripDateRepository = packagetripDateRepository;
             _tripRepositoryAsync = tripRepository;
             _mediaService = mediaService;
             _mapper = mapper;
@@ -42,82 +44,105 @@ namespace TripAgency.Service.Implementations
             var mapPackageTrip = _mapper.Map<PackageTrip>(AddDto);
             mapPackageTrip.ImageUrl = await _mediaService.UploadMediaAsync("PackageTrip", AddDto.Image);
             await _packageTripRepositoryAsync.AddAsync(mapPackageTrip);
-            var result = new GetPackageTripByIdDto() 
+            var result = new GetPackageTripByIdDto()
             {
-                Id= mapPackageTrip.Id,
+                Id = mapPackageTrip.Id,
                 Duration = AddDto.Duration,
-                ImageUrl=mapPackageTrip.ImageUrl ,
-                MaxCapacity=AddDto.MaxCapacity,
-                Description= AddDto.Description,
-                MinCapacity=AddDto.MinCapacity,
-                Name=AddDto.Name,
-                Price=AddDto.Price,
-                TripId=AddDto.TripId
+                ImageUrl = mapPackageTrip.ImageUrl,
+                MaxCapacity = AddDto.MaxCapacity,
+                Description = AddDto.Description,
+                MinCapacity = AddDto.MinCapacity,
+                Name = AddDto.Name,
+                Price = AddDto.Price,
+                TripId = AddDto.TripId
             }
             ;
             return Result<GetPackageTripByIdDto>.Success(result);
         }
-        
+
         public override async Task<Result> UpdateAsync(int id, UpdatePackageTripDto UpdateDto)
         {
             var trip = await _tripRepositoryAsync.GetByIdAsync(UpdateDto.TripId);
             if (trip is null)
                 return Result.NotFound($"Not Found Trip By Id : {UpdateDto.TripId}");
             var packageTrip = await _packageTripRepositoryAsync.GetTableNoTracking()
-                                                               .Where(x=>x.Id == id)
-                                                               .Include(x=>x.PackageTripDates)
-                                                               .Select(x=>new PackageTrip
+                                                               .Where(x => x.Id == id)
+                                                               .Include(x => x.PackageTripDates)
+                                                               .Select(x => new PackageTrip
                                                                {
                                                                    Description = x.Description,
                                                                    Duration = x.Duration,
                                                                    ImageUrl = x.ImageUrl,
                                                                    Id = x.Id,
-                                                                   MaxCapacity=x.MaxCapacity,
-                                                                   MinCapacity = x.MinCapacity, 
-                                                                   Name = x.Name, 
-                                                                   Price=x.Price,
-                                                                   TripId =x.TripId,
+                                                                   MaxCapacity = x.MaxCapacity,
+                                                                   MinCapacity = x.MinCapacity,
+                                                                   Name = x.Name,
+                                                                   Price = x.Price,
+                                                                   TripId = x.TripId,
                                                                    PackageTripDates = x.PackageTripDates.Where(x => x.Status != PackageTripDateStatus.Completed && x.Status != PackageTripDateStatus.Cancelled),
-
-
                                                                })
                                                                .FirstOrDefaultAsync();
             if (packageTrip is null)
                 return Result.NotFound($"Not Found PackageTrip By Id : {id}");
-            var PackageTripDateNotCanUpdateCapacity = new List<PackageTripDate>();
-            if(packageTrip.PackageTripDates is not null)
+            using var transaction = await _packagetripDateRepository.BeginTransactionAsync();
+            try
             {
-                foreach (var PackageTripDate in packageTrip.PackageTripDates)
+                var PackageTripDateNotCanUpdateCapacity = new List<PackageTripDate>();
+                if (packageTrip.PackageTripDates.Count() != 0)
                 {
-                    if (UpdateDto.MaxCapacity > PackageTripDate.AvailableSeats - packageTrip.MaxCapacity ) continue;
-                    PackageTripDateNotCanUpdateCapacity.Add(PackageTripDate);
-                    
+                    foreach (var PackageTripDate in packageTrip.PackageTripDates)
+                    {
+                        if (UpdateDto.MaxCapacity >= packageTrip.MaxCapacity - PackageTripDate.AvailableSeats)
+                        {
+                            PackageTripDate.AvailableSeats += UpdateDto.MaxCapacity - packageTrip.MaxCapacity;
+                            if (PackageTripDate.AvailableSeats == 0 && PackageTripDate.Status != PackageTripDateStatus.BookingClosed)
+                                PackageTripDate.Status = PackageTripDateStatus.Full;
+                            await _packagetripDateRepository.UpdateAsync(PackageTripDate);
+                            continue;
+                        }
+                        PackageTripDateNotCanUpdateCapacity.Add(PackageTripDate);
+
+                    }
                 }
+                if (PackageTripDateNotCanUpdateCapacity.Count() != 0)
+                {
+                    await transaction.RollbackAsync();
+                    return Result.BadRequest($"Dates with ids: {string.Join(",", PackageTripDateNotCanUpdateCapacity.Select(x => x.Id))} for PackagaTrip  Not have space to update");
+                }
+                packageTrip.Duration = UpdateDto.Duration;
+                packageTrip.Description = UpdateDto.Description;
+                packageTrip.TripId = UpdateDto.TripId;
+                packageTrip.Name = UpdateDto.Name;
+                packageTrip.MaxCapacity = UpdateDto.MaxCapacity;
+                packageTrip.MinCapacity = UpdateDto.MinCapacity;
+                var oldImageUrl = "";
+                if (UpdateDto.Image is not null)
+                {
+                    oldImageUrl= packageTrip.ImageUrl;
+                    packageTrip.ImageUrl = await _mediaService.UploadMediaAsync("PackageTrip", UpdateDto.Image);
+                }
+                await _packageTripRepositoryAsync.UpdateAsync(packageTrip);
+                await transaction.CommitAsync();
+                if (!string.IsNullOrEmpty(oldImageUrl))
+                    await _mediaService.DeleteMediaAsync(oldImageUrl);
+                return Result.Success("Update Successfully");
             }
-            if(PackageTripDateNotCanUpdateCapacity.Count() != 0)
+            catch (Exception)
             {
-                return Result.BadRequest($"The PackageTripDate with ids: {string.Join(",", PackageTripDateNotCanUpdateCapacity.Select(x => x.Id))} Not have space to update");
+                await transaction.RollbackAsync();
+                throw;
             }
-           
-            packageTrip.Duration = UpdateDto.Duration;
-            packageTrip.TripId = UpdateDto.TripId;
-            packageTrip.Name = UpdateDto.Name;
-            packageTrip.MaxCapacity = UpdateDto.MaxCapacity;
-            packageTrip.MinCapacity = UpdateDto.MinCapacity;
-            packageTrip.ImageUrl = await _mediaService.UploadMediaAsync("PackageTrip", UpdateDto.Image);
-            await _packageTripRepositoryAsync.UpdateAsync(packageTrip);
-            return Result.Success("Update Successfully");
         }
 
-        public async Task<Result<GetPackageTripDestinationsActivitiesDatesDto>> GetPackageTripDestinationsActivitiesDates(int packageTripId , enPackageTripDataStatusDto status)
+        public async Task<Result<GetPackageTripDestinationsActivitiesDatesDto>> GetPackageTripDestinationsActivitiesDates(int packageTripId, enPackageTripDataStatusDto status)
         {
             var PackageTrip = await _packageTripRepositoryAsync.GetTableNoTracking()
                                                              .Where(x => x.Id == packageTripId)
                                                              .Include(x => x.PackageTripDestinations)
                                                              .ThenInclude(x => x.PackageTripDestinationActivities)
-                                                             .Include(x => x.PackageTripDates.Where(ptd => ptd.Status ==Global.ConvertEnPackageTripDataStatusDtoToPackageTripDataStatus( status)))
+                                                             .Include(x => x.PackageTripDates.Where(ptd => ptd.Status == Global.ConvertEnPackageTripDataStatusDtoToPackageTripDataStatus(status)))
                                                              .FirstOrDefaultAsync();
-                                                             
+
             if (PackageTrip is null)
             {
                 return Result<GetPackageTripDestinationsActivitiesDatesDto>.NotFound($"Not Found PackageTrip With Id : {packageTripId}");
@@ -162,13 +187,13 @@ namespace TripAgency.Service.Implementations
                         ActivityId = a.ActivityId,
                     })
                 }),
-                PackageTripDatesDtos = PackageTrip.PackageTripDates.Where(ptd=>ptd.Status== Global.ConvertEnPackageTripDataStatusDtoToPackageTripDataStatus(status)).Select(d => new PackageTripDatesDto
+                PackageTripDatesDtos = PackageTrip.PackageTripDates.Where(ptd => ptd.Status == Global.ConvertEnPackageTripDataStatusDtoToPackageTripDataStatus(status)).Select(d => new PackageTripDatesDto
                 {
                     Id = d.Id,
                     EndBookingDate = d.EndBookingDate,
                     StartBookingDate = d.StartBookingDate,
                     StartPackageTripDate = d.StartPackageTripDate,
-                    EndPackageTripDate = d.EndPackageTripDate ,
+                    EndPackageTripDate = d.EndPackageTripDate,
                     Status = (enPackageTripDataStatusDto)d.Status
 
                 })

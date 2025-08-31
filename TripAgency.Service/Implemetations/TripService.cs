@@ -176,9 +176,16 @@ namespace TripAgency.Service.Implementations
 
             trip.Name = UpdateDto.Name;
             trip.Description =UpdateDto.Description;
-            trip.ImageUrl = await _mediaService.UploadMediaAsync("Trip", UpdateDto.Image);
+            var oldImageUrl="";
+            if (UpdateDto.Image is not null)
+            {
+                oldImageUrl= trip.ImageUrl;
+                trip.ImageUrl = await _mediaService.UploadMediaAsync("Trip", UpdateDto.Image);
+            }
             await _tripRepository.UpdateAsync(trip);
 
+            if(!string.IsNullOrEmpty(oldImageUrl))
+                await _mediaService.DeleteMediaAsync(oldImageUrl);
             return Result.Success("update Successfully");
             
         }

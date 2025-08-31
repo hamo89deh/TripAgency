@@ -8,6 +8,6 @@ namespace TripAgency.Service.Feature.Destination.Commands
         public string Description { get; set; }
         public string Location { get; set; }
         public int CityId { get; set; }
-        public IFormFile Image {  get; set; }
+        public IFormFile? Image {  get; set; }
     }
 }
