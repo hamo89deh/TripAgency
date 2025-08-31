@@ -57,14 +57,48 @@ namespace TripAgency.Service.Implementations
             ;
             return Result<GetPackageTripByIdDto>.Success(result);
         }
+        
         public override async Task<Result> UpdateAsync(int id, UpdatePackageTripDto UpdateDto)
         {
             var trip = await _tripRepositoryAsync.GetByIdAsync(UpdateDto.TripId);
             if (trip is null)
                 return Result.NotFound($"Not Found Trip By Id : {UpdateDto.TripId}");
-            var packageTrip = await _packageTripRepositoryAsync.GetByIdAsync(id);
+            var packageTrip = await _packageTripRepositoryAsync.GetTableNoTracking()
+                                                               .Where(x=>x.Id == id)
+                                                               .Include(x=>x.PackageTripDates)
+                                                               .Select(x=>new PackageTrip
+                                                               {
+                                                                   Description = x.Description,
+                                                                   Duration = x.Duration,
+                                                                   ImageUrl = x.ImageUrl,
+                                                                   Id = x.Id,
+                                                                   MaxCapacity=x.MaxCapacity,
+                                                                   MinCapacity = x.MinCapacity, 
+                                                                   Name = x.Name, 
+                                                                   Price=x.Price,
+                                                                   TripId =x.TripId,
+                                                                   PackageTripDates = x.PackageTripDates.Where(x => x.Status != PackageTripDateStatus.Completed && x.Status != PackageTripDateStatus.Cancelled),
+
+
+                                                               })
+                                                               .FirstOrDefaultAsync();
             if (packageTrip is null)
                 return Result.NotFound($"Not Found PackageTrip By Id : {id}");
+            var PackageTripDateNotCanUpdateCapacity = new List<PackageTripDate>();
+            if(packageTrip.PackageTripDates is not null)
+            {
+                foreach (var PackageTripDate in packageTrip.PackageTripDates)
+                {
+                    if (UpdateDto.MaxCapacity > PackageTripDate.AvailableSeats - packageTrip.MaxCapacity ) continue;
+                    PackageTripDateNotCanUpdateCapacity.Add(PackageTripDate);
+                    
+                }
+            }
+            if(PackageTripDateNotCanUpdateCapacity.Count() != 0)
+            {
+                return Result.BadRequest($"The PackageTripDate with ids: {string.Join(",", PackageTripDateNotCanUpdateCapacity.Select(x => x.Id))} Not have space to update");
+            }
+           
             packageTrip.Duration = UpdateDto.Duration;
             packageTrip.TripId = UpdateDto.TripId;
             packageTrip.Name = UpdateDto.Name;

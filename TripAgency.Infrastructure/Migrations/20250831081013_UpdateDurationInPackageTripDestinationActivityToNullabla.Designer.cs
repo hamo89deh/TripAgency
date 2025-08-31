@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TripAgency.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using TripAgency.Infrastructure.Context;
 namespace TripAgency.Infrastructure.Migrations
 {
     [DbContext(typeof(TripAgencyDbContext))]
-    partial class TripAgencyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250831081013_UpdateDurationInPackageTripDestinationActivityToNullabla")]
+    partial class UpdateDurationInPackageTripDestinationActivityToNullabla
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

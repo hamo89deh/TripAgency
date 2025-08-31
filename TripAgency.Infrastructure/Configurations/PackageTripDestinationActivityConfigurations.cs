@@ -24,7 +24,7 @@ namespace TripAgency.Infrastructure.Configurations
                .IsRequired(false);
 
             builder.Property(x => x.Duration)
-            .IsRequired();    
+            .IsRequired(false);    
 
             builder.Property(x => x.Description)
                 .HasMaxLength(250)

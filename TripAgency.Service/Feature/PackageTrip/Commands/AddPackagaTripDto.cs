@@ -12,7 +12,6 @@ namespace TripAgency.Service.Feature.PackageTrip.Commands
         public string Name { get; set; }
         public string Description { get; set; }
         public int Duration { get; set; }
-
         public IFormFile Image { get; set; }
         public int MaxCapacity { get; set; }
         public int MinCapacity { get; set; }
