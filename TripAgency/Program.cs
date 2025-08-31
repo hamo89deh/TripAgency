@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Any;
@@ -14,7 +13,6 @@ using System.Text;
 using System.Text.Json;
 using TripAgency.Api.Behavior;
 using TripAgency.Data.Entities.Identity;
-using TripAgency.Data.Helping;
 using TripAgency.Infrastructure;
 using TripAgency.Infrastructure.Context;
 using TripAgency.Middleware;
@@ -27,13 +25,10 @@ namespace TripAgency
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             try
             {
-
-
-
                 var builder = WebApplication.CreateBuilder(args);
 
                 // Add services to the container.
@@ -55,7 +50,6 @@ namespace TripAgency
                         Example = new OpenApiString("00:00:00")
                     });
                 });
-
                 builder.Services.AddDbContext<TripAgencyDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
                 builder.Services.AddServicesDependencies(builder.Configuration)
@@ -72,8 +66,9 @@ namespace TripAgency
                 {
                     var actionContext = x.GetRequiredService<IActionContextAccessor>().ActionContext;
                     var factory = x.GetRequiredService<IUrlHelperFactory>();
-                    return factory.GetUrlHelper(actionContext);
+                    return factory.GetUrlHelper(actionContext!);
                 });
+
                 #region addIdentity
 
                 builder.Services.AddIdentity<User, Role>(option =>
@@ -96,40 +91,40 @@ namespace TripAgency
                     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                     option.User.RequireUniqueEmail = true;
                     option.SignIn.RequireConfirmedEmail = false;
-                    
+
 
                 }).AddEntityFrameworkStores<TripAgencyDbContext>().AddDefaultTokenProviders();
                 #endregion
-
-                //Authontication
-
+                #region Authontication
                 builder.Services.AddAuthentication(x =>
                 {
                     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                     x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
                 })
-               .AddJwtBearer(x =>
-               {
-                   x.RequireHttpsMetadata = false;
-                   x.SaveToken = true;
-                   x.TokenValidationParameters = new TokenValidationParameters
-                   {
-                       ValidateIssuer = Boolean.Parse(builder.Configuration["jwtSettings:ValidateIssuer"]!),
-                       ValidIssuers = new[] { builder.Configuration["jwtSettings:Issuer"] },
-                       ValidateIssuerSigningKey = Boolean.Parse(builder.Configuration["jwtSettings:ValidateIssuerSigningKey"]!),
-                      
-                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["jwtSettings:Secret"]!)),
-                       ValidAudience = builder.Configuration["jwtSettings:Audience"],
-                       ValidateAudience = Boolean.Parse(builder.Configuration["jwtSettings:ValidateAudience"]!) ,
-                       ValidateLifetime = Boolean.Parse(builder.Configuration["jwtSettings:ValidateLifeTime"]! ),
-                   };
-               });
+                .AddJwtBearer(x =>
+                {
+                    x.RequireHttpsMetadata = false;
+                    x.SaveToken = true;
+                    x.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = Boolean.Parse(builder.Configuration["jwtSettings:ValidateIssuer"]!),
+                        ValidIssuers = new[] { builder.Configuration["jwtSettings:Issuer"] },
+                        ValidateIssuerSigningKey = Boolean.Parse(builder.Configuration["jwtSettings:ValidateIssuerSigningKey"]!),
+                
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["jwtSettings:Secret"]!)),
+                        ValidAudience = builder.Configuration["jwtSettings:Audience"],
+                        ValidateAudience = Boolean.Parse(builder.Configuration["jwtSettings:ValidateAudience"]!),
+                        ValidateLifetime = Boolean.Parse(builder.Configuration["jwtSettings:ValidateLifeTime"]!),
+                    };
+                });
 
-                // CORS 
+                #endregion
+                #region CORS
+                var allowReactApp = "AllowReactApp";
                 builder.Services.AddCors(options =>
                 {
-                    options.AddPolicy("AllowReactApp",
+                    options.AddPolicy(allowReactApp,
                         policy =>
                         {
                             policy.AllowAnyOrigin() // ????? React app ????? ??
@@ -147,7 +142,8 @@ namespace TripAgency
                                   .AllowAnyMethod();
                         });
                 });
-                //Swagger Gn
+                #endregion
+                #region Swagger Gn
                 builder.Services.AddSwaggerGen(c =>
                 {
                     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Trip Agency", Version = "v1" });
@@ -177,22 +173,43 @@ namespace TripAgency
                         }
                     });
                 });
+                #endregion
+
                 //Auth Filter
                 builder.Services.AddTransient<AuthFilter>();
 
 
                 var app = builder.Build();
                 app.UseMiddleware<ErrorHandlerExceptionMiddleware>();
-                
+
                 // Configure the HTTP request pipeline.
                 if (app.Environment.IsDevelopment())
                 {
                     app.UseSwagger();
                     app.UseSwaggerUI();
                 }
+
+                #region Update-Database
+
+                using var Scope = app.Services.CreateScope();
+                var Services = Scope.ServiceProvider;
+                var LoggerFactory = Services.GetRequiredService<ILoggerFactory>();
+
+                try
+                {
+                    var DbContext = Services.GetRequiredService<TripAgencyDbContext>();
+                    await DbContext.Database.MigrateAsync();
+                }
+                catch (Exception ex)
+                {
+                    var Logger = LoggerFactory.CreateLogger<Program>();
+                    Logger.LogError(ex, "Error! Database Not Updated");
+                }
+
+                #endregion
                 app.UseStaticFiles();
                 app.UseHttpsRedirection();
-                app.UseCors("AllowReactApp");
+                app.UseCors(allowReactApp);
                 app.UseAuthentication();
                 app.UseAuthorization();
 
