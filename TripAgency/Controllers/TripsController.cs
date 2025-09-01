@@ -31,7 +31,7 @@ namespace TripAgency.Controllers
                 return this.ToApiResult(tripsResult);
             return ApiResult<IEnumerable<GetTripsDto>>.Ok(tripsResult.Value!);
         }
-        [HttpGet("/{TripId}/PackageTrips")]
+        [HttpGet("{TripId}/PackageTrips")]
         public async Task<ApiResult<GetPackageTripsForTripDto>> GetPackagesForTrip(int TripId)
         {
             var packageTripsResult = await _tripService.GetPackagesForTripAsync(TripId);
