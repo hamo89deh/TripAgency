@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
+using TripAgency.Data.Enums;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.TripDate.Commands;
 using TripAgency.Service.Feature.TripDate.Queries;
@@ -45,6 +46,17 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult<string>(packageTripDateResult);
             }
             return ApiResult<string>.Ok(packageTripDateResult.Message);
+        }
+      
+        [HttpGet("{PacakageTripId}")]
+        public async Task<ApiResult<GetPackageTripDateByIdDto>> DatePackageTrip(int PacakageTripId , PackageTripDateStatus? dateStatus )
+        {
+            //var packageTripDateResult = await _packageTripDateService.UpdateStatusTripDate(tripDate);
+            //if (!packageTripDateResult.IsSuccess)
+            //{
+            //    return this.ToApiResult<string>(packageTripDateResult);
+            //}
+            return ApiResult<GetPackageTripDateByIdDto>.Ok(new GetPackageTripDateByIdDto());
         }
 
     }

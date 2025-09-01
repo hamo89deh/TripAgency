@@ -11,6 +11,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using TripAgency.Api.Behavior;
 using TripAgency.Data.Entities.Identity;
 using TripAgency.Infrastructure;
@@ -38,8 +39,10 @@ namespace TripAgency
                     .AddJsonOptions(options =>
                     {
                         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
                     });
-                ;
+                
                 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen(options =>
