@@ -40,7 +40,7 @@ namespace TripAgency.Api.Controllers
             return ApiResult<string>.Created(AddActivityPhobiasResult.Message!);
         }
 
-        [HttpDelete]
+        [HttpDelete("{PhobiaId}/Activity/{ActivityId}")]
         public async Task<ApiResult<string>> DeleteActivityPhobia(int ActivityId, int PhobiaId)
         {
             var DeleteActivityPhobiaResult = await _activityPhobiaService.DeleteActivityPhobia(ActivityId, PhobiaId);

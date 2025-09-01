@@ -48,7 +48,7 @@ namespace TripAgency.Api.Controllers
             }
             return ApiResult<GetPhobiaByIdDto>.Created(phobiaResult.Value!);
         }
-        [HttpPut("Id")]
+        [HttpPut("{Id}")]
         public async Task<ApiResult<string>> UpdatePhobia(int Id ,UpdatePhobiaDto updatePhobia)
         {
             var phobiaResult = await _phobiaService.UpdateAsync(Id, updatePhobia);
