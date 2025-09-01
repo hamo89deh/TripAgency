@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
 using TripAgency.Service.Abstracts;
+using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
 using TripAgency.Service.Feature.Trip.Commands;
 using TripAgency.Service.Feature.Trip.Queries;
+using TripAgency.Service.Implementations;
 
 namespace TripAgency.Controllers
 {
@@ -21,6 +23,22 @@ namespace TripAgency.Controllers
         public ITripService _tripService { get; }
         public IMapper _mapper { get; }
 
+        [HttpGet("ForUser")]
+        public async Task<ApiResult<IEnumerable<GetTripsDto>>> GetTripsForUser()
+        {
+            var tripsResult = await _tripService.GetAllForUsersAsync();
+            if (!tripsResult.IsSuccess)
+                return this.ToApiResult(tripsResult);
+            return ApiResult<IEnumerable<GetTripsDto>>.Ok(tripsResult.Value!);
+        }
+        [HttpGet("/{TripId}/PackageTrips")]
+        public async Task<ApiResult<GetPackageTripsForTripDto>> GetPackagesForTrip(int TripId)
+        {
+            var packageTripsResult = await _tripService.GetPackagesForTripAsync(TripId);
+            if (!packageTripsResult.IsSuccess)
+                return this.ToApiResult<GetPackageTripsForTripDto>(packageTripsResult);
+            return ApiResult<GetPackageTripsForTripDto>.Ok(packageTripsResult.Value!);
+        }
         [HttpGet]
         public async Task<ApiResult<IEnumerable<GetTripsDto>>> GetTrips()
         {

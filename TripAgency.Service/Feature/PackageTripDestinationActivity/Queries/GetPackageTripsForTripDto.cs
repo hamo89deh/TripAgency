@@ -14,10 +14,13 @@
         public int Duration { get; set; }
         public int MaxCapacity { get; set; }
         public int MinCapacity { get; set; }
+        public int Rating { get; set; } = 5;
+        public int AvailableSeats { get; set; }
         public decimal ActulPrice { get; set; }
         public string ImageUrl { get; set; }
-        public string CityName { get; set; }
         public int TripId { get; set; }
+        public IEnumerable<PackageTripCitiesDto> PackageTripCitiyDto { get; set; } = [];
+        public IEnumerable<PackageTripHotelsDto> PackageTripHotelsDto { get; set; } = [];
         public IEnumerable<PackageTripTypesForTripDto> PackageTripTypesDtos { get; set; } = [];
         public IEnumerable<PackageTripDestinationsForTripDto> PackageTripDestinationsDtos { get; set; } = [];
     }
@@ -31,6 +34,22 @@
 
     }
     public class PackageTripDestinationsForTripDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public IEnumerable<PackageTripDestinationActivitiesForTripDto> packageTripDestinationActivitiesForTrips { get; set; } = [];
+    }
+    public class PackageTripDestinationActivitiesForTripDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+    public class PackageTripCitiesDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+    public class PackageTripHotelsDto
     {
         public int Id { get; set; }
         public string Name { get; set; }

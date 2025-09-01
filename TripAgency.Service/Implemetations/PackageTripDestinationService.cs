@@ -239,6 +239,7 @@ namespace TripAgency.Service.Implementations
             var PackageTrip = await _packageTripRepositoryAsync.GetTableNoTracking()
                                                                .Where(x=>x.Id==packageTripId)
                                                                .Include(x=>x.PackageTripDestinations)
+                                                                .ThenInclude(x=>x.Destination)
                                                                .FirstOrDefaultAsync();
             if (PackageTrip is null)
             {
@@ -257,7 +258,7 @@ namespace TripAgency.Service.Implementations
                         //EndTime = d.EndTime,
                         //StartTime = d.StartTime,
                         //OrderDestination = d.OrderDestination,
-                        //Description = d.Description,
+                        Name= d.Destination.Name,
                         DestinationId = d.DestinationId,
                     })
                  };

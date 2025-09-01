@@ -44,17 +44,6 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult(packageTripsResult);
             return ApiResult<IEnumerable<GetPackageTripsDto>>.Ok(packageTripsResult.Value!);
         }
-
-        [HttpGet("Trip/{TripId}")]
-        public async Task<ApiResult<GetPackageTripsForTripDto>> GetPackageTripsForTrip(int TripId)
-        {
-            var packageTripsResult = await _packageTripService.GetPackageTripsForTrip(TripId);
-            if (!packageTripsResult.IsSuccess)
-                return this.ToApiResult<GetPackageTripsForTripDto>(packageTripsResult);
-            return ApiResult<GetPackageTripsForTripDto>.Ok(packageTripsResult.Value!);
-        }
-
-
         [HttpGet("{id}")]
         public async Task<ApiResult<GetPackageTripByIdDto>> GetPackageTripById(int id)
         {

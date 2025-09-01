@@ -208,78 +208,7 @@ namespace TripAgency.Service.Implementations
             return Result<GetPackageTripDestinationsActivitiesDatesDto>.Success(resultDto);
         }
 
-        public async Task<Result<GetPackageTripsForTripDto>> GetPackageTripsForTrip(int TripId)
-        {
-            var trip = await _tripRepositoryAsync.GetTableNoTracking()
-                                                 .Where(x=>x.Id==TripId)
-                                                 .FirstOrDefaultAsync();
-            if (trip is null)
-                return Result<GetPackageTripsForTripDto>.NotFound($"Not Found Trip By Id : {TripId}");
-           
-            var PackageTrips = await _packageTripRepositoryAsync.GetTableNoTracking()
-                                                          .Include(x=>x.PackageTripDates)
-                                                          .Where(x => x.TripId == trip.Id && x.PackageTripDates.Where(x=>x.Status == PackageTripDateStatus.Published).Any())
-                                                          .Include(x => x.PackageTripDestinations)
-                                                          .ThenInclude(x=>x.Destination)
-                                                          .ThenInclude(x=>x.City)
-                                                          .Include(x => x.PackageTripDestinations)
-                                                          .ThenInclude(x => x.PackageTripDestinationActivities)
-                                                          .Include(x=>x.PackageTripTypes)
-                                                          .ThenInclude(x=>x.TypeTrip)
-                                                          .ToListAsync();
 
-            var packageTripForTripDtos = new List<PackageTripForTripDto>();
-
-            if (PackageTrips.Select(x => x.PackageTripDates).Count() == 0)
-                return Result<GetPackageTripsForTripDto>.NotFound($"Not Found Any PackageTrip Publish for Trip With Id:{trip.Id}");
-            foreach (var packageTrip in PackageTrips)
-            {
-                    var PackageTripDestinationsDtos = new List<PackageTripDestinationsForTripDto>();
-                    foreach (var packageTripDestinations in packageTrip.PackageTripDestinations)
-                    {
-                        PackageTripDestinationsDtos.Add(new PackageTripDestinationsForTripDto
-                        {
-                            Id = packageTripDestinations.DestinationId,
-                            Name = packageTripDestinations.Destination.Name
-                        });
-                    }
-
-                    var PackageTripTypesDtos = new List<PackageTripTypesForTripDto>();
-                    foreach (var PackageTripType in packageTrip.PackageTripTypes)
-                    {
-                        PackageTripTypesDtos.Add(new PackageTripTypesForTripDto
-                        {                            
-                            Id = PackageTripType.TypeTripId,
-                            Name = PackageTripType.TypeTrip.Name
-                        });
-                    }
-
-                    packageTripForTripDtos.Add(new PackageTripForTripDto
-                    {
-                        ActulPrice = packageTrip!.Price + packageTrip!.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price)),
-                        TripId = packageTrip.TripId,
-                        Id = packageTrip.Id,
-                        Name = packageTrip.Name,
-                        Description = packageTrip.Description,
-                        ImageUrl = packageTrip.ImageUrl,
-                        Duration = packageTrip.Duration,
-                        MaxCapacity = packageTrip.MaxCapacity,
-                        MinCapacity = packageTrip.MinCapacity,
-                        CityName = packageTrip.PackageTripDestinations.Select(x => x.Destination.City.Name).FirstOrDefault()!,
-                        PackageTripDestinationsDtos = PackageTripDestinationsDtos,
-                        PackageTripTypesDtos = PackageTripTypesDtos
-
-
-                    });
-            }
-            var result = new GetPackageTripsForTripDto()
-            {
-                TripId= TripId,
-                PackageTripForTripDtos =packageTripForTripDtos
-            };
-
-            return Result<GetPackageTripsForTripDto>.Success(result);
-        }
       
     }
 }
