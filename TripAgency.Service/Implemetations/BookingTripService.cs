@@ -276,6 +276,13 @@ namespace TripAgency.Service.Implementations
                 if (tripDate != null)
                 {
                     tripDate.AvailableSeats += bookingTrip.PassengerCount;
+                    if (tripDate.Status == PackageTripDateStatus.Full)
+                    {
+                        if (DateTime.UtcNow.Date <= tripDate.EndBookingDate.Date)
+                            tripDate.Status = PackageTripDateStatus.Published;
+                        else
+                            tripDate.Status = PackageTripDateStatus.BookingClosed;
+                    }
                     await _packageTripDateRepository.UpdateAsync(tripDate);
                 }
 

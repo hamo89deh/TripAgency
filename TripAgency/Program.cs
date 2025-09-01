@@ -130,13 +130,13 @@ namespace TripAgency
                     options.AddPolicy(allowReactApp,
                         policy =>
                         {
-                            policy.AllowAnyOrigin() // ????? React app ????? ??
+                            policy.AllowAnyOrigin() // React app 
                                   .AllowAnyHeader()
                                   .AllowAnyMethod();
-                            //.AllowCredentials(); // ??? ??? ?????? authentication
+                            //.AllowCredentials(); authentication
                         });
 
-                    // ?? ?????? ??? origin (??????? ???)
+                    //  origin
                     options.AddPolicy("AllowAll",
                         policy =>
                         {
@@ -181,6 +181,8 @@ namespace TripAgency
                 //Auth Filter
                 builder.Services.AddTransient<AuthFilter>();
 
+                //  Hosted Service
+                builder.Services.AddHostedService<PackageTripDateStatusUpdateService>();
 
                 var app = builder.Build();
                 app.UseMiddleware<ErrorHandlerExceptionMiddleware>();

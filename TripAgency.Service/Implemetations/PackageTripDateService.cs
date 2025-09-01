@@ -321,8 +321,8 @@ namespace TripAgency.Service.Implementations
                 {
                     if (packageTripDate.EndBookingDate <= DateTime.Now)
                     {
-                        return Result.BadRequest($"Cannot RePublished the PackageTrip With id: {packageTripDateId} due to the expiration date of the booking");
-                    }
+                        return Result.BadRequest($"Cannot RePublished the PackageTrip With id: {packageTripDateId} after booking period has ended");
+                    }  
                     if (packageTripDate.AvailableSeats == 0)
                     {
                         return Result.BadRequest($"Cannot RePublished the PackageTrip With id: {packageTripDateId} Because there are no seats available");
