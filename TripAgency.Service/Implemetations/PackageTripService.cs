@@ -147,6 +147,7 @@ namespace TripAgency.Service.Implementations
                                                              .Where(x => x.Id == packageTripId)
                                                              .Include(x => x.PackageTripDestinations)
                                                              .ThenInclude(x => x.PackageTripDestinationActivities)
+                                                             .ThenInclude(x=>x.Activity)
                                                              .Include(x => x.PackageTripDates.Where(ptd => ptd.Status == Global.ConvertEnPackageTripDataStatusDtoToPackageTripDataStatus(status)))
                                                              .FirstOrDefaultAsync();
 
@@ -183,13 +184,14 @@ namespace TripAgency.Service.Implementations
                     //StartTime = d.StartTime,
                     //OrderDestination = d.OrderDestination,
                     DestinationId = d.DestinationId,
-                    ActivitiesDtos = d.PackageTripDestinationActivities.Select(a => new PackageTripDestinationActivitiesDto
+                    ActivitiesDtos = d.PackageTripDestinationActivities.Select(a => new GetPackageTripDestinationActivityDto
                     {
                         //Description = a.Description,
                         //Duration = a.Duration,
                         //EndTime = a.EndTime,
                         //OrderActivity = a.OrderActivity,
                         //StartTime = d.StartTime,
+                        Name = a.Activity.Name,
                         Price = a.Price,
                         ActivityId = a.ActivityId,
                     })

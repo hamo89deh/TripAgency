@@ -293,41 +293,34 @@ namespace TripAgency.Service.Implementations
                                                                                .Where(x => x.PackageTripId == packageTripId 
                                                                                                       && x.DestinationId == destinationId)
                                                                                .Include(x=>x.PackageTripDestinationActivities)
+                                                                               .ThenInclude(x=>x.Activity)
                                                                                .FirstOrDefaultAsync();
             if (PackageTripDestination is null)
             {
                 return Result<GetPackageTripDestinationActivitiesDto>.NotFound($"Not Found packageTrip wiht id : {packageTripId} associated with Destination id {destinationId} ");
             }
             GetPackageTripDestinationActivitiesDto restulDto;
-            if (PackageTripDestination.PackageTripDestinationActivities.Any())
+            if (!PackageTripDestination.PackageTripDestinationActivities.Any())
             {
-                restulDto = new GetPackageTripDestinationActivitiesDto()
-                {
-                    DestinationId = PackageTripDestination.DestinationId,
-                    PackageTripId = PackageTripDestination.PackageTripId,
-                    ActivitiesDtos = PackageTripDestination.PackageTripDestinationActivities.Select(a => new PackageTripDestinationActivitiesDto
-                    {
-                        //Description = a.Description,
-                        //Duration = a.Duration,
-                        //EndTime = a.EndTime,
-                        //OrderActivity = a.OrderActivity,
-                        //StartTime = a.StartTime,
-                        ActivityId = a.ActivityId,
-                        Price = a.Price,
-
-                    })
-                };
+                return Result<GetPackageTripDestinationActivitiesDto>.NotFound($"Not Found Any Activities For destination with id :{destinationId} and PackageTrip with id :{packageTripId}");
             }
-            else
+            restulDto = new GetPackageTripDestinationActivitiesDto()
             {
-                restulDto = new GetPackageTripDestinationActivitiesDto()
+                DestinationId = PackageTripDestination.DestinationId,
+                PackageTripId = PackageTripDestination.PackageTripId,
+                ActivitiesDtos = PackageTripDestination.PackageTripDestinationActivities.Select(a => new GetPackageTripDestinationActivityDto
                 {
-                    DestinationId = PackageTripDestination.DestinationId,
-                    PackageTripId = PackageTripDestination.PackageTripId,
-                    ActivitiesDtos = []
+                    //Description = a.Description,
+                    //Duration = a.Duration,
+                    //EndTime = a.EndTime,
+                    //OrderActivity = a.OrderActivity,
+                    //StartTime = a.StartTime,
+                    Name = a.Activity.Name,
+                    ActivityId = a.ActivityId,
+                    Price = a.Price,
 
-                };
-            }
+                })
+            };
             return Result<GetPackageTripDestinationActivitiesDto>.Success(restulDto);
 
         }
@@ -338,6 +331,7 @@ namespace TripAgency.Service.Implementations
                                                              .Where(x => x.Id == packageTripId)
                                                              .Include(x => x.PackageTripDestinations)
                                                              .ThenInclude(x=>x.PackageTripDestinationActivities)
+                                                             .ThenInclude(x=>x.Activity)
                                                              .FirstOrDefaultAsync();
             if (PackageTrip is null)
             {
@@ -360,13 +354,14 @@ namespace TripAgency.Service.Implementations
                             //StartTime = d.StartTime,
                             //OrderDestination = d.OrderDestination,
                             DestinationId = d.DestinationId,
-                            ActivitiesDtos = d.PackageTripDestinationActivities.Select(a => new PackageTripDestinationActivitiesDto
+                            ActivitiesDtos = d.PackageTripDestinationActivities.Select(a => new GetPackageTripDestinationActivityDto
                             {
                                 //Description = a.Description,
                                 //Duration = a.Duration,
                                 //EndTime = a.EndTime,
                                 //OrderActivity = a.OrderActivity,
                                 //StartTime = d.StartTime,
+                                Name = a.Activity.Name,
                                 Price = a.Price,
                                 ActivityId = a.ActivityId,
                             })

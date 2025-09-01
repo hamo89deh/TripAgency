@@ -141,10 +141,10 @@ namespace TripAgency.Service.Implementations
                 {
                     PackageTripId = PackageTripDestination.PackageTripId,
                     DestinationId = PackageTripDestination.DestinationId,
-                    ActivitiesDtos = destinationActivities.Select(da => new PackageTripDestinationActivitiesDto
+                    ActivitiesDtos = destinationActivities.Select(da => new GetPackageTripDestinationActivityDto
                     {
                         //Description = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.Description,
-                        //// Name =da.Activity.Name,
+                         Name =da.Activity.Name,
                         //Duration = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.Duration,
                         //StartTime = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.StartTime,
                         //EndTime = PackageTripDestinationActivitiesToAdd.FirstOrDefault(x => x.ActivityId == da.ActivityId)!.EndTime,
@@ -314,6 +314,7 @@ namespace TripAgency.Service.Implementations
                 DestinationId = PackageTripDestination.DestinationId,
                 PackageTripId = PackageTripDestination.PackageTripId,
                 Price = PackageTripDestinationActivity.Price,
+                Name = Activity.Name,
                 //Description = PackageTripDestinationActivity.Description,
                 //Duration = PackageTripDestinationActivity.Duration,
                 //EndTime = PackageTripDestinationActivity.EndTime,
