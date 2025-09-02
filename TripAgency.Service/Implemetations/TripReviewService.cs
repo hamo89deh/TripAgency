@@ -196,6 +196,21 @@ namespace TripAgency.Service.Implementations
 
             return Result<bool>.Success(true);
         }
+        public async Task<decimal?> CalculateAverageRatingAsync(int packageTripId)
+        {
+            const int minimumReviews = 3;
+            var validReviewsCount = await _tripReviewRepository.GetTableNoTracking()
+                .Include(p=>p.PackageTripDate)
+                .Where(r => r.PackageTripDate.PackageTripId == packageTripId &&  r.Rating >= 1 && r.Rating <= 5)
+                .CountAsync();
 
+            if (validReviewsCount < minimumReviews)
+                return null;
+
+            return await _tripReviewRepository.GetTableNoTracking()
+                .Include(p => p.PackageTripDate)
+                .Where(r => r.PackageTripDate.PackageTripId == packageTripId &&  r.Rating >= 1 && r.Rating <= 5)
+                .AverageAsync(r => (decimal?)r.Rating);
+        }
     }
 }

@@ -11,6 +11,7 @@ using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.Destination.Commands;
 using TripAgency.Service.Feature.Destination.Queries;
 using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
+using TripAgency.Service.Feature.PromotionDto;
 using TripAgency.Service.Feature.Trip.Commands;
 using TripAgency.Service.Feature.Trip.Queries;
 using TripAgency.Service.Generic;
@@ -26,7 +27,10 @@ namespace TripAgency.Service.Implementations
         public IMediaService _mediaService { get; }
         public IPackageTripRepositoryAsync _packageTripRepositoryAsync { get; }
         public IUserPhobiasRepositoryAsync _userPhobiaRepositoryAsync { get; }
+        public ITripReviewService _tripReviewService { get; }
+        public ITripReviewRepositoryAsync _tripReviewRepository { get; }
         private ITripDestinationRepositoryAsync _tripDestinationRepositoryAsync { get; set; }
+        private readonly IPromotionRepositoryAsync _promotionRepositoryAsync;
         public IMapper _mapper { get; }
 
         public TripService(ITripRepositoryAsync tripRepository,
@@ -36,6 +40,8 @@ namespace TripAgency.Service.Implementations
                            IMediaService mediaService,
                            IPackageTripRepositoryAsync packageTripRepositoryAsync,
                            IUserPhobiasRepositoryAsync userPhobiaRepositoryAsync,
+                           IPromotionRepositoryAsync promotionRepository,
+                           ITripReviewService tripReviewService,
                            ITripDestinationRepositoryAsync tripDestinationRepositoryAsync) : base(tripRepository, mapper)
         {
             _tripRepository = tripRepository;
@@ -46,6 +52,8 @@ namespace TripAgency.Service.Implementations
             _packageTripRepositoryAsync = packageTripRepositoryAsync;
             _userPhobiaRepositoryAsync = userPhobiaRepositoryAsync;
             _tripDestinationRepositoryAsync = tripDestinationRepositoryAsync;
+            _promotionRepositoryAsync = promotionRepository;
+            _tripReviewService = tripReviewService;
         }
         public async Task<Result<GetTripByIdDto>> GetTripByNameAsync(string name)
         {
@@ -289,10 +297,10 @@ namespace TripAgency.Service.Implementations
             var PackageTrips = await _packageTripRepositoryAsync.GetTableNoTracking()
                                                           .Include(x => x.PackageTripDates)
                                                           .Where(x => x.TripId == trip.Id && x.PackageTripDates.Any(x => x.Status == PackageTripDateStatus.Published))
+                                                          .Include(x=>x.Promotion)
                                                           .Include(x => x.PackageTripDestinations)
                                                              .ThenInclude(x => x.Destination)
                                                                 .ThenInclude(x => x.City)
-                                                                    .ThenInclude(x => x.Hotels)
                                                           .Include(x => x.PackageTripDestinations)
                                                              .ThenInclude(x => x.PackageTripDestinationActivities)
                                                                 .ThenInclude(x => x.Activity)
@@ -300,7 +308,9 @@ namespace TripAgency.Service.Implementations
                                                              .ThenInclude(x => x.TypeTrip)
 
                                                           .ToListAsync();
-
+            if (!PackageTrips.Any())
+                return Result<GetPackageTripsForTripDto>.NotFound($"Not Found Any PackageTrip Published for Trip With Id: {trip.Id}");
+            
             var packageTripForTripDtos = new List<PackageTripForTripDto>();
 
             if (PackageTrips.Select(x => x.PackageTripDates).Count() == 0)
@@ -318,40 +328,47 @@ namespace TripAgency.Service.Implementations
                                        .Select(g => g.First())
                                        .ToList();
 
-                // جلب الفنادق الفريدة بناءً على Hotel.Id
-                var hotels = packageTrip.PackageTripDestinations
-                                       .SelectMany(pd => pd.Destination.City.Hotels)
-                                       .Select(h => new PackageTripHotelsDto
-                                       {
-                                           Id = h.Id,
-                                           Name = h.Name
-                                       })
-                                       .GroupBy(h => h.Id)
-                                       .Select(g => g.First())
-                                       .ToList();
+               
+                // حساب السعر الأصلي
+                var actualPrice = packageTrip.Price + packageTrip.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price));
+
+             
+                // التحقق من العرض الترويجي
+                var promotion = packageTrip.Promotion;
+                if (promotion != null && promotion.IsActive && promotion.EndDate < DateTime.UtcNow)
+                {
+                    // تعطيل العرض المنتهي
+                    promotion.IsActive = false;
+                    await _promotionRepositoryAsync.UpdateAsync(promotion);
+                    //_logger.LogInformation("Deactivated expired promotion {PromotionId} for PackageTrip {PackageTripId}", promotion.Id, packageTrip.Id);
+                    promotion = null;
+                }
+                // حساب السعر بعد الخصم
+                decimal? priceAfterPromotion = null;
+                GetPromotionByIdDto promotionDto = null;
+                if (promotion != null && promotion.IsActive && promotion.EndDate < DateTime.UtcNow && promotion.StartDate <= DateTime.UtcNow )
+                {
+                    priceAfterPromotion = actualPrice * (1 - (promotion.DiscountPercentage / 100m));
+                    promotionDto = _mapper.Map<GetPromotionByIdDto>(promotion);
+                }
+                // حساب متوسط التقييم
+                var averageRating = await _tripReviewService.CalculateAverageRatingAsync(packageTrip.Id);
+                decimal finalRating = averageRating.HasValue ? Math.Round(averageRating.Value, 2) : 0m;
                 packageTripForTripDtos.Add(new PackageTripForTripDto
                 {
+                    PackageTripId = packageTrip.Id,
                     ActulPrice = packageTrip!.Price + packageTrip!.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price)),
+                    PriceAfterPromotion = priceAfterPromotion,
+                    GetPromotionByIdDto = promotionDto,
                     TripId = packageTrip.TripId,
-                    Id = packageTrip.Id,
                     Name = packageTrip.Name,
                     Description = packageTrip.Description,
                     ImageUrl = packageTrip.ImageUrl,
                     Duration = packageTrip.Duration,
                     MaxCapacity = packageTrip.MaxCapacity,
                     MinCapacity = packageTrip.MinCapacity,
-                    PackageTripHotelsDto = hotels,
                     PackageTripCitiyDto = cities,
-                    PackageTripDestinationsDtos = packageTrip.PackageTripDestinations.Select(x => new PackageTripDestinationsForTripDto
-                    {
-                        Id = x.DestinationId,
-                        Name = x.Destination.Name,
-                        packageTripDestinationActivitiesForTrips = x.PackageTripDestinationActivities.Select(x => new PackageTripDestinationActivitiesForTripDto
-                        {
-                            Id = x.Id,
-                            Name = x.Activity.Name
-                        })
-                    }),
+                    Rating= finalRating,
                     PackageTripTypesDtos = packageTrip.PackageTripTypes.Select(x => new PackageTripTypesForTripDto
                     {
                         Id = x.TypeTripId,

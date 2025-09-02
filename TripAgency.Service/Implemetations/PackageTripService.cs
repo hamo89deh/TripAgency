@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using TripAgency.Data.Entities;
 using TripAgency.Data.Enums;
 using TripAgency.Data.NewFolder1;
@@ -13,6 +14,7 @@ using TripAgency.Service.Feature.PackageTripDestination.Queries;
 using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
 using TripAgency.Service.Feature.PackageTripType.Commands;
 using TripAgency.Service.Feature.Payment;
+using TripAgency.Service.Feature.PromotionDto;
 using TripAgency.Service.Feature.TripDate.Queries;
 using TripAgency.Service.Generic;
 
@@ -22,15 +24,21 @@ namespace TripAgency.Service.Implementations
     {
         private IPackageTripRepositoryAsync _packageTripRepositoryAsync { get; set; }
         public IPackageTripDateRepositoryAsync _packagetripDateRepository { get; }
+        public ILogger<PackageTripService> _logger { get; }
         public ICityRepositoryAsync _cityRepositoryAsync { get; }
+        public IPromotionRepositoryAsync _promotionRepository { get; }
         public ITripRepositoryAsync _tripRepositoryAsync { get; }
+        public ITripReviewService _tripReviewService { get; }
         public IMediaService _mediaService { get; }
         public IMapper _mapper { get; }
 
         public PackageTripService(IPackageTripRepositoryAsync packagetripRepository,
                                   IPackageTripDateRepositoryAsync packagetripDateRepository,
                                   ICityRepositoryAsync cityRepositoryAsync,
+                                  IPromotionRepositoryAsync promotionRepository,
                                   ITripRepositoryAsync tripRepository,
+                                  ITripReviewService tripReviewService,
+                                  ILogger<PackageTripService> logger,
                                   IMediaService mediaService,
                                   IMapper mapper
                                   ) : base(packagetripRepository, mapper)
@@ -38,9 +46,12 @@ namespace TripAgency.Service.Implementations
             _packageTripRepositoryAsync = packagetripRepository;
             _packagetripDateRepository = packagetripDateRepository;
             _cityRepositoryAsync = cityRepositoryAsync;
+            _promotionRepository = promotionRepository;
             _tripRepositoryAsync = tripRepository;
+            _tripReviewService = tripReviewService;
             _mediaService = mediaService;
             _mapper = mapper;
+            _logger= logger;
         }
 
         public override async Task<Result<GetPackageTripByIdDto>> CreateAsync(AddPackageTripDto AddDto)
@@ -210,7 +221,126 @@ namespace TripAgency.Service.Implementations
             return Result<GetPackageTripDestinationsActivitiesDatesDto>.Success(resultDto);
         }
 
+        public async Task<Result<GetPackageTripDetailsDto>> GetPackageTripDetailsAsync(int packageTripId)
+        {
+            _logger.LogInformation("Fetching PackageTrip details for PackageTripId: {PackageTripId}", packageTripId);
 
-      
+            var packageTrip = await _packageTripRepositoryAsync.GetTableNoTracking()
+                .Include(x => x.PackageTripDates)
+                .Include(x => x.Promotion)
+                .Include(x => x.PackageTripDestinations)
+                    .ThenInclude(x => x.Destination)
+                        .ThenInclude(x => x.City)
+                            .ThenInclude(x => x.Hotels)
+                .Include(x => x.PackageTripDestinations)
+                    .ThenInclude(x => x.PackageTripDestinationActivities)
+                        .ThenInclude(x => x.Activity)
+                .Include(x => x.PackageTripTypes)
+                    .ThenInclude(x => x.TypeTrip)
+                .Where(x => x.Id == packageTripId)
+                .FirstOrDefaultAsync();
+
+            if (packageTrip == null)
+            {
+                _logger.LogWarning("PackageTrip with Id {PackageTripId} not found.", packageTripId);
+                return Result<GetPackageTripDetailsDto>.NotFound($"PackageTrip with Id {packageTripId} not found.");
+            }
+
+            // حساب السعر الأصلي
+            var actualPrice = packageTrip.Price + packageTrip.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price));
+
+            // التحقق من العرض الترويجي
+            var promotion = packageTrip.Promotion;
+            if (promotion != null && promotion.IsActive && promotion.EndDate < DateTime.UtcNow)
+            {
+                // تعطيل العرض المنتهي
+                promotion.IsActive = false;
+                await _promotionRepository.UpdateAsync(promotion);
+                _logger.LogInformation("Deactivated expired promotion {PromotionId} for PackageTrip {PackageTripId}", promotion.Id, packageTrip.Id);
+                promotion = null;
+            }
+
+            // حساب السعر بعد الخصم
+            decimal? priceAfterPromotion = null;
+            GetPromotionByIdDto promotionDto = null;
+            if (promotion != null && promotion.IsActive && promotion.StartDate <= DateTime.UtcNow && promotion.EndDate >= DateTime.UtcNow)
+            {
+                priceAfterPromotion = actualPrice * (1 - (promotion.DiscountPercentage / 100m));
+                promotionDto = _mapper.Map<GetPromotionByIdDto>(promotion);
+            }
+
+            // جلب المدن الفريدة
+            var cities = packageTrip.PackageTripDestinations
+                .Select(pd => new PackageTripCitiesDto
+                {
+                    Id = pd.Destination.City.Id,
+                    Name = pd.Destination.City.Name
+                })
+                .GroupBy(c => c.Id)
+                .Select(g => g.First())
+                .ToList();
+
+            // جلب الفنادق الفريدة
+            var hotels = packageTrip.PackageTripDestinations
+                .SelectMany(pd => pd.Destination.City.Hotels)
+                .Select(h => new PackageTripHotelsDto
+                {
+                    Id = h.Id,
+                    Name = h.Name
+                })
+                .GroupBy(h => h.Id)
+                .Select(g => g.First())
+                .ToList();
+            // حساب متوسط التقييم
+            var averageRating = await _tripReviewService.CalculateAverageRatingAsync(packageTripId);
+            decimal finalRating = averageRating.HasValue ? Math.Round(averageRating.Value, 2) : 0m;
+            // إنشاء DTO
+            var resultDto = new GetPackageTripDetailsDto
+            {
+                Id = packageTrip.Id,
+                Name = packageTrip.Name,
+                Description = packageTrip.Description,
+                Duration = packageTrip.Duration,
+                MaxCapacity = packageTrip.MaxCapacity,
+                MinCapacity = packageTrip.MinCapacity,
+                Rating = finalRating,
+                ActualPrice = actualPrice,
+                PriceAfterPromotion = priceAfterPromotion,
+                GetPromotionByIdDto = promotionDto,
+                ImageUrl = packageTrip.ImageUrl,
+                TripId = packageTrip.TripId,
+                PackageTripCitiesDto = cities,
+                PackageTripHotelsDto = hotels,
+                PackageTripTypesDtos = packageTrip.PackageTripTypes.Select(x => new PackageTripTypesForTripDto
+                {
+                    Id = x.TypeTripId,
+                    Name = x.TypeTrip.Name
+                }),
+                PackageTripDestinationsDtos = packageTrip.PackageTripDestinations.Select(x => new PackageTripDestinationsForTripDto
+                {
+                    Id = x.DestinationId,
+                    Name = x.Destination.Name,
+                    packageTripDestinationActivitiesForTrips = x.PackageTripDestinationActivities.Select(a => new PackageTripDestinationActivitiesForTripDto
+                    {
+                        Id = a.Id,
+                        Name = a.Activity.Name
+                    })
+                }),
+                PackageTripDates = packageTrip.PackageTripDates
+                    .Where(ptd => ptd.Status == PackageTripDateStatus.Published)
+                    .Select(ptd => new PackageTripDatesForTripDto
+                    {
+                        Id = ptd.Id,
+                        StartPackageTripDate = ptd.StartPackageTripDate,
+                        EndPackageTripDate = ptd.EndPackageTripDate,
+                        StartBookingDate = ptd.StartBookingDate,
+                        EndBookingDate = ptd.EndBookingDate,
+                        AvailableSeats = ptd.AvailableSeats
+                    })
+            };
+
+            _logger.LogInformation("Successfully fetched PackageTrip details for PackageTripId: {PackageTripId}", packageTripId);
+            return Result<GetPackageTripDetailsDto>.Success(resultDto);
+        }
     }
 }

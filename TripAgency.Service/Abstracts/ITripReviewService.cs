@@ -12,6 +12,7 @@ namespace TripAgency.Service.Abstracts
     {
         Task<Result<IEnumerable<GetTripReviewsDto>>> GetReviewsByPackageTripDateIdAsync(int packageTripDateId);
         Task<Result<bool>> CanUserReviewAsync(int packageTripDateId);
+        Task<decimal?> CalculateAverageRatingAsync(int packageTripId);
 
     }
 }

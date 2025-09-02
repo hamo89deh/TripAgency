@@ -5,7 +5,7 @@ using TripAgency.Infrastructure.InfrastructureBases;
 
 namespace TripAgency.Infrastructure.Repositories
 {
-    public class PromotionRepositoryAsync : GenericRepositoryAsync<Promotion>, IPromotionRepository
+    public class PromotionRepositoryAsync : GenericRepositoryAsync<Promotion>, IPromotionRepositoryAsync
     {
         public PromotionRepositoryAsync(TripAgencyDbContext dbContext) : base(dbContext)
         {

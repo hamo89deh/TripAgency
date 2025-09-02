@@ -52,7 +52,15 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult(packageTripResult);
             return ApiResult<GetPackageTripByIdDto>.Ok(packageTripResult.Value!);
         }
-
+       
+        [HttpGet("DetailsForBooking/{packageTripId}")]
+        public async Task<ApiResult<GetPackageTripDetailsDto>> GetPackageTripDetails(int packageTripId)
+        {
+            var result = await _packageTripService.GetPackageTripDetailsAsync(packageTripId);
+            if (!result.IsSuccess)
+                return this.ToApiResult(result);
+            return ApiResult<GetPackageTripDetailsDto>.Ok(result.Value!);
+        }
         [HttpPost]
         public async Task<ApiResult<GetPackageTripByIdDto>> AddPackageTrip([FromForm] AddPackageTripDto packageTripdto)
         {
