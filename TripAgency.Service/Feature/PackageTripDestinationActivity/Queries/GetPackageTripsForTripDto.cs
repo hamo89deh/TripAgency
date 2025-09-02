@@ -1,4 +1,6 @@
-﻿namespace TripAgency.Service.Feature.PackageTripDestinationActivity.Queries
+﻿using TripAgency.Service.Feature.PromotionDto;
+
+namespace TripAgency.Service.Feature.PackageTripDestinationActivity.Queries
 {
     public class GetPackageTripsForTripDto
     {
@@ -17,6 +19,8 @@
         public int Rating { get; set; } = 5;
         public int AvailableSeats { get; set; }
         public decimal ActulPrice { get; set; }
+        public decimal PriceAfterPromotion { get; set; }
+        public GetPromotionByIdDto GetPromotionByIdDto { get; set; }     
         public string ImageUrl { get; set; }
         public int TripId { get; set; }
         public IEnumerable<PackageTripCitiesDto> PackageTripCitiyDto { get; set; } = [];

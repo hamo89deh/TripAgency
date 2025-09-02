@@ -14,8 +14,8 @@ namespace TripAgency.Service.Abstracts
                                         IDeleteService<Activity>
     {
         Task<Result<GetActivityByIdDto>> GetActivityByNameAsync(string name);
-         Task<Result<PaginatedResult<GetActivitiesDto>>> GetActivityPagination(string searchItem, Dictionary<string, string> filters, string sortColumn, string sortDirection, int PageNumber, int pageSize);
+        Task<Result<PaginatedResult<GetActivitiesDto>>> GetActivityPagination(string searchItem, Dictionary<string, string> filters, string sortColumn, string sortDirection, int PageNumber, int pageSize);
       
 
-    }
+    } 
 }

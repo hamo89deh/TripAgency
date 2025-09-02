@@ -57,6 +57,16 @@ namespace TripAgency.Service.Implementations
             {
                 return Result<GetPackageTripDateByIdDto>.NotFound($"Not Found PackageTrip With Id : {AddDto.PackageTripId}");
             }
+            // التحقق من المدة
+            var tripDuration = (AddDto.EndPackageTripDate - AddDto.StartPackageTripDate).Days;
+            var expectedDuration = packageTrip.Duration;
+            if (Math.Abs(tripDuration - expectedDuration) > 1)
+            {
+                //_logger.LogWarning("Duration validation failed for PackageTripId: {PackageTripId}. Expected: {ExpectedDuration} days, Got: {TripDuration} days",
+                  //  AddDto.PackageTripId, expectedDuration, tripDuration);
+                return Result<GetPackageTripDateByIdDto>.BadRequest(
+                    $"The duration between StartPackageTripDate and EndPackageTripDate ({tripDuration} days) must be within ±1 day of the PackageTrip duration ({expectedDuration} days) for PackageTripId: {AddDto.PackageTripId}.");
+            }
 
             if (!packageTrip.PackageTripDestinations.Any())
             {
@@ -341,7 +351,6 @@ namespace TripAgency.Service.Implementations
                 return Result.Failure("Internal Error", failureType: ResultFailureType.InternalError);
             }
         }
-
         public async Task<Result<IEnumerable<GetPackageTripDateByIdDto>>> GetDateForPackageTrip(int packageTripId, PackageTripDateStatus? status)
         {
             var packageTrip = await _packageTripRepositoryAsync.GetTableNoTracking()
