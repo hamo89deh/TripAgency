@@ -20,9 +20,7 @@ namespace TripAgency.Service.Mapping.TripDate_Entity
                 .ForMember(d => d.StartTripDate, op => op.MapFrom(s => s.StartPackageTripDate))
                 .ForMember(d => d.EndTripDate, op => op.MapFrom(s => s.EndPackageTripDate))
                 .ForMember(d => d.AvailableSeats, op => op.MapFrom(s => s.AvailableSeats))
-                .ForMember(d => d.CreateDate, op => op.MapFrom(s => s.CreateDate))
                 .ForMember(d => d.PackageTripId, op => op.MapFrom(s => s.PackageTripId))
-                .ForMember(d => d.IsAvailable, op => op.MapFrom(s => s.IsAvailable))
                 .ForMember(d => d.Status, op => op.MapFrom(s => s.Status));
         }
     }

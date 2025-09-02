@@ -16,11 +16,14 @@ namespace TripAgency.Data.Entities
         public BookingStatus BookingStatus { get; set; }
         public decimal ActualPrice { get; set; }
         public string Notes { get; set; }
-        public PackageTripDate PackageTripDate { get; set; }  
         public int PackageTripDateId { get; set; }
-        public User User { get; set; }
         public int UserId { get; set; }
+        public int? AppliedPromotionId { get; set; } // حقل جديد لتتبع العرض المطبق
+        
+        public Promotion AppliedPromotion { get; set; } // العلاقة مع العرض
+        public User User { get; set; }
         public Payment Payment { get; set; }
+        public PackageTripDate PackageTripDate { get; set; }  
         public IEnumerable<BookingPassenger> BookingPassengers { get; set; }
 
     }

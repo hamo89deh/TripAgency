@@ -43,11 +43,11 @@ namespace TripAgency.Service.Implemetations
         {
             try
             {
-                if(_environment.WebRootPath is null)
+                if (_environment.WebRootPath is null)
                     GetOrCreateWwwRootPath();
                 // إنشاء اسم فريد للملف
                 var fullPath = Path.Combine(_environment.WebRootPath!, Location);
-                
+
                 var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
                 // إنشاء المجلد إذا لم يكن موجوداً
                 if (!Directory.Exists(fullPath))
@@ -69,5 +69,51 @@ namespace TripAgency.Service.Implemetations
                 throw;
             }
         }
+        // وظيفة جديدة لحذف الصورة بناءً على imageUrl
+        public async Task<bool> DeleteMediaAsync(string imageUrl)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(imageUrl))
+                {
+                    _logger.LogWarning("imageUrl is null or empty");
+                    return false;
+                }
+
+                // الحصول على المسار الكامل للملف
+                var filePath = GetAbsolutePath(imageUrl);
+
+                // التحقق من وجود الملف
+                if (!File.Exists(filePath))
+                {
+                    _logger.LogWarning($"File not found: {filePath}");
+                    return false;
+                }
+
+                // حذف الملف
+                File.Delete(filePath);
+                _logger.LogInformation($"File deleted successfully: {filePath}");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting file: {imageUrl}");
+                return false;
+            }
+        }
+
+        // وظيفة مساعدة للحصول على المسار المطلق من URL
+        private string GetAbsolutePath(string relativeUrl)
+        {
+            // إزالة البادئة "/" إذا كانت موجودة
+            var cleanPath = relativeUrl.StartsWith("/")
+                ? relativeUrl.Substring(1)
+                : relativeUrl;
+
+            // الجمع بين مسار wwwroot والمسار النسبي
+            return Path.Combine(_environment.WebRootPath ?? GetOrCreateWwwRootPath(), cleanPath);
+        }
+
     }
 }

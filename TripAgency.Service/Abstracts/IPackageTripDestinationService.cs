@@ -7,7 +7,7 @@ using TripAgency.Service.Generic;
 
 namespace TripAgency.Service.Abstracts
 {
-    public interface IPackageTripDestinationService : IWriteService<PackageTripDestination , AddPackageTripDestinationDto , UpdatePackageTripDestinationDto , GetPackageTripDestinationByIdDto >
+    public interface IPackageTripDestinationService : IWriteService<PackageTripDestination , AddPackageTripDestinationDto , UpdatePackageTripDestinationDto , GetPackageTripDestinationsDto>
     {
         Task<Result<GetPackageTripDestinationByIdDto>> GetPackageTripDestination(int packageTripId , int destinationId);
         Task<Result<GetPackageTripDestinationsDto>> GetPackageTripDestinations(int packageTripId );

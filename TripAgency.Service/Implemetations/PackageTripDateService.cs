@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using TripAgency.Data.Entities;
 using TripAgency.Data.Enums;
 using TripAgency.Data.NewFolder1;
@@ -55,6 +56,16 @@ namespace TripAgency.Service.Implementations
             if (packageTrip is null)
             {
                 return Result<GetPackageTripDateByIdDto>.NotFound($"Not Found PackageTrip With Id : {AddDto.PackageTripId}");
+            }
+            // التحقق من المدة
+            var tripDuration = (AddDto.EndPackageTripDate - AddDto.StartPackageTripDate).Days;
+            var expectedDuration = packageTrip.Duration;
+            if (Math.Abs(tripDuration - expectedDuration) > 1)
+            {
+                //_logger.LogWarning("Duration validation failed for PackageTripId: {PackageTripId}. Expected: {ExpectedDuration} days, Got: {TripDuration} days",
+                  //  AddDto.PackageTripId, expectedDuration, tripDuration);
+                return Result<GetPackageTripDateByIdDto>.BadRequest(
+                    $"The duration between StartPackageTripDate and EndPackageTripDate ({tripDuration} days) must be within ±1 day of the PackageTrip duration ({expectedDuration} days) for PackageTripId: {AddDto.PackageTripId}.");
             }
 
             if (!packageTrip.PackageTripDestinations.Any())
@@ -320,8 +331,8 @@ namespace TripAgency.Service.Implementations
                 {
                     if (packageTripDate.EndBookingDate <= DateTime.Now)
                     {
-                        return Result.BadRequest($"Cannot RePublished the PackageTrip With id: {packageTripDateId} due to the expiration date of the booking");
-                    }
+                        return Result.BadRequest($"Cannot RePublished the PackageTrip With id: {packageTripDateId} after booking period has ended");
+                    }  
                     if (packageTripDate.AvailableSeats == 0)
                     {
                         return Result.BadRequest($"Cannot RePublished the PackageTrip With id: {packageTripDateId} Because there are no seats available");
@@ -339,7 +350,34 @@ namespace TripAgency.Service.Implementations
                 //  _logger.LogError(ex, "CancelTripDate: خطأ غير متوقع أثناء إلغاء تاريخ الرحلة {TripDateId}.", tripDateId);
                 return Result.Failure("Internal Error", failureType: ResultFailureType.InternalError);
             }
-        }     
+        }
+        public async Task<Result<IEnumerable<GetPackageTripDateByIdDto>>> GetDateForPackageTrip(int packageTripId, PackageTripDateStatus? status)
+        {
+            var packageTrip = await _packageTripRepositoryAsync.GetTableNoTracking()
+                                                                .FirstOrDefaultAsync(x=> x.Id == packageTripId);
+           if (packageTrip is null)
+                return Result<IEnumerable<GetPackageTripDateByIdDto>>.NotFound($"Not Found PackageTrip with id {packageTripId}");
+            var datePackageTripDate = _packageTripDateRepository.GetTableNoTracking()
+                                                                 .Where(p => p.PackageTripId == packageTripId);
+            if (status is not null)
+                datePackageTripDate = datePackageTripDate.Where(d => d.Status == status);
+            var result = await datePackageTripDate.Select(x => new GetPackageTripDateByIdDto
+            {
+                Status = x.Status,
+                AvailableSeats = x.AvailableSeats,
+                EndBookingDate = x.EndBookingDate,
+                EndTripDate = x.EndBookingDate,
+                Id = x.Id,
+                PackageTripId = packageTripId,
+                StartBookingDate = x.StartBookingDate,
+                StartTripDate = x.StartBookingDate
+            }).ToListAsync();
+            if (!result.Any())
+                return Result<IEnumerable<GetPackageTripDateByIdDto>>.NotFound($"Not Found Any date {status} for PackageTrip with id {packageTripId}");
+            return Result<IEnumerable<GetPackageTripDateByIdDto>>.Success(result);
+
+
+        }
     }
 }
 

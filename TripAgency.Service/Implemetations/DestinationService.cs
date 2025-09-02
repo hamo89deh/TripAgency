@@ -85,9 +85,15 @@ namespace TripAgency.Service.Implementations
             destination.CityId = city.Id;
             destination.Description = updateDestinationDto.Description;
             destination.Location = updateDestinationDto.Location;
-            destination.ImageUrl = await _mediaService.UploadMediaAsync("Destination",updateDestinationDto.ImageUrl);
-
+            var oldImageUrl = "";
+            if (updateDestinationDto.Image is not null)
+            {
+                oldImageUrl=destination.ImageUrl;
+                destination.ImageUrl = await _mediaService.UploadMediaAsync("Destination", updateDestinationDto.Image); 
+            }
             await _destinationRepository.UpdateAsync(destination);
+            if (!string.IsNullOrEmpty(oldImageUrl))
+                await _mediaService.DeleteMediaAsync(oldImageUrl);
             return Result.Success();
         }
 

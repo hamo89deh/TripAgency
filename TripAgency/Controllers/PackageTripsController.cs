@@ -44,7 +44,6 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult(packageTripsResult);
             return ApiResult<IEnumerable<GetPackageTripsDto>>.Ok(packageTripsResult.Value!);
         }
-       
         [HttpGet("{id}")]
         public async Task<ApiResult<GetPackageTripByIdDto>> GetPackageTripById(int id)
         {
@@ -87,24 +86,25 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpPost("Destination")]
-        public async Task<ApiResult<GetPackageTripDestinationByIdDto>> AddPackageTripDestination(AddPackageTripDestinationDto packageTripDestination)
+        public async Task<ApiResult<GetPackageTripDestinationsDto>> AddPackageTripDestination(AddPackageTripDestinationDto packageTripDestination)
         {
             var packageTripDestinationResult = await _packageTripDestinationService.CreateAsync(packageTripDestination);
             if (!packageTripDestinationResult.IsSuccess)
             {
                 return this.ToApiResult(packageTripDestinationResult);
             }
-            return ApiResult<GetPackageTripDestinationByIdDto>.Created(packageTripDestinationResult.Value!);
+            return ApiResult<GetPackageTripDestinationsDto>.Created(packageTripDestinationResult.Value!);
         }
-        [HttpPut("Destination")]
-        public async Task<ApiResult<string>> UpdatePackageTripDestination(UpdatePackageTripDestinationDto updatePackageTripDestination)
-        {
-            var packageTripDestinationResult = await _packageTripDestinationService.UpdateAsync(0, updatePackageTripDestination);
-            if (!packageTripDestinationResult.IsSuccess)
-                return this.ToApiResult<string>(packageTripDestinationResult);
-            return ApiResult<string>.Ok("Success Updated");
+        //[HttpPut("Destination")]
+        //public async Task<ApiResult<string>> UpdatePackageTripDestination([FromForm] UpdatePackageTripDestinationDto updatePackageTripDestination)
+        //{
+        //    var packageTripDestinationResult = await _packageTripDestinationService.UpdateAsync(0, updatePackageTripDestination);
+        //    if (!packageTripDestinationResult.IsSuccess)
+        //        return this.ToApiResult<string>(packageTripDestinationResult);
+        //    return ApiResult<string>.Ok("Success Updated");
 
-        }
+        //}
+      
         [HttpDelete("{packageTripId}/Destination/{destinationId}")]
         public async Task<ApiResult<string>> DeletePackageTripDestination(int packageTripId, int destinationId)
         {

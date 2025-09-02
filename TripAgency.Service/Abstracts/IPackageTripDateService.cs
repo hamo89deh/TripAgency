@@ -18,5 +18,6 @@ namespace TripAgency.Service.Abstracts
     {
        public Task<Result> UpdateStatusTripDate(UpdatePackageTripDateDto updateTripDateDto);
        public bool CanChangeStatus(PackageTripDateStatus currentStatus, PackageTripDateStatus newStatus);
+       public Task<Result<IEnumerable<GetPackageTripDateByIdDto>>> GetDateForPackageTrip(int packageTripId, PackageTripDateStatus? newStatus);
     }
 }

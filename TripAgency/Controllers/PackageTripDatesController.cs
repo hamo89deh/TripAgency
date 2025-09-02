@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
+using TripAgency.Data.Enums;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.TripDate.Commands;
 using TripAgency.Service.Feature.TripDate.Queries;
@@ -36,15 +39,41 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpPut]
-        public async Task<ApiResult<string>> UpdateStatudPackageTripDate(UpdatePackageTripDateDto tripDate)
+        public async Task<ApiResult<string>> UpdateStatudPackageTripDate(int DatePackageTripId , enUpdatePackageTripDataStatusDto Status)
         {
-            var packageTripDateResult = await _packageTripDateService.UpdateStatusTripDate(tripDate);
+            var packageTripDateResult = await _packageTripDateService.UpdateStatusTripDate(new UpdatePackageTripDateDto
+            {
+                Id = DatePackageTripId,
+                Status= Status
+            });
             if (!packageTripDateResult.IsSuccess)
             {
                 return this.ToApiResult<string>(packageTripDateResult);
             }
             return ApiResult<string>.Ok(packageTripDateResult.Message);
         }
+      
+        [HttpGet("PackageTrip/{PackageTripId}")]
+        public async Task<ApiResult<IEnumerable<GetPackageTripDateByIdDto>>> DatePackageTrip(int PackageTripId, PackageTripDateStatus? dateStatus )
+        {
+            var packageTripDateResult = await _packageTripDateService.GetDateForPackageTrip(PackageTripId, dateStatus);
+            if (!packageTripDateResult.IsSuccess)
+            {
+                return this.ToApiResult<IEnumerable<GetPackageTripDateByIdDto>> (packageTripDateResult);
+            }
+            return ApiResult<IEnumerable<GetPackageTripDateByIdDto>>.Ok(packageTripDateResult.Value!);
+        }
+        [HttpGet("{Id}")]
+        public async Task<ApiResult<GetPackageTripDateByIdDto>> DatePackageTripById(int Id)
+        {
+            var packageTripDateResult = await _packageTripDateService.GetByIdAsync(Id);
+            if (!packageTripDateResult.IsSuccess)
+            {
+                return this.ToApiResult<GetPackageTripDateByIdDto>(packageTripDateResult);
+            }
+            return ApiResult<GetPackageTripDateByIdDto>.Ok(packageTripDateResult.Value!);
+        }
+
 
     }
 

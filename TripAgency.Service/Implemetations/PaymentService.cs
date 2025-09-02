@@ -82,6 +82,8 @@ namespace TripAgency.Service.Implementations
                 if (tripDate != null)
                 {
                     tripDate.AvailableSeats += bookingTrip.PassengerCount;
+                    if(tripDate.Status == PackageTripDateStatus.Full)
+                        tripDate.Status= PackageTripDateStatus.Published;
                     await _packageTripDateRepository.UpdateAsync(tripDate);
                 }
 

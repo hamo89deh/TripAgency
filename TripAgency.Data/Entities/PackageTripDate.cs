@@ -19,6 +19,7 @@ namespace TripAgency.Data.Entities
         public int PackageTripId { get; set; }
         public PackageTrip PackageTrip { get; set; }
         public IEnumerable<BookingTrip> BookingTrips { get; set; }
+        public IEnumerable<TripReview> TripReviews { get; set; }
 
     }
 

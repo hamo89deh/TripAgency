@@ -31,6 +31,9 @@ namespace TripAgency.Infrastructure.Configurations
                    .HasPrecision(18, 2)
                    .IsRequired(true);
 
+            builder.Property(x => x.AppliedPromotionId)
+              .IsRequired(false); // العرض اختياري
+
             builder.ToTable("BookingTrips");
             
             builder.HasOne(x=>x.PackageTripDate)
@@ -43,6 +46,11 @@ namespace TripAgency.Infrastructure.Configurations
                    .HasForeignKey(x => x.UserId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(x => x.AppliedPromotion)
+               .WithMany() // لا حاجة لمجموعة في Promotion إذا لم تكن مطلوبة
+               .HasForeignKey(x => x.AppliedPromotionId)
+               .OnDelete(DeleteBehavior.Restrict)
+               .IsRequired(false); // العلاقة اختيارية
         }
     }
 }

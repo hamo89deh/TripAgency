@@ -12,7 +12,7 @@ namespace TripAgency.Service.Feature.PackageTrip.Commands
         public int MinCapacity { get; set; }
         public decimal Price { get; set; }
         public int TripId { get; set; }
-        public IFormFile Image { get; set; }
+        public IFormFile? Image { get; set; }
 
     }
 }

@@ -146,8 +146,8 @@ namespace TripAgency.Service.Implemetations
             if (user is null)
                 return Result<JwtAuthResult>.Failure($"Not Found User By Email Or Password Not Correct : {signInDto.Email} ", failureType: ResultFailureType.Unauthorized);
 
-            if (!user.EmailConfirmed)
-                return Result<JwtAuthResult>.BadRequest("Email Not Confirm");
+            //if (!user.EmailConfirmed)
+            //    return Result<JwtAuthResult>.BadRequest("Email Not Confirm");
 
             var signInResult = await _signInManager.CheckPasswordSignInAsync(user, signInDto.Password, false);
 

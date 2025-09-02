@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
 using TripAgency.Data.Entities;
@@ -30,7 +31,10 @@ namespace TripAgency.Service.Implementations
         public IPaymentService _paymentService { get; }
         public IConfiguration _configuration { get; }
         public ICurrentUserService _currentUserService { get; }
+        public IPromotionService _promotionService { get; }
+        public ILogger<BookingTripService> _logger { get; }
         public IMapper _mapper { get; }
+
         private string baseUrl;
         public BookingTripService(IBookingTripRepositoryAsync bookingTripRepository,
                                   IPackageTripDateRepositoryAsync tripDateRepository,
@@ -44,7 +48,9 @@ namespace TripAgency.Service.Implementations
                                   IRefundRepositoryAsync refundRepositoryAsync,
                                   IMapper mapper,
                                   IConfiguration configuration,
-                                  ICurrentUserService currentUserService
+                                  ICurrentUserService currentUserService,
+                                  IPromotionService promotionService,
+                                  ILogger<BookingTripService> logger
                                  ) : base(bookingTripRepository, mapper)
         {
             _bookingTripRepository = bookingTripRepository;
@@ -59,6 +65,8 @@ namespace TripAgency.Service.Implementations
             _notificationService = notificationService;
             _configuration = configuration;
             _currentUserService = currentUserService;
+            _promotionService = promotionService;
+            _logger = logger;
             _paymentService = paymentService;
             baseUrl = configuration["BaseUrl"] ?? throw new InvalidOperationException("Not Found BaseUrl."); ;
         }
@@ -97,9 +105,29 @@ namespace TripAgency.Service.Implementations
 
             // النحقق من السعر الفعلي 
             var calculatedTotalPrice = packageTripDate.PackageTrip.Price + packageTripDate.PackageTrip.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price));
-            if (calculatedTotalPrice != bookPackageDto.AmountPrice)
+            // 1.4. استرجاع العرض الترويجي الصالح
+            var promotionResult = await _promotionService.GetValidPromotionAsync(packageTripDate.PackageTripId);
+            int? appliedPromotionId = null;
+            decimal finalPrice = calculatedTotalPrice * bookPackageDto.PassengerCount;
+
+            if (promotionResult.IsSuccess && promotionResult.Value != null)
             {
-                return Result<PaymentInitiationResponseDto>.BadRequest($"The ActualPrice is {calculatedTotalPrice}");
+                var promotion = promotionResult.Value;
+                appliedPromotionId = promotion.Id;
+                finalPrice = calculatedTotalPrice * (1 - promotion.DiscountPercentage / 100);
+                _logger.LogInformation("Applied promotion with Id: {PromotionId} with DiscountPercentage: {DiscountPercentage}% for PackageTripId: {PackageTripId}. FinalPrice: {FinalPrice}",
+                    promotion.Id, promotion.DiscountPercentage, packageTripDate.PackageTripId, finalPrice);
+            }
+            else
+            {
+                _logger.LogInformation("No valid promotion found for PackageTripId: {PackageTripId}. Using total price: {TotalPrice}",
+                    packageTripDate.PackageTripId, calculatedTotalPrice);
+            }
+
+            // 1.5. التحقق من السعر المقدم من العميل
+            if (finalPrice != bookPackageDto.AmountPrice)
+            {
+                return Result<PaymentInitiationResponseDto>.BadRequest($"The ActualPrice is {finalPrice}");
             }
             using var Transaction = await _bookingTripRepository.BeginTransactionAsync();
             try
@@ -111,7 +139,8 @@ namespace TripAgency.Service.Implementations
                     PassengerCount = bookPackageDto.PassengerCount,
                     BookingDate = DateTime.UtcNow,
                     BookingStatus = BookingStatus.Pending,
-                    ActualPrice = calculatedTotalPrice,
+                    AppliedPromotionId= appliedPromotionId,
+                    ActualPrice = finalPrice,
                     Notes = $"Pending payment via {paymentMethod.Name}",
                     UserId = user.Id
                 };
@@ -120,6 +149,8 @@ namespace TripAgency.Service.Implementations
 
                 // 1.4. نقصان المقاعد المتاحة (وحفظ)
                 packageTripDate.AvailableSeats -= bookPackageDto.PassengerCount;
+                if (packageTripDate.AvailableSeats == 0) 
+                    packageTripDate.Status = PackageTripDateStatus.Full;
                 await _packageTripDateRepository.UpdateAsync(packageTripDate);
 
                 // 1.5. جلب خدمة بوابة الدفع المناسبة من المصنع
@@ -143,7 +174,7 @@ namespace TripAgency.Service.Implementations
                 var paymentRequest = new PaymentRequest
                 {
                     BookingId = bookingTrip.Id,
-                    Amount = bookPackageDto.AmountPrice,
+                    Amount =finalPrice,
                     Currency = "USD",
                     CustomerEmail = user.Email!,
                     SuccessCallbackUrl = $"{baseUrl}/payment/success?bookingId={bookingTrip.Id}&method={paymentMethod.Name}",
@@ -159,7 +190,7 @@ namespace TripAgency.Service.Implementations
                 {
                     BookingTripId = bookingTrip.Id,
                     PaymentMethodId = paymentMethod.Id,
-                    Amount = calculatedTotalPrice, // المبلغ المراد دفعه
+                    Amount = finalPrice, // المبلغ المراد دفعه
                     PaymentDate = DateTime.UtcNow,
                     PaymentStatus = PaymentStatus.Pending, // الحالة الأولية للدفع
                     TransactionId = string.Empty
@@ -274,6 +305,13 @@ namespace TripAgency.Service.Implementations
                 if (tripDate != null)
                 {
                     tripDate.AvailableSeats += bookingTrip.PassengerCount;
+                    if (tripDate.Status == PackageTripDateStatus.Full)
+                    {
+                        if (DateTime.UtcNow.Date <= tripDate.EndBookingDate.Date)
+                            tripDate.Status = PackageTripDateStatus.Published;
+                        else
+                            tripDate.Status = PackageTripDateStatus.BookingClosed;
+                    }
                     await _packageTripDateRepository.UpdateAsync(tripDate);
                 }
 

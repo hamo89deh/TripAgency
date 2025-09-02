@@ -8,7 +8,7 @@ namespace TripAgency.Api.Extention
     {
       
         public static ApiResult<TValue> ToApiResult<TValue>(this ControllerBase controller, Result<TValue> result)
-            where TValue : class
+            
         {
             if (result.IsSuccess)
             {
