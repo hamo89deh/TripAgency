@@ -7,6 +7,7 @@ using TripAgency.Infrastructure.Abstracts;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Implementations;
 using TripAgency.Service.Implemetations;
+using TripAgency.Service.Implemetations.Payment;
 
 namespace TripAgency.Service
 {
@@ -31,6 +32,7 @@ namespace TripAgency.Service
             services.AddSingleton<IPaymentTimerService, PaymentTimerService>();
             services.AddTransient<IPaymentGatewayService, UsdtPaymentGatewayService>();
             services.AddTransient<IPaymentGatewayService, PayeerPaymentGatewayService>();
+            services.AddTransient<IPaymentGatewayService, SyriatelCashPaymentGatewayService>();
             services.AddTransient<IPaymentGatewayFactory, PaymentGatewayFactory>();
             services.AddTransient<IApplicationUserService, ApplicationUserService>();
             services.AddTransient<IAuthonticationService, AuthonticationService>();
@@ -50,6 +52,7 @@ namespace TripAgency.Service
            
             services.AddTransient<UsdtPaymentGatewayService>(); 
             services.AddTransient<PayeerPaymentGatewayService>();
+            services.AddTransient<SyriatelCashPaymentGatewayService>();
 
 
             //Email Setting

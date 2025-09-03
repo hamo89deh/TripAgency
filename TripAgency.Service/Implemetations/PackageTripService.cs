@@ -292,12 +292,11 @@ namespace TripAgency.Service.Implementations
                 .Select(g => g.First())
                 .ToList();
             // حساب متوسط التقييم
-            var averageRating = await _tripReviewService.CalculateAverageRatingAsync(packageTripId);
-            decimal finalRating = averageRating.HasValue ? Math.Round(averageRating.Value, 2) : 0m;
+            int finalRating = await _tripReviewService.CalculateAverageRatingAsync(packageTripId);
             // إنشاء DTO
             var resultDto = new GetPackageTripDetailsDto
             {
-                Id = packageTrip.Id,
+                PackageTripId = packageTrip.Id,
                 Name = packageTrip.Name,
                 Description = packageTrip.Description,
                 Duration = packageTrip.Duration,

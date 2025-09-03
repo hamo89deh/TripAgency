@@ -913,7 +913,7 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PaymentMethods");
+                    b.ToTable("PaymentMethods", (string)null);
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.Phobia", b =>

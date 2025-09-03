@@ -4,21 +4,21 @@ using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.Payment;
 
-namespace TripAgency.Service.Implementations
+namespace TripAgency.Service.Implemetations.Payment
 {
     public class UsdtPaymentGatewayService : IPaymentGatewayService
     {
         private readonly ILogger<UsdtPaymentGatewayService> _logger;
-        private readonly string _usdtWalletAddress; 
+        private readonly string _usdtWalletAddress;
         private readonly string _usdtNetworkType;
         private readonly string baseUrl;
 
         public UsdtPaymentGatewayService(IConfiguration configuration, ILogger<UsdtPaymentGatewayService> logger)
         {
             _logger = logger;
-            _usdtWalletAddress = configuration["PaymentGateways:USDT_Manual:WalletAddress"] ?? throw new InvalidOperationException("USDT WalletAddress not configured.");
-            _usdtNetworkType = configuration["PaymentGateways:USDT_Manual:NetworkType"] ?? throw new InvalidOperationException("USDT NetworkType not configured.");
-            baseUrl = configuration["BaseUrl"] ?? throw new InvalidOperationException("USDT WalletAddress not configured.");
+            _usdtWalletAddress = configuration["PaymentGateways:USDT:WalletAddress"] ?? throw new InvalidOperationException("USDT WalletAddress not configured.");
+            _usdtNetworkType = configuration["PaymentGateways:USDT:NetworkType"] ?? throw new InvalidOperationException("USDT NetworkType not configured.");
+            baseUrl = configuration["BaseUrl"] ?? throw new InvalidOperationException("BaseUrl not configured.");
 
         }
 
@@ -31,14 +31,14 @@ namespace TripAgency.Service.Implementations
                 // لا يوجد RedirectUrl حقيقي
                 // ، لكن نستخدمه لتمرير معلومات للواجهة الأمامية
                 RedirectUrl = $"{baseUrl}/payment/manual-info?bookingId={request.BookingId}&method=usdt",
-                TransactionId = string.Empty, 
+                TransactionId = string.Empty,
                 IsSuccess = true, // التهيئة ناجحة لأننا أعطينا العميل المعلومات
                 PaymentInstructions = instructions
             };
             return Result<PaymentInitiationResponseDto>.Success(response);
         }
 
-        public  Task<Result<PaymentCallbackResult>> ProcessPaymentCallbackAsync(string transactionId, string statusFromGateway, Dictionary<string, string>? additionalParams = null)
+        public Task<Result<PaymentCallbackResult>> ProcessPaymentCallbackAsync(string transactionId, string statusFromGateway, Dictionary<string, string>? additionalParams = null)
         {
             // هذا الجزء لن يتم استدعاؤه تلقائياً من بوابة الدفع لـ USDT.
             // معالجة تأكيد الدفع لـ USDT ستتم يدوياً من قبل Admin (عبر SubmitManualPaymentNotificationAsync).

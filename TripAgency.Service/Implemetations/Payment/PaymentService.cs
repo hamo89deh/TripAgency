@@ -10,7 +10,7 @@ using TripAgency.Infrastructure.Abstracts;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.Payment;
 
-namespace TripAgency.Service.Implementations
+namespace TripAgency.Service.Implemetations.Payment
 {
     public class PaymentService : IPaymentService
     {
@@ -82,8 +82,8 @@ namespace TripAgency.Service.Implementations
                 if (tripDate != null)
                 {
                     tripDate.AvailableSeats += bookingTrip.PassengerCount;
-                    if(tripDate.Status == PackageTripDateStatus.Full)
-                        tripDate.Status= PackageTripDateStatus.Published;
+                    if (tripDate.Status == PackageTripDateStatus.Full)
+                        tripDate.Status = PackageTripDateStatus.Published;
                     await _packageTripDateRepository.UpdateAsync(tripDate);
                 }
 
@@ -136,7 +136,7 @@ namespace TripAgency.Service.Implementations
             }
 
             if (
-                bookingTrip.PackageTripDate.Status == PackageTripDateStatus.Cancelled )
+                bookingTrip.PackageTripDate.Status == PackageTripDateStatus.Cancelled)
             {
                 //_logger.LogWarning("SubmitManualPaymentNotification: محاولة إشعار دفع يدوي للحجز {BookingId} لرحلة مكتملة بتاريخ {TripDate}.", notificationDto.BookingId, booking.TripDate.Date.ToShortDateString());
                 return Result.BadRequest("This Trip Canselling By adming if you pay Sent Report");
@@ -174,7 +174,7 @@ namespace TripAgency.Service.Implementations
             var payment = bookingTrip.Payment;
 
             if (!string.IsNullOrEmpty(payment.TransactionId))
-            { 
+            {
                 return Result.BadRequest(" Cann't send More Than one Notification Payment For the Same Booking");
             }
 
@@ -329,8 +329,8 @@ namespace TripAgency.Service.Implementations
 
         public async Task<Result> ReportMissingPaymentAsync(MissingPaymentReportDto reportDto)
         {
-            var userId =  _currentUserService.GetUserId();
-            
+            var userId = _currentUserService.GetUserId();
+
             var existingReport = await _discrepancyReportRepositoryAsync.GetTableNoTracking()
                                           .FirstOrDefaultAsync(r => r.ReportedTransactionRef == reportDto.TransactionReference);
 
@@ -437,7 +437,7 @@ namespace TripAgency.Service.Implementations
                 //_logger.LogWarning("ProcessDiscrepancyReport: بلاغ التضارب {ReportId} غير موجود أو ليس في حالة 'بانتظار المراجعة'.", reportId);
                 return Result.NotFound("بلاغ التضارب غير موجود أو ليس في حالة 'بانتظار المراجعة'.");
             }
-           
+
             using var transaction = await _discrepancyReportRepositoryAsync.BeginTransactionAsync();
             try
             {
@@ -474,7 +474,7 @@ namespace TripAgency.Service.Implementations
                         TransactionReference = report.ReportedTransactionRef,
                         TransactionRefunded = string.Empty,
                         ReportId = report.Id,
-                        
+
                     };
                     await _refundRepositoryAsync.AddAsync(refund);
                 }
@@ -539,9 +539,9 @@ namespace TripAgency.Service.Implementations
                     AssociatedBookingId = payment.BookingTripId,
                     BookingStatus = payment.BookingTrip.BookingStatus,
                     TripDate = payment.BookingTrip.PackageTripDate?.StartPackageTripDate,
-                    TripDateStatus = payment.BookingTrip.PackageTripDate != null ? (PackageTripDateStatus)payment.BookingTrip.PackageTripDate.Status : null
+                    TripDateStatus = payment.BookingTrip.PackageTripDate != null ? payment.BookingTrip.PackageTripDate.Status : null
                 };
-                transactionStatus.BookingTripDetailDto = BookingTripDetailDto;  
+                transactionStatus.BookingTripDetailDto = BookingTripDetailDto;
 
             }
 
@@ -588,7 +588,7 @@ namespace TripAgency.Service.Implementations
                     AdminNotesOnRefund = refund.AdminNotes,
                 };
                 transactionStatus.RefundedDetailDto = RefundedDetailDto;
-             
+
             }
 
             if (payment == null) // لو في Refund بس ما في Payment (سيناريو غريب، ممكن يكون Refund لدفعة مجهولة)
@@ -624,7 +624,7 @@ namespace TripAgency.Service.Implementations
             return Result<PaymentTransactionStatusDto>.Success(transactionStatus);
         }
 
-     
+
         // 11. جلب بلاغات الدفع المفقودة للمدير
         public async Task<Result<IEnumerable<MissingPaymentReportResponceDto>>> GetMissingPaymentReportsForAdminAsync()
         {
@@ -641,7 +641,7 @@ namespace TripAgency.Service.Implementations
                 PaidAmount = r.ReportedPaidAmount,
                 CustomerNotes = r.CustomerNotes
             }).ToList();
-         
+
             if (!resultDtos.Any())
             {
                 return Result<IEnumerable<MissingPaymentReportResponceDto>>.NotFound("Not Found any Report Pending");
@@ -656,7 +656,7 @@ namespace TripAgency.Service.Implementations
                                                                .Where(p => p.PaymentStatus == PaymentStatus.Pending)
                                                                .ToListAsync();
 
-            paymnetsPending = paymnetsPending.Where(p =>! string.IsNullOrEmpty(p.TransactionId)).ToList();
+            paymnetsPending = paymnetsPending.Where(p => !string.IsNullOrEmpty(p.TransactionId)).ToList();
             if (!paymnetsPending.Any())
             {
                 return Result<IEnumerable<ManualPaymentDetailsDto>>.NotFound("Not Found Any payment Pending");
@@ -672,8 +672,8 @@ namespace TripAgency.Service.Implementations
                     PaymentDateTime = payment.PaymentDate,
                     PaymentMethodId = payment.PaymentMethodId,
                     TransactionReference = payment.TransactionId
-                    
-                });          
+
+                });
             }
             return Result<IEnumerable<ManualPaymentDetailsDto>>.Success(manualPaymentDetailsDtos);
 

@@ -18,6 +18,8 @@ namespace TripAgency.Service.Implementations
         private readonly IPackageTripDateRepositoryAsync _packageTripDateRepository;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMapper _mapper;
+        private const int DefaultRating = 4; // التقييم الافتراضي
+        private const int MinimumReviews = 3; // الحد الأدنى للتقييمات
 
         public ILogger<TripReviewService> _logger { get; }
 
@@ -196,21 +198,22 @@ namespace TripAgency.Service.Implementations
 
             return Result<bool>.Success(true);
         }
-        public async Task<decimal?> CalculateAverageRatingAsync(int packageTripId)
+        public async Task<int> CalculateAverageRatingAsync(int packageTripId)
         {
-            const int minimumReviews = 3;
             var validReviewsCount = await _tripReviewRepository.GetTableNoTracking()
-                .Include(p=>p.PackageTripDate)
-                .Where(r => r.PackageTripDate.PackageTripId == packageTripId &&  r.Rating >= 1 && r.Rating <= 5)
+                .Include(p => p.PackageTripDate)
+                .Where(r => r.PackageTripDate.PackageTripId == packageTripId && r.Rating >= 1 && r.Rating <= 5)
                 .CountAsync();
 
-            if (validReviewsCount < minimumReviews)
-                return null;
+            if (validReviewsCount < MinimumReviews)
+                return DefaultRating;
 
-            return await _tripReviewRepository.GetTableNoTracking()
+            var averageRating = await _tripReviewRepository.GetTableNoTracking()
                 .Include(p => p.PackageTripDate)
-                .Where(r => r.PackageTripDate.PackageTripId == packageTripId &&  r.Rating >= 1 && r.Rating <= 5)
+                .Where(r => r.PackageTripDate.PackageTripId == packageTripId  && r.Rating >= 1 && r.Rating <= 5)
                 .AverageAsync(r => (decimal?)r.Rating);
+
+            return averageRating.HasValue ? (int)Math.Round(averageRating.Value) : DefaultRating;
         }
     }
 }
