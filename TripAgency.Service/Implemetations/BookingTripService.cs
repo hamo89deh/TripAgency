@@ -191,7 +191,7 @@ namespace TripAgency.Service.Implementations
                     BookingTripId = bookingTrip.Id,
                     PaymentMethodId = paymentMethod.Id,
                     Amount = finalPrice, // المبلغ المراد دفعه
-                    PaymentDate = DateTime.UtcNow,
+                    PaymentDate = DateTime.Now,
                     PaymentStatus = PaymentStatus.Pending, // الحالة الأولية للدفع
                     TransactionId = string.Empty
                 };

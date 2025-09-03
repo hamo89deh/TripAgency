@@ -47,7 +47,7 @@ namespace TripAgency.Infrastructure.Configurations
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(x => x.AppliedPromotion)
-               .WithMany() // لا حاجة لمجموعة في Promotion إذا لم تكن مطلوبة
+               .WithMany(x=>x.BookingTrips) // لا حاجة لمجموعة في Promotion إذا لم تكن مطلوبة
                .HasForeignKey(x => x.AppliedPromotionId)
                .OnDelete(DeleteBehavior.Restrict)
                .IsRequired(false); // العلاقة اختيارية

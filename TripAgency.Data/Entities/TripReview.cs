@@ -9,7 +9,7 @@ namespace TripAgency.Data.Entities
         public int UserId { get; set; } // معرف المستخدم
         public int Rating { get; set; } // التقييم (1-5)
         public string Comment { get; set; } // التعليق (اختياري)
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // العلاقات
         public PackageTripDate PackageTripDate { get; set; }

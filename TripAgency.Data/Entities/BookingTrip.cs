@@ -20,7 +20,7 @@ namespace TripAgency.Data.Entities
         public int UserId { get; set; }
         public int? AppliedPromotionId { get; set; } // حقل جديد لتتبع العرض المطبق
         
-        public Promotion AppliedPromotion { get; set; } // العلاقة مع العرض
+        public Promotion? AppliedPromotion { get; set; } // العلاقة مع العرض
         public User User { get; set; }
         public Payment Payment { get; set; }
         public PackageTripDate PackageTripDate { get; set; }  

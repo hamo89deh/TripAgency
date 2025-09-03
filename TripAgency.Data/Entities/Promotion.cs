@@ -14,6 +14,7 @@
 
         // العلاقات
         public PackageTrip PackageTrip { get; set; }
+        public IEnumerable<BookingTrip> BookingTrips { get; set; }
     }
 
 }

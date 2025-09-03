@@ -19,7 +19,7 @@ namespace TripAgency.Service.Implemetations.Payment
                 // "stripe" => _serviceProvider.GetRequiredService<StripePaymentGatewayService>(),
                 "usdt" => _serviceProvider.GetRequiredService<UsdtPaymentGatewayService>(),
                 "payeer" => _serviceProvider.GetRequiredService<PayeerPaymentGatewayService>(),
-                "syriatelcash" => _serviceProvider.GetRequiredService<SyriatelCashPaymentGatewayService>(),
+                "syriatel cash" => _serviceProvider.GetRequiredService<SyriatelCashPaymentGatewayService>(),
                 // أضف أي بوابات دفع أخرى هنا (مثل PayPal, Payeer)
                 //"mock" => _serviceProvider.GetRequiredService<MockPaymentGatewayService>(), // خيار الـ Mock للمحاكاة
                 _ => throw new ArgumentException($"Payment gateway '{gatewayProviderName}' not supported or not configured in factory.")
