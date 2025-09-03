@@ -139,12 +139,12 @@ namespace TripAgency.Service.Implemetations
             var result = await GetJWTAndRerfreshToken(user);
             return Result<JwtAuthResult>.Success(result);
         }
-        public async Task<Result<JwtAuthResult>> SignIn(SignInDto signInDto)
+        public async Task<Result<SignInResponce>> SignIn(SignInDto signInDto)
         {
             var user = await _userManager.FindByEmailAsync(signInDto.Email);
 
             if (user is null)
-                return Result<JwtAuthResult>.Failure($"Not Found User By Email Or Password Not Correct : {signInDto.Email} ", failureType: ResultFailureType.Unauthorized);
+                return Result<SignInResponce>.Failure($"Not Found User By Email Or Password Not Correct : {signInDto.Email} ", failureType: ResultFailureType.Unauthorized);
 
             //if (!user.EmailConfirmed)
             //    return Result<JwtAuthResult>.BadRequest("Email Not Confirm");
@@ -152,17 +152,21 @@ namespace TripAgency.Service.Implemetations
             var signInResult = await _signInManager.CheckPasswordSignInAsync(user, signInDto.Password, false);
 
             if (!signInResult.Succeeded)
-                return Result<JwtAuthResult>.Failure("Not Found User By Email Or Password Not Correct", failureType: ResultFailureType.Unauthorized);
+                return Result<SignInResponce>.Failure("Not Found User By Email Or Password Not Correct", failureType: ResultFailureType.Unauthorized);
 
             var oldRefreshToken = await _refreshTokenRepository.GetTableNoTracking()
                                                                .Where(r => r.UserId == user.Id)
                                                                .FirstOrDefaultAsync();
             if (oldRefreshToken is not null)
                 await _refreshTokenRepository.DeleteAsync(oldRefreshToken);
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var result = new SignInResponce()
+            {
+                GetRolesDto = userRoles.Select(x => new GetRolesDto { Name = x }) ,
+                JwtAuthResult = await GetJWTAndRerfreshToken(user)
+            };
 
-            var result = await GetJWTAndRerfreshToken(user);
-
-            return Result<JwtAuthResult>.Success(result);
+            return Result<SignInResponce>.Success(result);
         }       
        
         public async Task<Result> LogOut(LogOutDto logOutDto)
@@ -256,9 +260,7 @@ namespace TripAgency.Service.Implemetations
                 await trans.RollbackAsync();
                 return Result.Failure("internal error", failureType: ResultFailureType.InternalError);
             }
-        }
-
-     
+        }    
         public async Task<JwtAuthResult> GetJWTAndRerfreshToken(User user)
         {
             var (jwtToken, accessToken) = await GenerateJWTToken(user);

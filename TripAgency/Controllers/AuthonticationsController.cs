@@ -42,14 +42,14 @@ namespace TripAgency.Api.Controllers
             return ApiResult<string>.Ok(SendConfirmEmailResult.Message!);
         }
         [HttpPost("SignIn")]
-        public async Task<ApiResult<JwtAuthResult>> SignIn(SignInDto signInDto)
+        public async Task<ApiResult<SignInResponce>> SignIn(SignInDto signInDto)
         {
             var SignInResult = await _authonticationService.SignIn(signInDto);
             if (!SignInResult.IsSuccess)
             {
-                return this.ToApiResult<JwtAuthResult>(SignInResult);
+                return this.ToApiResult<SignInResponce>(SignInResult);
             }
-            return ApiResult<JwtAuthResult>.Ok(SignInResult.Value!);
+            return ApiResult<SignInResponce>.Ok(SignInResult.Value!);
         }
         [HttpPost("LogOut")]
         public async Task<ApiResult<string>> LogOut(LogOutDto logOutDto)

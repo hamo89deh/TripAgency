@@ -14,7 +14,7 @@ namespace TripAgency.Service.Abstracts
 {
     public interface IAuthonticationService
     {
-        public Task<Result<JwtAuthResult>> SignIn(SignInDto signInDto);
+        public Task<Result<SignInResponce>> SignIn(SignInDto signInDto);
         public Task<Result> LogOut(LogOutDto logou);
         public Task<Result<JwtAuthResult>> RefreshAccessToken(RefreshAccessTokenDto RefreshTokenDto);
         public Task<Result> ConfirmEmail(int userId, string code);
