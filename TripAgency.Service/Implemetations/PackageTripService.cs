@@ -286,7 +286,16 @@ namespace TripAgency.Service.Implementations
                 .Select(h => new PackageTripHotelsDto
                 {
                     Id = h.Id,
-                    Name = h.Name
+                    Name = h.Name,
+                    CityId=h.CityId,
+                    CityName = h.City.Name,
+                    Email = h.Email,
+                    Location= h.Location,  
+                    MidPriceForOneNight = h.MidPriceForOneNight,
+                    Phone = h.Phone,
+                    Rate = h.Rate
+                   
+                    
                 })
                 .GroupBy(h => h.Id)
                 .Select(g => g.First())
