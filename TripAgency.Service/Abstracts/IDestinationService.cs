@@ -20,6 +20,7 @@ namespace TripAgency.Service.Abstracts
         Task<Result> AddDestinationActivity(int DestinationId, int ActivityId);
         Task<Result> DeleteDestinationActivity(int DestinationId, int ActivityId);
         Task<Result<GetDestinationActivitiesByIdDto>> GetDestinationActivitiesByIdDto(int DestinationId);
+        Task<Result<IEnumerable<GetDestinationsDetailsDto>>> GetDestinationsDetails();
 
        
     }

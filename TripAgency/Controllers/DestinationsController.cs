@@ -36,6 +36,16 @@ namespace TripAgency.Controllers
             }
             return ApiResult<IEnumerable<GetDestinationsDto>>.Ok(result.Value!);
         }
+        [HttpGet("Details")]
+        public async Task<ApiResult<IEnumerable<GetDestinationsDetailsDto>>> GetDestinationsDetails()
+        {
+            var result = await _destinationService.GetDestinationsDetails();
+            if (!result.IsSuccess)
+            {
+                return this.ToApiResult(result);
+            }
+            return ApiResult<IEnumerable<GetDestinationsDetailsDto>>.Ok(result.Value!);
+        }
         [HttpGet("{id}")]
 
         public async Task<ApiResult<GetDestinationByIdDto>> GetDestinationById(int id)

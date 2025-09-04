@@ -176,5 +176,34 @@ namespace TripAgency.Service.Implementations
             return Result<GetDestinationActivitiesByIdDto>.Success(resultDto);
 
         }
+
+        public async Task<Result<IEnumerable<GetDestinationsDetailsDto>>> GetDestinationsDetails()
+        {
+            var destinations = await _destinationRepository.GetTableNoTracking()
+                                                           .Include(x=>x.City)
+                                                           .Include(d => d.DestinationActivities)
+                                                           .ThenInclude(da => da.Activity)
+                                                           .ToListAsync();
+            if (destinations.Count() == 0)
+                return Result<IEnumerable < GetDestinationsDetailsDto >>.NotFound("Not Found Any Destinations");
+
+            var resultDto = destinations.Where(x=>x.DestinationActivities.Any()).Select(x => new GetDestinationsDetailsDto()
+            {
+                Id = x.Id,
+                CityId = x.CityId,
+                CityName = x.City.Name,
+                Name = x.Name,
+                Description = x.Description,
+                ImageUrl = x.ImageUrl,
+                Location = x.Location,
+                GetDestinationActivitiesByIds = x.DestinationActivities.Select(d => new GetActivitiesDetailsDto
+                {
+                    Id = d.Activity.Id,
+                    Description = d.Activity.Description,
+                    Name = d.Activity.Name,
+                })
+            });
+            return Result<IEnumerable<GetDestinationsDetailsDto>>.Success(resultDto);
+        }
     }
 }

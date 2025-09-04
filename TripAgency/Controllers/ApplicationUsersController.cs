@@ -64,7 +64,7 @@ namespace TripAgency.Api.Controllers
             return ApiResult<GetUserByIdDto>.Ok(UserResult.Value!);
 
         }
-        [HttpGet()]
+        [HttpGet]
         public async Task<ApiResult<IEnumerable<GetUsersDto>>> GetUsers()
         {
             var UsersResult = await _applicationUserService.GetUsers();
