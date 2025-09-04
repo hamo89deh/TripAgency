@@ -17,6 +17,7 @@ using TripAgency.Service.Feature.User.Queries;
 using TripAgency.Service.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Azure;
+using Microsoft.Extensions.Hosting;
 
 namespace TripAgency.Service.Implemetations
 {
@@ -24,13 +25,15 @@ namespace TripAgency.Service.Implemetations
     {
         private readonly TripAgencyDbContext _dBContext;
         public IUrlHelper _urlHelper { get; }
+        public IMediaService _mediaService { get; }
 
         public ApplicationUserService(UserManager<User> userManager ,
                                       TripAgencyDbContext dBContext,
                                       IHttpContextAccessor httpContextAccessor,
                                       IEmailService emailService,
                                       ICurrentUserService currentUserService,
-                                      IUrlHelper urlHelper
+                                      IUrlHelper urlHelper,
+                                      IMediaService mediaService
             ) 
         {
             _dBContext = dBContext;
@@ -39,6 +42,7 @@ namespace TripAgency.Service.Implemetations
             _emailService = emailService;
             _currentUserService = currentUserService;
             _urlHelper = urlHelper;
+            _mediaService = mediaService;
             _userManager = userManager;
         }
 
@@ -55,7 +59,8 @@ namespace TripAgency.Service.Implemetations
                 Email = userDtos.Email,
                 FirstName = userDtos.FirstName ,
                 LastName= userDtos.LastName,
-                LoyaltyPoints = 0
+                LoyaltyPoints = 0,
+                ImageUrl = "/User/UserDefaultImage.jpg"
             };
             var trans = await _dBContext.Database.BeginTransactionAsync();
             try
@@ -148,6 +153,8 @@ namespace TripAgency.Service.Implemetations
             oldUser.PhoneNumber = userDtos.PhoneNumber;
             oldUser.Address =   userDtos.Address;
             oldUser.Country = userDtos.Country;
+            if(userDtos.Image is not null)
+                oldUser.ImageUrl = await _mediaService.UploadMediaAsync("User",userDtos.Image);
 
             //if username is Exist
             var userByUserName = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == userDtos.UserName && x.Id != oldUser.Id);
@@ -183,7 +190,8 @@ namespace TripAgency.Service.Implemetations
                 Email = user.Email!,
                 PhoneNumber = user.PhoneNumber,
                 FirstName = user.FirstName,
-                LastName = user.LastName
+                LastName = user.LastName,
+                ImageUrl = user.ImageUrl 
             };
             
             return Result<GetUserByIdDto>.Success(result);
@@ -206,7 +214,8 @@ namespace TripAgency.Service.Implemetations
                     Email = user.Email!,
                     PhoneNumber = user.PhoneNumber,
                     FirstName = user.FirstName,
-                    LastName = user.LastName
+                    LastName = user.LastName,
+                    ImageUrl= user.ImageUrl
                 });
             }
 

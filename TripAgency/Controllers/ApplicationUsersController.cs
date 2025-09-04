@@ -31,7 +31,7 @@ namespace TripAgency.Api.Controllers
             return ApiResult<string>.Created(AddNewUserResult.Message!);
         }
         [HttpPut()]
-        public async Task<ApiResult<string>> UpdateUser(UpdateUserDto userDto)
+        public async Task<ApiResult<string>> UpdateUser([FromForm]UpdateUserDto userDto)
         {
             var UpdateUserResult = await _applicationUserService.UpdateUser(userDto);
             if (!UpdateUserResult.IsSuccess)

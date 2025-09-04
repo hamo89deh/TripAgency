@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace TripAgency.Service.Feature.User.Command
 {
@@ -12,5 +13,6 @@ namespace TripAgency.Service.Feature.User.Command
         public string? PhoneNumber { get; set; }
         public string? Address { get; set; }
         public string? Country { get; set; }
+        public IFormFile? Image { get; set; }
     }
 }

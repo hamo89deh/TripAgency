@@ -31,6 +31,11 @@ namespace TripAgency.Infrastructure.Configurations
                    .HasMaxLength(200)
                    .IsRequired(false);
 
+            builder.Property(x => x.ImageUrl)
+                  .HasColumnType("nvarchar")
+                  .HasMaxLength(400)
+                  .IsRequired(true);
+             
             builder.Property(x => x.Code)
                    .HasColumnType("nvarchar")
                   .HasMaxLength(25)
