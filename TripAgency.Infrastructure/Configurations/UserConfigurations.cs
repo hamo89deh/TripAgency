@@ -15,9 +15,15 @@ namespace TripAgency.Infrastructure.Configurations
                    .HasMaxLength(200)
                    .IsRequired(false);
 
-            builder.Property(x => x.FullName)
+            builder.Property(x => x.FirstName)
                     .HasColumnType("nvarchar")
-                   .HasMaxLength(200)
+                   .HasMaxLength(100)
+                   .IsRequired();
+
+
+            builder.Property(x => x.LastName)
+                    .HasColumnType("nvarchar")
+                   .HasMaxLength(100)
                    .IsRequired();
 
             builder.Property(x => x.Country)

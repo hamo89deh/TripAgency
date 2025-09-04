@@ -53,7 +53,8 @@ namespace TripAgency.Service.Implemetations
             {
                 UserName= userDtos.UserName,
                 Email = userDtos.Email,
-                FullName = userDtos.FirstName + userDtos.LastName,
+                FirstName = userDtos.FirstName ,
+                LastName= userDtos.LastName,
                 LoyaltyPoints = 0
             };
             var trans = await _dBContext.Database.BeginTransactionAsync();
@@ -140,8 +141,9 @@ namespace TripAgency.Service.Implemetations
         {
             //check if user is exist
             var oldUser = await _currentUserService.GetUserAsync();
-          
-            oldUser.FullName = userDtos.FirstName + userDtos.LastName;
+
+            oldUser.FirstName = userDtos.FirstName;
+            oldUser.LastName = userDtos.LastName;
             oldUser.Email = userDtos.Email;
             oldUser.PhoneNumber = userDtos.PhoneNumber;
             oldUser.Address =   userDtos.Address;
@@ -180,7 +182,8 @@ namespace TripAgency.Service.Implemetations
                 Country = user.Country,
                 Email = user.Email!,
                 PhoneNumber = user.PhoneNumber,
-                FullName = user.FullName
+                FirstName = user.FirstName,
+                LastName = user.LastName
             };
             
             return Result<GetUserByIdDto>.Success(result);
@@ -202,7 +205,8 @@ namespace TripAgency.Service.Implemetations
                     Country = user.Country,
                     Email = user.Email!,
                     PhoneNumber = user.PhoneNumber,
-                    FullName = user.FullName
+                    FirstName = user.FirstName,
+                    LastName = user.LastName
                 });
             }
 

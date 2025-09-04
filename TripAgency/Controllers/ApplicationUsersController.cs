@@ -12,9 +12,12 @@ namespace TripAgency.Api.Controllers
     public class ApplicationUsersController : ControllerBase
     {
         public IApplicationUserService _applicationUserService { get; }
-        public ApplicationUsersController(IApplicationUserService applicationUser)
+        public ICurrentUserService CurrentUserService { get; }
+
+        public ApplicationUsersController(IApplicationUserService applicationUser , ICurrentUserService currentUserService)
         {
             _applicationUserService = applicationUser;
+            CurrentUserService = currentUserService;
         }
 
         [HttpPost]
@@ -49,10 +52,11 @@ namespace TripAgency.Api.Controllers
             return ApiResult<string>.Ok(DeleteUserResult.Message!);
 
         }
-        [HttpGet("{Id}")]
-        public async Task<ApiResult<GetUserByIdDto>> GetUserById(int Id)
+        [HttpGet("UserInformation")]
+        public async Task<ApiResult<GetUserByIdDto>> GetUserInformation()
         {
-            var UserResult = await _applicationUserService.GetUserById(Id);
+            var user = await CurrentUserService.GetUserAsync();
+            var UserResult = await _applicationUserService.GetUserById(user.Id);
             if (!UserResult.IsSuccess)
             {
                 return this.ToApiResult<GetUserByIdDto>(UserResult);
