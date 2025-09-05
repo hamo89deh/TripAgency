@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TripAgency.Data.Entities;
+using TripAgency.Data.Helping;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Infrastructure.Abstracts;
 using TripAgency.Service.Abstracts;
@@ -10,6 +11,7 @@ using TripAgency.Service.Feature.Destination.Commands;
 using TripAgency.Service.Feature.Destination.Queries;
 using TripAgency.Service.Feature.DestinationActivity.Queries;
 using TripAgency.Service.Generic;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TripAgency.Service.Implementations
 {
@@ -177,13 +179,16 @@ namespace TripAgency.Service.Implementations
 
         }
 
-        public async Task<Result<IEnumerable<GetDestinationsDetailsDto>>> GetDestinationsDetails()
+        public async Task<Result<IEnumerable<GetDestinationsDetailsDto>>> GetDestinationsDetails(string? search)
         {
-            var destinations = await _destinationRepository.GetTableNoTracking()
-                                                           .Include(x=>x.City)
-                                                           .Include(d => d.DestinationActivities)
-                                                           .ThenInclude(da => da.Activity)
-                                                           .ToListAsync();
+            var query =  _destinationRepository.GetTableNoTracking();
+            if (search is not null)
+                query = query.ApplySearch(search, new string[] { "Name", "Description" });
+            var destinations = await query .Include(x => x.City)
+                                     .Include(d => d.DestinationActivities)
+                                         .ThenInclude(da => da.Activity)
+                                     .ToListAsync();
+                                                           
             if (destinations.Count() == 0)
                 return Result<IEnumerable < GetDestinationsDetailsDto >>.NotFound("Not Found Any Destinations");
 
@@ -204,6 +209,42 @@ namespace TripAgency.Service.Implementations
                 })
             });
             return Result<IEnumerable<GetDestinationsDetailsDto>>.Success(resultDto);
+        }
+
+        public async Task<Result<PaginatedResult<GetDestinationsDetailsDto>>> GetDestinationsPaginationDetails(string? search, int pageNumber, int pageSize)
+        {
+            var query = _destinationRepository.GetTableNoTracking();
+                                                           
+            if (search is not null)
+                query = query.ApplySearch(search, new string[] { "Name", "Description" });
+            query = query.Include(x => x.City)
+                         .Include(d => d.DestinationActivities)
+                         .ThenInclude(da => da.Activity)
+                         .Where(x => x.DestinationActivities.Any());
+
+            var DestinationPagination = await query.ToPaginatedListAsync(pageNumber,pageSize);
+            if (DestinationPagination.TotalCount == 0)
+                return Result<PaginatedResult<GetDestinationsDetailsDto>>.NotFound("Not Found Any Destinations");
+
+            var resultData = DestinationPagination.Data.Select(x => new GetDestinationsDetailsDto()
+            {
+                Id = x.Id,
+                CityId = x.CityId,
+                CityName = x.City.Name,
+                Name = x.Name,
+                Description = x.Description,
+                ImageUrl = x.ImageUrl,
+                Location = x.Location,
+                GetDestinationActivitiesByIds = x.DestinationActivities.Select(d => new GetActivitiesDetailsDto
+                {
+                    Id = d.Activity.Id,
+                    Description = d.Activity.Description,
+                    Name = d.Activity.Name,
+                })
+            }).ToList();
+            var result=   PaginatedResult<GetDestinationsDetailsDto>.Success(resultData, DestinationPagination.TotalCount, DestinationPagination.CurrentPage , DestinationPagination.PageSize);
+          
+            return Result<PaginatedResult<GetDestinationsDetailsDto>>.Success(result);
         }
     }
 }

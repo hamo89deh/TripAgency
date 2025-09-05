@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
+using TripAgency.Data.Helping;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.Destination.Commands;
 using TripAgency.Service.Feature.Destination.Queries;
@@ -37,14 +38,24 @@ namespace TripAgency.Controllers
             return ApiResult<IEnumerable<GetDestinationsDto>>.Ok(result.Value!);
         }
         [HttpGet("Details")]
-        public async Task<ApiResult<IEnumerable<GetDestinationsDetailsDto>>> GetDestinationsDetails()
+        public async Task<ApiResult<IEnumerable<GetDestinationsDetailsDto>>> GetDestinationsDetails(string? search)
         {
-            var result = await _destinationService.GetDestinationsDetails();
+            var result = await _destinationService.GetDestinationsDetails(search);
             if (!result.IsSuccess)
             {
                 return this.ToApiResult(result);
             }
             return ApiResult<IEnumerable<GetDestinationsDetailsDto>>.Ok(result.Value!);
+        }
+        [HttpGet("Pagination/Details")]
+        public async Task<ApiResult<PaginatedResult<GetDestinationsDetailsDto>>> GetDestinationsPaginationDetails(string? search , int pageNumber=1 , int pageSize=8)
+        {
+            var result = await _destinationService.GetDestinationsPaginationDetails(search,pageNumber,pageSize);
+            if (!result.IsSuccess)
+            {
+                return this.ToApiResult(result);
+            }
+            return ApiResult<PaginatedResult<GetDestinationsDetailsDto>>.Ok(result.Value!);
         }
         [HttpGet("{id}")]
 

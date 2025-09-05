@@ -9,20 +9,20 @@
             Data = data;
         }
 
-        internal PaginatedResult(bool succeeded, List<T> data = default, List<string> messages = null, int count = 0,
+        internal PaginatedResult(bool succeeded, List<T> data = default, List<string> messages = null, int totalCount = 0,
             int page = 1, int pageSize = 10)
         {
             Data = data;
             CurrentPage = page;
             Succeeded = succeeded;
             PageSize = pageSize;
-            TotalPages = (int)Math.Ceiling(count / (double)pageSize);
-            TotalCount = count;
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            TotalCount = totalCount;
         }
 
-        public static PaginatedResult<T> Success(List<T> data, int count, int page, int pageSize)
+        public static PaginatedResult<T> Success(List<T> data, int totalCount, int page, int pageSize)
         {
-            return new(true, data, null, count, page, pageSize);
+            return new(true, data, null, totalCount, page, pageSize);
         }
         public List<T> Data { get; set; }
 

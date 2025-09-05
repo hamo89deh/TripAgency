@@ -1,4 +1,5 @@
 ﻿using TripAgency.Data.Entities;
+using TripAgency.Data.Helping;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Service.Feature.City.Command;
 using TripAgency.Service.Feature.City.Queries;
@@ -20,7 +21,8 @@ namespace TripAgency.Service.Abstracts
         Task<Result> AddDestinationActivity(int DestinationId, int ActivityId);
         Task<Result> DeleteDestinationActivity(int DestinationId, int ActivityId);
         Task<Result<GetDestinationActivitiesByIdDto>> GetDestinationActivitiesByIdDto(int DestinationId);
-        Task<Result<IEnumerable<GetDestinationsDetailsDto>>> GetDestinationsDetails();
+        Task<Result<IEnumerable<GetDestinationsDetailsDto>>> GetDestinationsDetails(string? search);
+        Task<Result<PaginatedResult<GetDestinationsDetailsDto>>> GetDestinationsPaginationDetails(string? search , int pageNumber , int pageSize);
 
        
     }
