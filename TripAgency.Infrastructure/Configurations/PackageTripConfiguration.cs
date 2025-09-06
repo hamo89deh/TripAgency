@@ -35,6 +35,9 @@ namespace TripAgency.Infrastructure.Configurations
             builder.Property(h => h.ImageUrl)
               .IsRequired()
               .HasMaxLength(300);
+
+            builder.Property(x => x.Rate)
+                  .IsRequired();
             builder.ToTable("PackageTrips");
 
             builder.HasOne(c => c.Trip)

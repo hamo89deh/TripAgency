@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
+using TripAgency.Data.Helping;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.User.Command;
 using TripAgency.Service.Feature.User.Queries;
@@ -73,6 +74,17 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult<IEnumerable<GetUsersDto>>(UsersResult);
             }
             return ApiResult<IEnumerable<GetUsersDto>>.Ok(UsersResult.Value!);
+
+        }
+        [HttpGet("Pagination")]
+        public async Task<ApiResult<PaginatedResult<GetUsersDto>>> GetUsers(string? search , int pageNumber=1 , int pageSize =10)
+        {
+            var UsersResult = await _applicationUserService.GetUsersPagination(search,pageNumber , pageSize);
+            if (!UsersResult.IsSuccess)
+            {
+                return this.ToApiResult<PaginatedResult<GetUsersDto>>(UsersResult);
+            }
+            return ApiResult<PaginatedResult<GetUsersDto>>.Ok(UsersResult.Value!);
 
         }
     }

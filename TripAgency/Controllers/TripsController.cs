@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using MimeKit.Tnef;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
+using TripAgency.Data.Helping;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
 using TripAgency.Service.Feature.Trip.Commands;
@@ -26,10 +28,26 @@ namespace TripAgency.Controllers
         [HttpGet("ForUser")]
         public async Task<ApiResult<IEnumerable<GetTripsDto>>> GetTripsForUser()
         {
-            var tripsResult = await _tripService.GetAllForUsersAsync();
+            var tripsResult = await _tripService.GetTripsForUsersAsync();
             if (!tripsResult.IsSuccess)
                 return this.ToApiResult(tripsResult);
             return ApiResult<IEnumerable<GetTripsDto>>.Ok(tripsResult.Value!);
+        }
+        [HttpGet("Pagination/ForUser")]
+        public async Task<ApiResult<PaginatedResult<GetTripsDto>>> GetTripsPagintionForUser(string? search , int pageNumber=1 ,int pageSize=10)
+        {
+            var tripsResult = await _tripService.GetTripsPaginationForUsersAsync(search,pageNumber,pageSize);
+            if (!tripsResult.IsSuccess)
+                return this.ToApiResult(tripsResult);
+            return ApiResult<PaginatedResult<GetTripsDto>>.Ok(tripsResult.Value!);
+        }
+        [HttpGet("{TripId}/Pagination/PackageTrips")]
+        public async Task<ApiResult<PaginatedResult<PackageTripForTripDto>>> GetPackagesPaginationForTrip(int TripId,string? search, int pageNumber = 1, int pageSize = 10)
+        {
+            var tripsResult = await _tripService.GetPackagesPaginationForTripAsync(TripId,search, pageNumber, pageSize);
+            if (!tripsResult.IsSuccess)
+                return this.ToApiResult(tripsResult);
+            return ApiResult<PaginatedResult<PackageTripForTripDto>>.Ok(tripsResult.Value!);
         }
         [HttpGet("{TripId}/PackageTrips")]
         public async Task<ApiResult<GetPackageTripsForTripDto>> GetPackagesForTrip(int TripId)

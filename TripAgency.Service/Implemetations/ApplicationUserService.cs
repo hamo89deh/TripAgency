@@ -18,6 +18,7 @@ using TripAgency.Service.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Azure;
 using Microsoft.Extensions.Hosting;
+using TripAgency.Data.Helping;
 
 namespace TripAgency.Service.Implemetations
 {
@@ -191,7 +192,9 @@ namespace TripAgency.Service.Implemetations
                 PhoneNumber = user.PhoneNumber,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                ImageUrl = user.ImageUrl 
+                ImageUrl = user.ImageUrl ,
+                UserName = user.UserName,
+                LoyaltyPoints = user.LoyaltyPoints
             };
             
             return Result<GetUserByIdDto>.Success(result);
@@ -215,13 +218,39 @@ namespace TripAgency.Service.Implemetations
                     PhoneNumber = user.PhoneNumber,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
-                    ImageUrl= user.ImageUrl
+                    ImageUrl= user.ImageUrl,
+                    UserName = user.UserName,
+                    LoyaltyPoints = user.LoyaltyPoints
                 });
             }
 
             return Result<IEnumerable<GetUsersDto>>.Success(usersResult);
         }
 
+        public async Task<Result<PaginatedResult<GetUsersDto>>> GetUsersPagination(string? search, int pageNumber, int pageSize )
+        {
+            var query = _userManager.Users;
+            if(search is not null)
+                query = query.ApplySearch(search,new[]{ "UserName","Email"});
+         
+            var usersResult = await query.Select(user => new GetUsersDto()
+            {
+                Id = user.Id,
+                Address = user.Address,
+                Country = user.Country,
+                Email = user.Email!,
+                PhoneNumber = user.PhoneNumber,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                ImageUrl = user.ImageUrl,
+                UserName = user.UserName,
+                LoyaltyPoints = user.LoyaltyPoints
+                
+            }).ToPaginatedListAsync(pageNumber, pageSize);
+            if (usersResult.TotalCount == 0)
+                 return Result<PaginatedResult<GetUsersDto>>.NotFound($"Not Found Users");
+            return Result<PaginatedResult<GetUsersDto>>.Success(usersResult);
+        }
     }
 
 }

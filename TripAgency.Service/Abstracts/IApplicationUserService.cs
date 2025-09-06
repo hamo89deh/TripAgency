@@ -5,6 +5,7 @@ using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Threading.Tasks;
 using TripAgency.Data.Entities.Identity;
+using TripAgency.Data.Helping;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Service.Feature.User.Command;
 using TripAgency.Service.Feature.User.Queries;
@@ -20,6 +21,7 @@ namespace TripAgency.Service.Abstracts
         public Task<Result<string>> ChangePassword(ChangeUserPassword changeUserPassword);
         public Task<Result<GetUserByIdDto>> GetUserById(int Id);
         public Task<Result<IEnumerable<GetUsersDto>>> GetUsers();
+        public Task<Result<PaginatedResult<GetUsersDto>>> GetUsersPagination(string? search, int pageNumber , int pageSize );
 
     }
 }

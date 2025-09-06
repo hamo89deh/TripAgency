@@ -13,7 +13,7 @@ namespace TripAgency.Data.Entities
         public int MinCapacity { get; set; }
         public decimal Price { get; set; }
         public string ImageUrl { get; set; }
-
+        public int Rate { get; set; } = 5;
         public Trip Trip { get; set; }
         public int TripId { get; set; }
         public Promotion? Promotion { get; set; }

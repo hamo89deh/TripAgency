@@ -4,6 +4,7 @@ using TripAgency.Service.Generic;
 using TripAgency.Service.Feature.Trip.Queries;
 using TripAgency.Service.Feature.Trip.Commands;
 using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
+using TripAgency.Data.Helping;
 
 
 namespace TripAgency.Service.Abstracts
@@ -17,8 +18,10 @@ namespace TripAgency.Service.Abstracts
         Task<Result<GetTripDestinationsDto>> AddTripDestinations(AddTripDestinationsDto addTripDestinationsDto);
         Task<Result<GetTripDestinationsDto>> GetTripDestinationsById(int TripId);
         Task<Result> DeleteTripDestination(int tripId, int destinationId);
-        Task<Result<IEnumerable<GetTripsDto>>> GetAllForUsersAsync();
+        Task<Result<IEnumerable<GetTripsDto>>> GetTripsForUsersAsync();
+        Task<Result<PaginatedResult<GetTripsDto>>> GetTripsPaginationForUsersAsync(string? search, int pageNumber, int pageSize );
         public Task<Result<GetPackageTripsForTripDto>> GetPackagesForTripAsync(int TripId);
+        public Task<Result<PaginatedResult<PackageTripForTripDto>>> GetPackagesPaginationForTripAsync(int TripId, string? search, int pageNumber, int pageSize);
 
     }
 }

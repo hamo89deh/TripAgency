@@ -330,7 +330,7 @@ namespace TripAgency.Service.Implementations
                     Name = x.Destination.Name,
                     packageTripDestinationActivitiesForTrips = x.PackageTripDestinationActivities.Select(a => new PackageTripDestinationActivitiesForTripDto
                     {
-                        Id = a.Id,
+                        Id = a.ActivityId,
                         Name = a.Activity.Name
                     })
                 }),

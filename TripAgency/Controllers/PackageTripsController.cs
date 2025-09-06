@@ -72,8 +72,6 @@ namespace TripAgency.Api.Controllers
             return ApiResult<GetPackageTripByIdDto>.Created(packageTripResult.Value!);
         }
 
-      
-
         [HttpPut("{Id}")]
         public async Task<ApiResult<string>> UpdatePackageTrip(int Id , [FromForm] UpdatePackageTripDto updatePackageTrip)
         {

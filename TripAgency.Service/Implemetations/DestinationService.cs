@@ -222,11 +222,7 @@ namespace TripAgency.Service.Implementations
                          .ThenInclude(da => da.Activity)
                          .Where(x => x.DestinationActivities.Any());
 
-            var DestinationPagination = await query.ToPaginatedListAsync(pageNumber,pageSize);
-            if (DestinationPagination.TotalCount == 0)
-                return Result<PaginatedResult<GetDestinationsDetailsDto>>.NotFound("Not Found Any Destinations");
-
-            var resultData = DestinationPagination.Data.Select(x => new GetDestinationsDetailsDto()
+            var resultData = await query.Select(x => new GetDestinationsDetailsDto()
             {
                 Id = x.Id,
                 CityId = x.CityId,
@@ -241,10 +237,12 @@ namespace TripAgency.Service.Implementations
                     Description = d.Activity.Description,
                     Name = d.Activity.Name,
                 })
-            }).ToList();
-            var result=   PaginatedResult<GetDestinationsDetailsDto>.Success(resultData, DestinationPagination.TotalCount, DestinationPagination.CurrentPage , DestinationPagination.PageSize);
+            }).ToPaginatedListAsync(pageNumber, pageSize);
+            if (resultData.TotalCount == 0)
+                return Result<PaginatedResult<GetDestinationsDetailsDto>>.NotFound("Not Found Any Destinations");
+
           
-            return Result<PaginatedResult<GetDestinationsDetailsDto>>.Success(result);
+            return Result<PaginatedResult<GetDestinationsDetailsDto>>.Success(resultData);
         }
     }
 }

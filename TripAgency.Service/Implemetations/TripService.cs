@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using TripAgency.Data.Entities;
 using TripAgency.Data.Entities.Identity;
 using TripAgency.Data.Enums;
+using TripAgency.Data.Helping;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Infrastructure.Abstracts;
 using TripAgency.Infrastructure.Repositories;
@@ -229,7 +230,7 @@ namespace TripAgency.Service.Implementations
             }
             return Result<IEnumerable<GetTripsDto>>.Success(tripResult);
         }
-        public async Task<Result<IEnumerable<GetTripsDto>>> GetAllForUsersAsync()
+        public async Task<Result<IEnumerable<GetTripsDto>>> GetTripsForUsersAsync()
         {
             
             User user = null! ;
@@ -283,11 +284,29 @@ namespace TripAgency.Service.Implementations
                     CountPackageTrip = t.ValidPackageTrips.Count
                 })
                 .ToListAsync();
-            
+            if (trips.Count() == 0)
+                return Result<IEnumerable<GetTripsDto>>.NotFound("Not Found Any Trips");
             return Result<IEnumerable<GetTripsDto>>.Success(trips);
         }
         public async Task<Result<GetPackageTripsForTripDto>> GetPackagesForTripAsync(int TripId)
         {
+            User user = null!;
+            var userPhobiaIds = new List<int>();
+            try
+            {
+                user = await _currentUserService.GetUserAsync();
+                userPhobiaIds = await _userPhobiaRepositoryAsync.GetTableNoTracking()
+                                                           .Where(p => p.UserId == user.Id)
+                                                           .Select(p => p.PhobiaId)
+                                                           .Distinct()
+                                                           .ToListAsync();
+
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+
+
             var trip = await _tripRepository.GetTableNoTracking()
                                                  .Where(x => x.Id == TripId)
                                                  .FirstOrDefaultAsync();
@@ -296,14 +315,20 @@ namespace TripAgency.Service.Implementations
 
             var PackageTrips = await _packageTripRepositoryAsync.GetTableNoTracking()
                                                           .Include(x => x.PackageTripDates)
-                                                          .Where(x => x.TripId == trip.Id && x.PackageTripDates.Any(x => x.Status == PackageTripDateStatus.Published))
-                                                          .Include(x=>x.Promotion)
-                                                          .Include(x => x.PackageTripDestinations)
-                                                             .ThenInclude(x => x.Destination)
-                                                                .ThenInclude(x => x.City)
                                                           .Include(x => x.PackageTripDestinations)
                                                              .ThenInclude(x => x.PackageTripDestinationActivities)
                                                                 .ThenInclude(x => x.Activity)
+                                                                    .ThenInclude(x=>x.ActivityPhobias)
+                                                          .Where(x => x.TripId == trip.Id && x.PackageTripDates.Any(x => x.Status == PackageTripDateStatus.Published) &&
+                                                                 (user == null ||
+                                                                  x.PackageTripDestinations.All(ptd =>
+                                                                      ptd.PackageTripDestinationActivities.All(ptda =>
+                                                                          !ptda.Activity.ActivityPhobias.Any(ap => userPhobiaIds.Contains(ap.PhobiaId)))))
+                                                                )
+                                                          .Include(x=>x.Promotion)
+                                                          .Include(x => x.PackageTripDestinations)
+                                                             .ThenInclude(x => x.Destination)
+                                                                .ThenInclude(x => x.City)                                                        
                                                           .Include(x => x.PackageTripTypes)
                                                              .ThenInclude(x => x.TypeTrip)
 
@@ -384,6 +409,161 @@ namespace TripAgency.Service.Implementations
             };
 
             return Result<GetPackageTripsForTripDto>.Success(result);
+        }
+        public async Task<Result<PaginatedResult<GetTripsDto>>> GetTripsPaginationForUsersAsync(string? search, int pageNumber, int pageSize)
+        { 
+            
+            User user = null! ;
+            var userPhobiaIds = new List<int>();
+            try
+            {
+                 user = await _currentUserService.GetUserAsync();
+                 userPhobiaIds = await _userPhobiaRepositoryAsync.GetTableNoTracking()
+                                                            .Where(p => p.UserId == user.Id)
+                                                            .Select(p=>p.PhobiaId)
+                                                            .Distinct()
+                                                            .ToListAsync();
+                                                             
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+
+
+            // جلب الرحلات التي تحتوي على PackageTripDates بحالة Published فقط
+            // جلب الرحلات التي تحتوي على PackageTrips مع PackageTripDates بحالة Published
+            var tripsQuery = _tripRepository.GetTableNoTracking()
+                                            .Include(t => t.PackageTrips)
+                                                .ThenInclude(pt => pt.PackageTripDates)
+                                            .Where(t => t.PackageTrips.Any(pt => pt.PackageTripDates.Any(ptd => ptd.Status == PackageTripDateStatus.Published)))
+                                            .Include(t => t.PackageTrips)
+                                                .ThenInclude(pt => pt.PackageTripDestinations)
+                                                    .ThenInclude(ptd => ptd.PackageTripDestinationActivities)
+                                                        .ThenInclude(ptda => ptda.Activity)
+                                                            .ThenInclude(a => a.ActivityPhobias);
+
+            // تصفية الرحلات بناءً على فوبيا المستخدم إذا كان موجودًا
+            var tripsResult = await tripsQuery
+                .Select(t => new
+                {
+                    Trip = t,
+                    ValidPackageTrips = t.PackageTrips
+                        .Where(pt => pt.PackageTripDates.Any(ptd => ptd.Status == PackageTripDateStatus.Published) &&
+                                     (user == null ||
+                                      pt.PackageTripDestinations.All(ptd =>
+                                          ptd.PackageTripDestinationActivities.All(ptda =>
+                                              !ptda.Activity.ActivityPhobias.Any(ap => userPhobiaIds.Contains(ap.PhobiaId)))))
+                        )
+                        .ToList()
+                })
+                .Where(t => t.ValidPackageTrips.Any())
+                .Select(t => new GetTripsDto
+                {
+                    Id = t.Trip.Id,
+                    Name = t.Trip.Name,
+                    Description = t.Trip.Description,
+                    ImageUrl = t.Trip.ImageUrl,
+                    CountPackageTrip = t.ValidPackageTrips.Count
+                })
+                .ToPaginatedListAsync(pageNumber, pageSize);
+            if (tripsResult.TotalCount == 0)
+                return Result<PaginatedResult<GetTripsDto>>.NotFound("Not found Any Trips");
+            return Result<PaginatedResult<GetTripsDto>>.Success(tripsResult);
+        }      
+        public async Task<Result<PaginatedResult<PackageTripForTripDto>>> GetPackagesPaginationForTripAsync(int TripId, string? search, int pageNumber, int pageSize)
+        {
+            User user = null!;
+            var userPhobiaIds = new List<int>();
+            try
+            {
+                user = await _currentUserService.GetUserAsync();
+                userPhobiaIds = await _userPhobiaRepositoryAsync.GetTableNoTracking()
+                                                           .Where(p => p.UserId == user.Id)
+                                                           .Select(p => p.PhobiaId)
+                                                           .ToListAsync();
+
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+
+            // التحقق من وجود الرحلة
+            var trip = await _tripRepository.GetTableNoTracking()
+                                           .Where(x => x.Id == TripId)
+                                           .FirstOrDefaultAsync();
+            if (trip == null)
+                return Result<PaginatedResult<PackageTripForTripDto>>.NotFound($"Not Found Trip By Id : {TripId}");
+
+            // بناء الاستعلام الأساسي
+            var query = _packageTripRepositoryAsync.GetTableNoTracking();
+               
+            // تطبيق البحث إذا وجد
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.ApplySearch(search , new[] {"Name", "Description"});
+            }
+            query = query.Include(x => x.PackageTripDates)
+                         .Include(x => x.PackageTripDestinations)
+                            .ThenInclude(x => x.PackageTripDestinationActivities)
+                               .ThenInclude(x => x.Activity)
+                                  .ThenInclude(x => x.ActivityPhobias)
+                .Where(x => x.TripId == trip.Id && x.PackageTripDates.Any(x => x.Status == PackageTripDateStatus.Published) &&
+                                     (user == null ||
+                                      x.PackageTripDestinations.All(ptd =>
+                                          ptd.PackageTripDestinationActivities.All(ptda =>
+                                              !ptda.Activity.ActivityPhobias.Any(ap => userPhobiaIds.Contains(ap.PhobiaId))))))
+                .Include(x => x.Promotion)
+                .Include(x => x.PackageTripDestinations)
+                    .ThenInclude(x => x.Destination)
+                        .ThenInclude(x => x.City)            
+                .Include(x => x.PackageTripTypes)
+                    .ThenInclude(x => x.TypeTrip);
+
+            // بناء DTO داخل الاستعلام مع تطبيق Pagination
+            var paginatedResult = await query.Select(pt => new PackageTripForTripDto
+            {
+                PackageTripId = pt.Id,
+                ActulPrice = pt.Price + pt.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price)),
+                PriceAfterPromotion = pt.Promotion != null && pt.Promotion.IsActive && pt.Promotion.EndDate >= DateTime.UtcNow && pt.Promotion.StartDate <= DateTime.UtcNow
+                    ? pt.Price + pt.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price)) * (1 - (pt.Promotion.DiscountPercentage / 100m))
+                    : null,
+                GetPromotionByIdDto = pt.Promotion != null && pt.Promotion.IsActive && pt.Promotion.EndDate >= DateTime.UtcNow && pt.Promotion.StartDate <= DateTime.UtcNow
+                    ? new GetPromotionByIdDto
+                    {
+                        Id = pt.Promotion.Id,
+                        DiscountPercentage = pt.Promotion.DiscountPercentage,
+                        StartDate = pt.Promotion.StartDate,
+                        EndDate = pt.Promotion.EndDate
+                    }
+                    : null,
+                TripId = pt.TripId,
+                Name = pt.Name,
+                Description = pt.Description,
+                ImageUrl = pt.ImageUrl,
+                Duration = pt.Duration,
+                MaxCapacity = pt.MaxCapacity,
+                MinCapacity = pt.MinCapacity,
+                PackageTripCitiyDto = pt.PackageTripDestinations
+                    .Select(pd => new PackageTripCitiesDto
+                    {
+                        Id = pd.Destination.City.Id,
+                        Name = pd.Destination.City.Name
+                    })
+                    .GroupBy(c => c.Id)
+                    .Select(g => g.First()),
+                Rating = pt.Rate, // استخدام العمود الجديد Rate
+                PackageTripTypesDtos = pt.PackageTripTypes.Select(x => new PackageTripTypesForTripDto
+                {
+                    Id = x.TypeTripId,
+                    Name = x.TypeTrip.Name
+                })
+            }).ToPaginatedListAsync(pageNumber, pageSize);
+
+
+            if (paginatedResult.TotalCount == 0)
+                return Result<PaginatedResult<PackageTripForTripDto>>.NotFound($"Not Found Any PackageTrip Published for Trip With Id: {trip.Id}");
+
+            return Result<PaginatedResult<PackageTripForTripDto>>.Success(paginatedResult);
         }
     }
 }
