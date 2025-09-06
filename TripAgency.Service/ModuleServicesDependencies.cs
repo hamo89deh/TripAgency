@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TripAgency.Data.Entities;
 using TripAgency.Data.Helping;
 using TripAgency.Infrastructure.Abstracts;
 using TripAgency.Service.Abstracts;
@@ -47,7 +48,8 @@ namespace TripAgency.Service
             services.AddTransient<IBookingPassengerService, BookingPassengerService>();
             services.AddTransient<IMediaService, MediaService>();
             services.AddTransient<ITripReviewService, TripReviewService>();
-            services.AddTransient<IPromotionService, PromotionService>();
+            services.AddTransient<IOfferService, OfferService>();
+            services.AddTransient<IPackageTripOffersService, PackageTripOfferService>();
             services.AddTransient<IMediaService, MediaService>();
            
             services.AddTransient<UsdtPaymentGatewayService>(); 

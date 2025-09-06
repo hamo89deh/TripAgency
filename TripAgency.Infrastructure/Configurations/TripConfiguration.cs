@@ -16,7 +16,7 @@ namespace TripAgency.Infrastructure.Configurations
 
             builder.Property(h => h.Description)
                 .IsRequired()
-                .HasMaxLength(200);
+                .HasMaxLength(400);
 
             builder.Property(h => h.ImageUrl)
               .IsRequired()

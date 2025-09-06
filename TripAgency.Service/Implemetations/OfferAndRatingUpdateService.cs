@@ -4,15 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using TripAgency.Infrastructure.Abstracts;
 using Microsoft.Extensions.Logging;
 
-public class PromotionAndRatingUpdateService : BackgroundService
+public class OfferAndRatingUpdateService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<PromotionAndRatingUpdateService> _logger;
+    private readonly ILogger<OfferAndRatingUpdateService> _logger;
     private int DefaultRating = 5;
     private int MinimumReviews = 5;
 
 
-    public PromotionAndRatingUpdateService(IServiceProvider serviceProvider, ILogger<PromotionAndRatingUpdateService> logger)
+    public OfferAndRatingUpdateService(IServiceProvider serviceProvider, ILogger<OfferAndRatingUpdateService> logger)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -28,16 +28,16 @@ public class PromotionAndRatingUpdateService : BackgroundService
 
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    var promotionRepository = scope.ServiceProvider.GetRequiredService<IPromotionRepositoryAsync>();
+                    var offerRepository = scope.ServiceProvider.GetRequiredService<IOffersRepositoryAsync>();
                     var tripReviewRepository = scope.ServiceProvider.GetRequiredService<ITripReviewRepositoryAsync>();
                     var packageTripRepository = scope.ServiceProvider.GetRequiredService<IPackageTripRepositoryAsync>();
 
                     // تحديث العروض الترويجية
-                    var updatedPromotionsCount = await promotionRepository.GetTableNoTracking()
+                    var updatedoffersCount = await offerRepository.GetTableNoTracking()
                         .Where(p => p.IsActive && p.EndDate < DateTime.Now)
                         .ExecuteUpdateAsync(p => p.SetProperty(x => x.IsActive, false), stoppingToken);
 
-                    _logger.LogInformation("Updated {Count} expired promotions.", updatedPromotionsCount);
+                    _logger.LogInformation("Updated {Count} expired promotions.", updatedoffersCount);
 
                     // تحديث التقييمات
                     var packageTrips = await packageTripRepository.GetTableNoTracking()

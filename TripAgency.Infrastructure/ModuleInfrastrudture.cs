@@ -42,7 +42,8 @@ namespace TripAgency.Infrastructure
             services.AddTransient < IUserPhobiasRepositoryAsync, UserPhobiasRepositoryAsync>();
             services.AddTransient < IBookingPassengerRepositoryAsync, BookingPassengerRepositoryAsync>();
             services.AddTransient < ITripReviewRepositoryAsync, TripReviewRepositoryAsync>();
-            services.AddTransient < IPromotionRepositoryAsync, PromotionRepositoryAsync>();
+            services.AddTransient < IOffersRepositoryAsync, OfferRepositoryAsync>();
+            services.AddTransient <IPackageTripOffersRepositoryAsync, PackageTripOffersRepositoryAsync>();
           
 
             return services;

@@ -31,7 +31,7 @@ namespace TripAgency.Service.Implementations
         public ITripReviewService _tripReviewService { get; }
         public ITripReviewRepositoryAsync _tripReviewRepository { get; }
         private ITripDestinationRepositoryAsync _tripDestinationRepositoryAsync { get; set; }
-        private readonly IPromotionRepositoryAsync _promotionRepositoryAsync;
+        private readonly IOffersRepositoryAsync _promotionRepositoryAsync;
         public IMapper _mapper { get; }
 
         public TripService(ITripRepositoryAsync tripRepository,
@@ -41,7 +41,7 @@ namespace TripAgency.Service.Implementations
                            IMediaService mediaService,
                            IPackageTripRepositoryAsync packageTripRepositoryAsync,
                            IUserPhobiasRepositoryAsync userPhobiaRepositoryAsync,
-                           IPromotionRepositoryAsync promotionRepository,
+                           IOffersRepositoryAsync promotionRepository,
                            ITripReviewService tripReviewService,
                            ITripDestinationRepositoryAsync tripDestinationRepositoryAsync) : base(tripRepository, mapper)
         {
@@ -325,7 +325,8 @@ namespace TripAgency.Service.Implementations
                                                                       ptd.PackageTripDestinationActivities.All(ptda =>
                                                                           !ptda.Activity.ActivityPhobias.Any(ap => userPhobiaIds.Contains(ap.PhobiaId)))))
                                                                 )
-                                                          .Include(x=>x.Promotion)
+                                                          .Include(x=>x.PackageTripOffers)
+                                                          .ThenInclude(x=>x.Offer)
                                                           .Include(x => x.PackageTripDestinations)
                                                              .ThenInclude(x => x.Destination)
                                                                 .ThenInclude(x => x.City)                                                        
@@ -359,22 +360,14 @@ namespace TripAgency.Service.Implementations
 
              
                 // التحقق من العرض الترويجي
-                var promotion = packageTrip.Promotion;
-                if (promotion != null && promotion.IsActive && promotion.EndDate < DateTime.UtcNow)
-                {
-                    // تعطيل العرض المنتهي
-                    promotion.IsActive = false;
-                    await _promotionRepositoryAsync.UpdateAsync(promotion);
-                    //_logger.LogInformation("Deactivated expired promotion {PromotionId} for PackageTrip {PackageTripId}", promotion.Id, packageTrip.Id);
-                    promotion = null;
-                }
+                var promotion = packageTrip.PackageTripOffers.Where(x => x.IsApply).Select(p => p.Offer).FirstOrDefault(x => x.IsActive && x.EndDate >= DateTime.UtcNow && x.StartDate <= DateTime.UtcNow);
                 // حساب السعر بعد الخصم
-                decimal? priceAfterPromotion = null;
-                GetPromotionByIdDto promotionDto = null;
-                if (promotion != null && promotion.IsActive && promotion.EndDate < DateTime.UtcNow && promotion.StartDate <= DateTime.UtcNow )
+                decimal? priceAfterOffer = null;
+                GetOfferByIdDto OfferDto = null;
+                if (promotion != null )
                 {
-                    priceAfterPromotion = actualPrice * (1 - (promotion.DiscountPercentage / 100m));
-                    promotionDto = _mapper.Map<GetPromotionByIdDto>(promotion);
+                    priceAfterOffer = actualPrice * (1 - (promotion.DiscountPercentage / 100m));
+                    OfferDto = _mapper.Map<GetOfferByIdDto>(promotion);
                 }
                 // حساب متوسط التقييم
                 int finalRating = await _tripReviewService.CalculateAverageRatingAsync(packageTrip.Id);
@@ -382,8 +375,8 @@ namespace TripAgency.Service.Implementations
                 {
                     PackageTripId = packageTrip.Id,
                     ActulPrice = packageTrip!.Price + packageTrip!.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price)),
-                    PriceAfterPromotion = priceAfterPromotion,
-                    GetPromotionByIdDto = promotionDto,
+                    PriceAfterOffer = priceAfterOffer,
+                    GetPromotionByIdDto = OfferDto,
                     TripId = packageTrip.TripId,
                     Name = packageTrip.Name,
                     Description = packageTrip.Description,
@@ -512,7 +505,8 @@ namespace TripAgency.Service.Implementations
                                       x.PackageTripDestinations.All(ptd =>
                                           ptd.PackageTripDestinationActivities.All(ptda =>
                                               !ptda.Activity.ActivityPhobias.Any(ap => userPhobiaIds.Contains(ap.PhobiaId))))))
-                .Include(x => x.Promotion)
+                .Include(x => x.PackageTripOffers)
+                    .ThenInclude(x=>x.Offer)
                 .Include(x => x.PackageTripDestinations)
                     .ThenInclude(x => x.Destination)
                         .ThenInclude(x => x.City)            
@@ -524,19 +518,20 @@ namespace TripAgency.Service.Implementations
             {
                 PackageTripId = pt.Id,
                 ActulPrice = pt.Price + pt.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price)),
-                PriceAfterPromotion = pt.Promotion != null && pt.Promotion.IsActive && pt.Promotion.EndDate >= DateTime.UtcNow && pt.Promotion.StartDate <= DateTime.UtcNow
-                    ? pt.Price + pt.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price)) * (1 - (pt.Promotion.DiscountPercentage / 100m))
-                    : null,
-                GetPromotionByIdDto = pt.Promotion != null && pt.Promotion.IsActive && pt.Promotion.EndDate >= DateTime.UtcNow && pt.Promotion.StartDate <= DateTime.UtcNow
-                    ? new GetPromotionByIdDto
-                    {
-                        Id = pt.Promotion.Id,
-                        DiscountPercentage = pt.Promotion.DiscountPercentage,
-                        StartDate = pt.Promotion.StartDate,
-                        EndDate = pt.Promotion.EndDate
-                    }
-                    : null,
-                TripId = pt.TripId,
+                PriceAfterOffer = pt.PackageTripOffers.Any(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow)
+                ? pt.Price + pt.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price)) *
+                  (1 - (pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow).Offer.DiscountPercentage / 100m))
+                : null,
+                GetPromotionByIdDto = pt.PackageTripOffers.Any(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow)
+                ? new GetOfferByIdDto
+                {
+                    Id = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow).Offer.Id,
+                    DiscountPercentage = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow).Offer.DiscountPercentage,
+                    StartDate = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow).Offer.StartDate,
+                    EndDate = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow).Offer.EndDate
+                }
+                : null,
+                TripId = pt.TripId ,
                 Name = pt.Name,
                 Description = pt.Description,
                 ImageUrl = pt.ImageUrl,

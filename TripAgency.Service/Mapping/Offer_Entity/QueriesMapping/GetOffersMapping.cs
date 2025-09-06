@@ -3,14 +3,13 @@ using TripAgency.Service.Feature.PromotionDto;
 
 namespace TripAgency.Service.Mapping.Promotioin_Entity
 {
-    public partial class PromotionProfile
+    public partial class OfferProfile
     {
-        public void GetPromotionByIdMapping()
+        public void GetOffersMapping()
         {
 
-            CreateMap<Promotion, GetPromotionsDto>().
+            CreateMap<Offer, GetOfferByIdDto>().
                  ForMember(d => d.Id, op => op.MapFrom(s => s.Id)).
-                 ForMember(d => d.PackageTripId, op => op.MapFrom(s => s.PackageTripId)).
                  ForMember(d => d.EndDate, op => op.MapFrom(s => s.EndDate)).
                  ForMember(d => d.StartDate, op => op.MapFrom(s => s.StartDate)).
                  ForMember(d => d.DiscountPercentage, op => op.MapFrom(s => s.DiscountPercentage)).

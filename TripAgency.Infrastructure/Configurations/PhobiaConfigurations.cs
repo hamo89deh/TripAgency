@@ -12,7 +12,7 @@ namespace TripAgency.Infrastructure.Configurations
 
             builder.Property(x => x.Name)
                    .HasColumnType("nvarchar")
-                   .HasMaxLength(50)
+                   .HasMaxLength(100)
                    .IsRequired(true);
 
             builder.Property(x => x.Description)

@@ -18,10 +18,10 @@ namespace TripAgency.Service.Feature.PackageTripDestinationActivity.Queries
         public int MinCapacity { get; set; }
         public int Rating { get; set; } = 5;
         public decimal ActulPrice { get; set; }
-        public decimal? PriceAfterPromotion { get; set; }
+        public decimal? PriceAfterOffer { get; set; }
         public string ImageUrl { get; set; }
         public int TripId { get; set; }
-        public GetPromotionByIdDto? GetPromotionByIdDto { get; set; }     
+        public GetOfferByIdDto? GetPromotionByIdDto { get; set; }     
         public IEnumerable<PackageTripCitiesDto> PackageTripCitiyDto { get; set; } = [];
         public IEnumerable<PackageTripTypesForTripDto> PackageTripTypesDtos { get; set; } = [];
     }
@@ -34,6 +34,12 @@ namespace TripAgency.Service.Feature.PackageTripDestinationActivity.Queries
         public DateTime EndBookingDate { get; set; }
         public int AvailableSeats { get; set; }
 
+
+    }
+    public class PaymentMethodDto
+    {
+        public int Id { get; set; }
+       public string Name {  get; set; } 
 
     }
     public class PackageTripDestinationsForTripDto

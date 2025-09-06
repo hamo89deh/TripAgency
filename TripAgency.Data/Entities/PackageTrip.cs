@@ -7,7 +7,6 @@ namespace TripAgency.Data.Entities
         public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-
         public int Duration { get; set; }
         public int MaxCapacity { get; set; }
         public int MinCapacity { get; set; }
@@ -16,11 +15,11 @@ namespace TripAgency.Data.Entities
         public int Rate { get; set; } = 5;
         public Trip Trip { get; set; }
         public int TripId { get; set; }
-        public Promotion? Promotion { get; set; }
         public IEnumerable<PackageTripType> PackageTripTypes { get; set; }
         public IEnumerable<PackageTripDestination> PackageTripDestinations { get; set; }
         public IEnumerable<PackageTripDate> PackageTripDates { get; set; }
         public IEnumerable<FavoritePackageTrip>? FavoritePackageTrips { get; set; }
+        public IEnumerable<PackageTripOffers> PackageTripOffers { get; set; }
 
 
 

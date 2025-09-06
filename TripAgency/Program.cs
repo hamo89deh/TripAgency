@@ -184,7 +184,7 @@ namespace TripAgency
                 //  Hosted Service
                 builder.Services.AddHostedService<PackageTripDateStatusUpdateService>();
                 // ????? ?????? ???????
-                builder.Services.AddHostedService<PromotionAndRatingUpdateService>();
+                builder.Services.AddHostedService<OfferAndRatingUpdateService>();
 
                 var app = builder.Build();
                 app.UseMiddleware<ErrorHandlerExceptionMiddleware>();

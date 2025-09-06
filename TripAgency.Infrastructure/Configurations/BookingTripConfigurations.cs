@@ -12,7 +12,7 @@ namespace TripAgency.Infrastructure.Configurations
 
             builder.Property(x => x.Notes)
                    .HasColumnType("nvarchar")
-                   .HasMaxLength(50)
+                   .HasMaxLength(300)
                    .IsRequired(true);
 
             builder.Property(x => x.BookingDate)
@@ -31,7 +31,7 @@ namespace TripAgency.Infrastructure.Configurations
                    .HasPrecision(18, 2)
                    .IsRequired(true);
 
-            builder.Property(x => x.AppliedPromotionId)
+            builder.Property(x => x.AppliedOfferId)
               .IsRequired(false); // العرض اختياري
 
             builder.ToTable("BookingTrips");
@@ -46,9 +46,9 @@ namespace TripAgency.Infrastructure.Configurations
                    .HasForeignKey(x => x.UserId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(x => x.AppliedPromotion)
+            builder.HasOne(x => x.AppliedOffer)
                .WithMany(x=>x.BookingTrips) // لا حاجة لمجموعة في Promotion إذا لم تكن مطلوبة
-               .HasForeignKey(x => x.AppliedPromotionId)
+               .HasForeignKey(x => x.AppliedOfferId)
                .OnDelete(DeleteBehavior.Restrict)
                .IsRequired(false); // العلاقة اختيارية
         }

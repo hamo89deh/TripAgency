@@ -18,9 +18,9 @@ namespace TripAgency.Data.Entities
         public string Notes { get; set; }
         public int PackageTripDateId { get; set; }
         public int UserId { get; set; }
-        public int? AppliedPromotionId { get; set; } // حقل جديد لتتبع العرض المطبق
+        public int? AppliedOfferId { get; set; } // حقل جديد لتتبع العرض المطبق
         
-        public Promotion? AppliedPromotion { get; set; } // العلاقة مع العرض
+        public Offer? AppliedOffer { get; set; } // العلاقة مع العرض
         public User User { get; set; }
         public Payment Payment { get; set; }
         public PackageTripDate PackageTripDate { get; set; }  

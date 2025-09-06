@@ -26,7 +26,7 @@ namespace TripAgency.Service.Implementations
         public IPackageTripDateRepositoryAsync _packagetripDateRepository { get; }
         public ILogger<PackageTripService> _logger { get; }
         public ICityRepositoryAsync _cityRepositoryAsync { get; }
-        public IPromotionRepositoryAsync _promotionRepository { get; }
+        public IOffersRepositoryAsync _promotionRepository { get; }
         public ITripRepositoryAsync _tripRepositoryAsync { get; }
         public ITripReviewService _tripReviewService { get; }
         public IMediaService _mediaService { get; }
@@ -35,7 +35,7 @@ namespace TripAgency.Service.Implementations
         public PackageTripService(IPackageTripRepositoryAsync packagetripRepository,
                                   IPackageTripDateRepositoryAsync packagetripDateRepository,
                                   ICityRepositoryAsync cityRepositoryAsync,
-                                  IPromotionRepositoryAsync promotionRepository,
+                                  IOffersRepositoryAsync promotionRepository,
                                   ITripRepositoryAsync tripRepository,
                                   ITripReviewService tripReviewService,
                                   ILogger<PackageTripService> logger,
@@ -227,7 +227,9 @@ namespace TripAgency.Service.Implementations
 
             var packageTrip = await _packageTripRepositoryAsync.GetTableNoTracking()
                 .Include(x => x.PackageTripDates)
-                .Include(x => x.Promotion)
+                
+                .Include(x => x.PackageTripOffers)
+                .ThenInclude(x=>x.Offer)
                 .Include(x => x.PackageTripDestinations)
                     .ThenInclude(x => x.Destination)
                         .ThenInclude(x => x.City)
@@ -250,23 +252,29 @@ namespace TripAgency.Service.Implementations
             var actualPrice = packageTrip.Price + packageTrip.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price));
 
             // التحقق من العرض الترويجي
-            var promotion = packageTrip.Promotion;
-            if (promotion != null && promotion.IsActive && promotion.EndDate < DateTime.UtcNow)
+            var offer = packageTrip.PackageTripOffers
+                                        .Where(x => x.IsApply)
+                                        .Select(p => p.Offer)
+                                        .FirstOrDefault(x => x.IsActive
+                                                        && x.EndDate >= DateTime.UtcNow
+                                                        && x.StartDate <= DateTime.UtcNow
+                                                        );
+            if (offer != null && offer.IsActive && offer.EndDate < DateTime.UtcNow)
             {
                 // تعطيل العرض المنتهي
-                promotion.IsActive = false;
-                await _promotionRepository.UpdateAsync(promotion);
-                _logger.LogInformation("Deactivated expired promotion {PromotionId} for PackageTrip {PackageTripId}", promotion.Id, packageTrip.Id);
-                promotion = null;
+                offer.IsActive = false;
+                await _promotionRepository.UpdateAsync(offer);
+                _logger.LogInformation("Deactivated expired Offer {OfferId} for PackageTrip {PackageTripId}", offer.Id, packageTrip.Id);
+                offer = null;
             }
 
             // حساب السعر بعد الخصم
-            decimal? priceAfterPromotion = null;
-            GetPromotionByIdDto promotionDto = null;
-            if (promotion != null && promotion.IsActive && promotion.StartDate <= DateTime.UtcNow && promotion.EndDate >= DateTime.UtcNow)
+            decimal? priceAfterOffer = null;
+            GetOfferByIdDto offerDto = null;
+            if (offer != null && offer.IsActive && offer.StartDate <= DateTime.UtcNow && offer.EndDate >= DateTime.UtcNow)
             {
-                priceAfterPromotion = actualPrice * (1 - (promotion.DiscountPercentage / 100m));
-                promotionDto = _mapper.Map<GetPromotionByIdDto>(promotion);
+                priceAfterOffer = actualPrice * (1 - (offer.DiscountPercentage / 100m));
+                offerDto = _mapper.Map<GetOfferByIdDto>(offer);
             }
 
             // جلب المدن الفريدة
@@ -313,8 +321,8 @@ namespace TripAgency.Service.Implementations
                 MinCapacity = packageTrip.MinCapacity,
                 Rating = finalRating,
                 ActualPrice = actualPrice,
-                PriceAfterPromotion = priceAfterPromotion,
-                GetPromotionByIdDto = promotionDto,
+                PriceAfterPromotion = priceAfterOffer,
+                GetOfferByIdDto = offerDto,
                 ImageUrl = packageTrip.ImageUrl,
                 TripId = packageTrip.TripId,
                 PackageTripCitiesDto = cities,

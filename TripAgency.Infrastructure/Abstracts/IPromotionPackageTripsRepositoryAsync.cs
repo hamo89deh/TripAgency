@@ -3,8 +3,7 @@ using TripAgency.Infrastructure.InfrastructureBases;
 
 namespace TripAgency.Infrastructure.Abstracts
 {
-    public interface IPromotionRepositoryAsync : IGenericRepositoryAsync<Promotion>
+    public interface IPackageTripOffersRepositoryAsync : IGenericRepositoryAsync<PackageTripOffers>
     {
-      
     }
 }

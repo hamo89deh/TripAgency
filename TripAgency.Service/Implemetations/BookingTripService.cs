@@ -31,7 +31,7 @@ namespace TripAgency.Service.Implementations
         public IPaymentService _paymentService { get; }
         public IConfiguration _configuration { get; }
         public ICurrentUserService _currentUserService { get; }
-        public IPromotionService _promotionService { get; }
+        public IOfferService _promotionService { get; }
         public ILogger<BookingTripService> _logger { get; }
         public IMapper _mapper { get; }
 
@@ -49,7 +49,7 @@ namespace TripAgency.Service.Implementations
                                   IMapper mapper,
                                   IConfiguration configuration,
                                   ICurrentUserService currentUserService,
-                                  IPromotionService promotionService,
+                                  IOfferService promotionService,
                                   ILogger<BookingTripService> logger
                                  ) : base(bookingTripRepository, mapper)
         {
@@ -106,7 +106,7 @@ namespace TripAgency.Service.Implementations
             // النحقق من السعر الفعلي 
             var calculatedTotalPrice = packageTripDate.PackageTrip.Price + packageTripDate.PackageTrip.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price));
             // 1.4. استرجاع العرض الترويجي الصالح
-            var promotionResult = await _promotionService.GetValidPromotionAsync(packageTripDate.PackageTripId);
+            var promotionResult = await _promotionService.GetValidOfferAsync(packageTripDate.PackageTripId);
             int? appliedPromotionId = null;
             decimal finalPrice = calculatedTotalPrice * bookPackageDto.PassengerCount;
 
@@ -139,7 +139,7 @@ namespace TripAgency.Service.Implementations
                     PassengerCount = bookPackageDto.PassengerCount,
                     BookingDate = DateTime.UtcNow,
                     BookingStatus = BookingStatus.Pending,
-                    AppliedPromotionId= appliedPromotionId,
+                    AppliedOfferId= appliedPromotionId,
                     ActualPrice = finalPrice,
                     Notes = $"Pending payment via {paymentMethod.Name}",
                     UserId = user.Id

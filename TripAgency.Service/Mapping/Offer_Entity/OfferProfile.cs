@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace TripAgency.Service.Mapping.Promotioin_Entity
 {
-    public partial class PromotionProfile : Profile 
+    public partial class OfferProfile : Profile 
     {
-        public PromotionProfile()
+        public OfferProfile()
         {
-            GetPromotionsMapping();
-            GetPromotionByIdMapping();
+            GetOffersMapping();
+            GetOfferByIdMapping();
 
         }
     }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TripAgency.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using TripAgency.Infrastructure.Context;
 namespace TripAgency.Infrastructure.Migrations
 {
     [DbContext(typeof(TripAgencyDbContext))]
-    partial class TripAgencyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250906070614_EditTableNameForPromotionToOffers")]
+    partial class EditTableNameForPromotionToOffers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -221,7 +224,7 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.Property<string>("Notes")
                         .IsRequired()
-                        .HasMaxLength(300)
+                        .HasMaxLength(50)
                         .HasColumnType("nvarchar");
 
                     b.Property<int>("PackageTripDateId")
@@ -626,8 +629,7 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
@@ -650,8 +652,8 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(400)
-                        .HasColumnType("nvarchar(400)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("Duration")
                         .HasColumnType("int");
@@ -989,7 +991,7 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PaymentMethods", (string)null);
+                    b.ToTable("PaymentMethods");
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.Phobia", b =>
@@ -1007,7 +1009,7 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
+                        .HasMaxLength(50)
                         .HasColumnType("nvarchar");
 
                     b.HasKey("Id");
@@ -1080,8 +1082,8 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(400)
-                        .HasColumnType("nvarchar(400)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
@@ -1130,7 +1132,7 @@ namespace TripAgency.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Comment")
-                        .HasMaxLength(300)
+                        .HasMaxLength(200)
                         .HasColumnType("nvarchar");
 
                     b.Property<DateTime>("CreatedAt")

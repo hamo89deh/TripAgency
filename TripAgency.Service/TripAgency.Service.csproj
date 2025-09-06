@@ -15,7 +15,7 @@
     <Folder Include="Feature\DestinationActivity\Commands\" />
     <Folder Include="Feature\Hotel\Commands\Validation\" />
     <Folder Include="Mapping\PackageTripDestinationActivity_Entity\Queries\" />
-    <Folder Include="Mapping\Promotion_Entity\CommandsMapping\" />
+    <Folder Include="Mapping\Offer_Entity\CommandsMapping\" />
   </ItemGroup>
 
   <ItemGroup>

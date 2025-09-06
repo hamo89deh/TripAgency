@@ -15,7 +15,7 @@ namespace TripAgency.Service.Feature.PackageTripDestinationActivity.Queries
         public decimal? PriceAfterPromotion { get; set; }
         public string ImageUrl { get; set; }
         public int TripId { get; set; }
-        public GetPromotionByIdDto? GetPromotionByIdDto { get; set; }
+        public GetOfferByIdDto? GetOfferByIdDto { get; set; }
         public IEnumerable<PackageTripCitiesDto> PackageTripCitiesDto { get; set; } = [];
         public IEnumerable<PackageTripHotelsDto> PackageTripHotelsDto { get; set; } = [];
         public IEnumerable<PackageTripTypesForTripDto> PackageTripTypesDtos { get; set; } = [];

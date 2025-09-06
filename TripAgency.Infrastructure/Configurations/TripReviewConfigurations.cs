@@ -23,7 +23,7 @@ namespace TripAgency.Infrastructure.Configurations
 
             builder.Property(x => x.Comment)
                    .HasColumnType("nvarchar")
-                   .HasMaxLength(200) // حد أقصى للتعليق
+                   .HasMaxLength(300) // حد أقصى للتعليق
                    .IsRequired(false); // التعليق اختياري
 
             builder.Property(x => x.CreatedAt)

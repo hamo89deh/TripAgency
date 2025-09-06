@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TripAgency.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using TripAgency.Infrastructure.Context;
 namespace TripAgency.Infrastructure.Migrations
 {
     [DbContext(typeof(TripAgencyDbContext))]
-    partial class TripAgencyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250906045936_AddPromotionPackageTripTable")]
+    partial class AddPromotionPackageTripTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -209,7 +212,7 @@ namespace TripAgency.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("AppliedOfferId")
+                    b.Property<int?>("AppliedPromotionId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("BookingDate")
@@ -221,7 +224,7 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.Property<string>("Notes")
                         .IsRequired()
-                        .HasMaxLength(300)
+                        .HasMaxLength(50)
                         .HasColumnType("nvarchar");
 
                     b.Property<int>("PackageTripDateId")
@@ -235,7 +238,7 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppliedOfferId");
+                    b.HasIndex("AppliedPromotionId");
 
                     b.HasIndex("PackageTripDateId");
 
@@ -603,43 +606,6 @@ namespace TripAgency.Infrastructure.Migrations
                     b.ToTable("Notifications", (string)null);
                 });
 
-            modelBuilder.Entity("TripAgency.Data.Entities.Offer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("DiscountPercentage")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Offers", (string)null);
-                });
-
             modelBuilder.Entity("TripAgency.Data.Entities.PackageTrip", b =>
                 {
                     b.Property<int>("Id")
@@ -650,8 +616,8 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(400)
-                        .HasColumnType("nvarchar(400)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("Duration")
                         .HasColumnType("int");
@@ -822,32 +788,6 @@ namespace TripAgency.Infrastructure.Migrations
                     b.ToTable("PackageTripDestinationActivities", (string)null);
                 });
 
-            modelBuilder.Entity("TripAgency.Data.Entities.PackageTripOffers", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsApply")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("OfferId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PackageTripId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OfferId");
-
-                    b.HasIndex("PackageTripId");
-
-                    b.ToTable("PackageTripOffers", (string)null);
-                });
-
             modelBuilder.Entity("TripAgency.Data.Entities.PackageTripType", b =>
                 {
                     b.Property<int>("Id")
@@ -989,7 +929,7 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PaymentMethods", (string)null);
+                    b.ToTable("PaymentMethods");
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.Phobia", b =>
@@ -1007,12 +947,70 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
+                        .HasMaxLength(50)
                         .HasColumnType("nvarchar");
 
                     b.HasKey("Id");
 
                     b.ToTable("Phobias", (string)null);
+                });
+
+            modelBuilder.Entity("TripAgency.Data.Entities.Promotion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DiscountPercentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Promotions", (string)null);
+                });
+
+            modelBuilder.Entity("TripAgency.Data.Entities.PromotionPackageTrips", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsApply")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PackageTripId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PromotionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PackageTripId");
+
+                    b.HasIndex("PromotionId");
+
+                    b.ToTable("PromotionPackageTrips", (string)null);
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.Refund", b =>
@@ -1080,8 +1078,8 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(400)
-                        .HasColumnType("nvarchar(400)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
@@ -1130,7 +1128,7 @@ namespace TripAgency.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Comment")
-                        .HasMaxLength(300)
+                        .HasMaxLength(200)
                         .HasColumnType("nvarchar");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1272,9 +1270,9 @@ namespace TripAgency.Infrastructure.Migrations
 
             modelBuilder.Entity("TripAgency.Data.Entities.BookingTrip", b =>
                 {
-                    b.HasOne("TripAgency.Data.Entities.Offer", "AppliedOffer")
+                    b.HasOne("TripAgency.Data.Entities.Promotion", "AppliedPromotion")
                         .WithMany("BookingTrips")
-                        .HasForeignKey("AppliedOfferId")
+                        .HasForeignKey("AppliedPromotionId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TripAgency.Data.Entities.PackageTripDate", "PackageTripDate")
@@ -1289,7 +1287,7 @@ namespace TripAgency.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("AppliedOffer");
+                    b.Navigation("AppliedPromotion");
 
                     b.Navigation("PackageTripDate");
 
@@ -1438,25 +1436,6 @@ namespace TripAgency.Infrastructure.Migrations
                     b.Navigation("PackageTripDestination");
                 });
 
-            modelBuilder.Entity("TripAgency.Data.Entities.PackageTripOffers", b =>
-                {
-                    b.HasOne("TripAgency.Data.Entities.Offer", "Offer")
-                        .WithMany("PackageTripOffers")
-                        .HasForeignKey("OfferId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("TripAgency.Data.Entities.PackageTrip", "PackageTrip")
-                        .WithMany("PackageTripOffers")
-                        .HasForeignKey("PackageTripId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Offer");
-
-                    b.Navigation("PackageTrip");
-                });
-
             modelBuilder.Entity("TripAgency.Data.Entities.PackageTripType", b =>
                 {
                     b.HasOne("TripAgency.Data.Entities.PackageTrip", "PackageTrip")
@@ -1517,6 +1496,25 @@ namespace TripAgency.Infrastructure.Migrations
                     b.Navigation("ReviewedByUser");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TripAgency.Data.Entities.PromotionPackageTrips", b =>
+                {
+                    b.HasOne("TripAgency.Data.Entities.PackageTrip", "PackageTrip")
+                        .WithMany("PromotionPackageTrips")
+                        .HasForeignKey("PackageTripId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TripAgency.Data.Entities.Promotion", "Promotion")
+                        .WithMany("PromotionPackageTrips")
+                        .HasForeignKey("PromotionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("PackageTrip");
+
+                    b.Navigation("Promotion");
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.Refund", b =>
@@ -1643,13 +1641,6 @@ namespace TripAgency.Infrastructure.Migrations
                     b.Navigation("UserRefreshTokens");
                 });
 
-            modelBuilder.Entity("TripAgency.Data.Entities.Offer", b =>
-                {
-                    b.Navigation("BookingTrips");
-
-                    b.Navigation("PackageTripOffers");
-                });
-
             modelBuilder.Entity("TripAgency.Data.Entities.PackageTrip", b =>
                 {
                     b.Navigation("FavoritePackageTrips");
@@ -1658,9 +1649,9 @@ namespace TripAgency.Infrastructure.Migrations
 
                     b.Navigation("PackageTripDestinations");
 
-                    b.Navigation("PackageTripOffers");
-
                     b.Navigation("PackageTripTypes");
+
+                    b.Navigation("PromotionPackageTrips");
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.PackageTripDate", b =>
@@ -1680,6 +1671,13 @@ namespace TripAgency.Infrastructure.Migrations
                     b.Navigation("ActivityPhobias");
 
                     b.Navigation("UserPhobias");
+                });
+
+            modelBuilder.Entity("TripAgency.Data.Entities.Promotion", b =>
+                {
+                    b.Navigation("BookingTrips");
+
+                    b.Navigation("PromotionPackageTrips");
                 });
 
             modelBuilder.Entity("TripAgency.Data.Entities.Trip", b =>
