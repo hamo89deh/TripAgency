@@ -83,25 +83,34 @@ namespace TripAgency.Service.Implementations
                 return Result<GetPackageTripDestinationActivitiesDto>.BadRequest($"Duplicate Acitvites Ids found in the request. ");
             }
 
-            var existActivites = await _activityRepositoryAsync.GetTableNoTracking()
+            var existActivities = await _activityRepositoryAsync.GetTableNoTracking()
                                                                .Where(a => requestAcivityIds.Contains(a.Id))
                                                                .ToListAsync();
 
-            if (requestAcivityIds.Count() != existActivites.Count())
+            if (requestAcivityIds.Count() != existActivities.Count())
             {
-                var notFoundActivitesIds = requestAcivityIds.Except(existActivites.Select(d => d.Id));
+                var notFoundActivitesIds = requestAcivityIds.Except(existActivities.Select(d => d.Id));
                 return Result<GetPackageTripDestinationActivitiesDto>.NotFound($"One or More from Activities Not found ,Missing Activity Ids : {string.Join(',', notFoundActivitesIds)} ");
             }
 
+            // التحقق من أسعار الأنشطة
+            foreach (var activityDto in AddDto.ActivitiesDtos)
+            {
+                var activity = existActivities.FirstOrDefault(a => a.Id == activityDto.ActivityId);
+                if (activityDto.Price < activity!.Price)
+                {
+                    return Result<GetPackageTripDestinationActivitiesDto>.BadRequest($"Price for Activity With name {activity.Name} ({activityDto.Price}) is less than the allowed price ({activity?.Price ?? 0}).");
+                }
+            }
             var destinationActivities = await _destinationActivityRepositoryAsync.GetTableNoTracking()
                                                                        .Where(da => da.DestinationId == PackageTripDestination.DestinationId
-                                                                                  && existActivites.Select(ea => ea.Id).Contains(da.ActivityId))
+                                                                                  && existActivities.Select(ea => ea.Id).Contains(da.ActivityId))
                                                                        .Include(d => d.Activity)
                                                                        .ToListAsync();
 
-            if (destinationActivities.Count() != existActivites.Count())
+            if (destinationActivities.Count() != existActivities.Count())
             {
-                var notFoundDestinationActivites = existActivites.Select(a => a.Id)
+                var notFoundDestinationActivites = existActivities.Select(a => a.Id)
                                                                  .Except(destinationActivities.Select(d => d.Id));
 
                 return Result<GetPackageTripDestinationActivitiesDto>.BadRequest($"The Destination With Id : {PackageTripDestination.DestinationId} Not Contain Activity with id {string.Join(',', notFoundDestinationActivites)}");

@@ -145,7 +145,8 @@ namespace TripAgency.Service.Implementations
                 .FirstOrDefaultAsync(p => p.PackageTripId == packageTripId &&
                                           p.IsApply &&
                                           p.Offer.IsActive&&
-                                          p.Offer.EndDate >= DateTime.Now
+                                          p.Offer.EndDate >= DateTime.Now &&
+                                          p.Offer.StartDate <= DateTime.Now
                                           );
                             
                
@@ -219,6 +220,14 @@ namespace TripAgency.Service.Implementations
                                                         .FirstOrDefaultAsync();
             if (packageTripOffer is not null)
                 return Result.BadRequest($"adding Before offer with id :{OfferId} to Package Trip with id :{packageTrip}");
+
+            var packageTripOfferApply = await _packageTripOffersRepo.GetTableNoTracking()
+                                            .Where(x => x.PackageTripId == PackageTirpId && x.IsApply)
+                                            .FirstOrDefaultAsync();
+            if (packageTripOffer is not null)
+                return Result.BadRequest($"Found offer Apply before with id :{packageTripOfferApply.OfferId} to Package Trip with id :{packageTrip}");
+
+
 
             await _packageTripOffersRepo.AddAsync(new PackageTripOffers
             {
