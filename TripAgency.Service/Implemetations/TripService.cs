@@ -360,14 +360,14 @@ namespace TripAgency.Service.Implementations
 
              
                 // التحقق من العرض الترويجي
-                var promotion = packageTrip.PackageTripOffers.Where(x => x.IsApply).Select(p => p.Offer).FirstOrDefault(x => x.IsActive && x.EndDate >= DateTime.UtcNow && x.StartDate <= DateTime.UtcNow);
+                var offer = packageTrip.PackageTripOffers.Where(x => x.IsApply).Select(p => p.Offer).FirstOrDefault(x => x.IsActive && x.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.StartDate <= DateOnly.FromDateTime(DateTime.Now));
                 // حساب السعر بعد الخصم
                 decimal? priceAfterOffer = null;
                 GetOfferByIdDto OfferDto = null;
-                if (promotion != null )
+                if (offer != null )
                 {
-                    priceAfterOffer = actualPrice * (1 - (promotion.DiscountPercentage / 100m));
-                    OfferDto = _mapper.Map<GetOfferByIdDto>(promotion);
+                    priceAfterOffer = actualPrice * (1 - (offer.DiscountPercentage / 100m));
+                    OfferDto = _mapper.Map<GetOfferByIdDto>(offer);
                 }
                 // حساب متوسط التقييم
                 int finalRating = await _tripReviewService.CalculateAverageRatingAsync(packageTrip.Id);
@@ -376,7 +376,7 @@ namespace TripAgency.Service.Implementations
                     PackageTripId = packageTrip.Id,
                     ActulPrice = packageTrip!.Price + packageTrip!.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price)),
                     PriceAfterOffer = priceAfterOffer,
-                    GetPromotionByIdDto = OfferDto,
+                    GetOfferByIdDto = OfferDto,
                     TripId = packageTrip.TripId,
                     Name = packageTrip.Name,
                     Description = packageTrip.Description,
@@ -518,17 +518,17 @@ namespace TripAgency.Service.Implementations
             {
                 PackageTripId = pt.Id,
                 ActulPrice = pt.Price + pt.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price)),
-                PriceAfterOffer = pt.PackageTripOffers.Any(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow)
+                PriceAfterOffer = pt.PackageTripOffers.Any(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now))
                 ? pt.Price + pt.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price)) *
-                  (1 - (pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow).Offer.DiscountPercentage / 100m))
+                  (1 - (pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now)).Offer.DiscountPercentage / 100m))
                 : null,
-                GetPromotionByIdDto = pt.PackageTripOffers.Any(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow)
+                GetOfferByIdDto = pt.PackageTripOffers.Any(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now))
                 ? new GetOfferByIdDto
                 {
-                    Id = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow).Offer.Id,
-                    DiscountPercentage = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow).Offer.DiscountPercentage,
-                    StartDate = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow).Offer.StartDate,
-                    EndDate = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.UtcNow && x.Offer.StartDate <= DateTime.UtcNow).Offer.EndDate
+                    Id = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now)).Offer.Id,
+                    DiscountPercentage = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now)).Offer.DiscountPercentage,
+                    StartDate = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now)).Offer.StartDate,
+                    EndDate = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now)).Offer.EndDate
                 }
                 : null,
                 TripId = pt.TripId ,

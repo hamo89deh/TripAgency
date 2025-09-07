@@ -2,8 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
+using TripAgency.Data.Entities;
+using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.PromotionDto;
+using TripAgency.Service.Implementations;
 
 namespace TripAgency.Api.Controllers
 {
@@ -20,14 +23,6 @@ namespace TripAgency.Api.Controllers
         public IOfferService _offerService { get; }
         public IMapper _mapper { get; }
 
-        [HttpGet("PackageTrip/{PackageTripId}")]
-        public async Task<ApiResult<IEnumerable<GetPackageTripOffersDto>>> GetOffersByPackageTripIdAsync(int PackageTripId)
-        {
-            var OffersResult = await _offerService.GetOffersByPackageTripIdAsync(PackageTripId);
-            if (!OffersResult.IsSuccess)
-                return this.ToApiResult(OffersResult);
-            return ApiResult<IEnumerable<GetPackageTripOffersDto>>.Ok(OffersResult.Value!);
-        }
 
         [HttpGet]
         public async Task<ApiResult<IEnumerable<GetOffersDto>>> GetAllAsync( )
@@ -45,14 +40,7 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult(OffersResult);
             return ApiResult<GetOfferByIdDto>.Ok(OffersResult.Value!);
         }
-        [HttpGet("Valid/PackageTrip{PackagTripId}")]
-        public async Task<ApiResult<GetOfferByIdDto>> GetValidOffersAsync(int PackagTripId)
-        {
-            var OfferResult = await _offerService.GetValidOfferAsync(PackagTripId);
-            if (!OfferResult.IsSuccess)
-                return this.ToApiResult(OfferResult);
-            return ApiResult<GetOfferByIdDto>.Ok(OfferResult.Value!);
-        }
+   
         [HttpPost]
         public async Task<ApiResult<GetOfferByIdDto>> AddPromotion(AddOfferDto offerDto)
         {

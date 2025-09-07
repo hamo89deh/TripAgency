@@ -12,8 +12,7 @@ namespace TripAgency.Service.Abstracts
                                         IAddService<Offer, AddOfferDto, GetOfferByIdDto>,
                                         IDeleteService<Offer>
     {
-        Task<Result<IEnumerable<GetPackageTripOffersDto>>> GetOffersByPackageTripIdAsync(int packageTripId);
-        Task<Result<GetOfferByIdDto>> GetValidOfferAsync(int packageTripId);
+     
     }
 
 

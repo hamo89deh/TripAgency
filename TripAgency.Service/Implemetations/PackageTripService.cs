@@ -256,10 +256,10 @@ namespace TripAgency.Service.Implementations
                                         .Where(x => x.IsApply)
                                         .Select(p => p.Offer)
                                         .FirstOrDefault(x => x.IsActive
-                                                        && x.EndDate >= DateTime.UtcNow
-                                                        && x.StartDate <= DateTime.UtcNow
+                                                        && x.EndDate >= DateOnly.FromDateTime(DateTime.Now)
+                                                        && x.StartDate <= DateOnly.FromDateTime(DateTime.Now)
                                                         );
-            if (offer != null && offer.IsActive && offer.EndDate < DateTime.UtcNow)
+            if (offer != null && offer.IsActive && offer.EndDate < DateOnly.FromDateTime(DateTime.Now))
             {
                 // تعطيل العرض المنتهي
                 offer.IsActive = false;
@@ -271,7 +271,7 @@ namespace TripAgency.Service.Implementations
             // حساب السعر بعد الخصم
             decimal? priceAfterOffer = null;
             GetOfferByIdDto offerDto = null;
-            if (offer != null && offer.IsActive && offer.StartDate <= DateTime.UtcNow && offer.EndDate >= DateTime.UtcNow)
+            if (offer != null && offer.IsActive && offer.StartDate <= DateOnly.FromDateTime(DateTime.Now) && offer.EndDate >= DateOnly.FromDateTime(DateTime.Now))
             {
                 priceAfterOffer = actualPrice * (1 - (offer.DiscountPercentage / 100m));
                 offerDto = _mapper.Map<GetOfferByIdDto>(offer);

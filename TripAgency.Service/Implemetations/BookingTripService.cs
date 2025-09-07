@@ -31,7 +31,8 @@ namespace TripAgency.Service.Implementations
         public IPaymentService _paymentService { get; }
         public IConfiguration _configuration { get; }
         public ICurrentUserService _currentUserService { get; }
-        public IOfferService _promotionService { get; }
+        public IOfferService _offerService { get; }
+        public IPackageTripOffersService _packageTripOffersService { get; }
         public ILogger<BookingTripService> _logger { get; }
         public IMapper _mapper { get; }
 
@@ -50,6 +51,7 @@ namespace TripAgency.Service.Implementations
                                   IConfiguration configuration,
                                   ICurrentUserService currentUserService,
                                   IOfferService promotionService,
+                                  IPackageTripOffersService packageTripOffersService,
                                   ILogger<BookingTripService> logger
                                  ) : base(bookingTripRepository, mapper)
         {
@@ -65,7 +67,8 @@ namespace TripAgency.Service.Implementations
             _notificationService = notificationService;
             _configuration = configuration;
             _currentUserService = currentUserService;
-            _promotionService = promotionService;
+            _offerService = promotionService;
+            _packageTripOffersService = packageTripOffersService;
             _logger = logger;
             _paymentService = paymentService;
             baseUrl = configuration["BaseUrl"] ?? throw new InvalidOperationException("Not Found BaseUrl."); ;
@@ -106,7 +109,7 @@ namespace TripAgency.Service.Implementations
             // النحقق من السعر الفعلي 
             var calculatedTotalPrice = packageTripDate.PackageTrip.Price + packageTripDate.PackageTrip.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price));
             // 1.4. استرجاع العرض الترويجي الصالح
-            var promotionResult = await _promotionService.GetValidOfferAsync(packageTripDate.PackageTripId);
+            var promotionResult = await _packageTripOffersService.GetValidOfferAsync(packageTripDate.PackageTripId);
             int? appliedPromotionId = null;
             decimal finalPrice = calculatedTotalPrice * bookPackageDto.PassengerCount;
 

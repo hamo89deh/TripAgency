@@ -7,5 +7,9 @@ namespace TripAgency.Service.Abstracts
     {
         Task<Result> DeletePackageTripOffer(int PackageTirpId, int OfferId);
         Task<Result> AddPackageTripOffer(int PackageTirpId, int OfferId);
+        Task<Result> CancelAppliedOfferAsync(int packageTripId);
+        Task<Result<IEnumerable<GetPackageTripOffersDto>>> GetOffersByPackageTripIdAsync(int packageTripId);
+        Task<Result<GetOfferByIdDto>> GetValidOfferAsync(int packageTripId);
+        Task<Result> ReapplyOfferAsync(int packageTripId, int offerId);
     }
 }
