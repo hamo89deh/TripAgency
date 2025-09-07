@@ -33,10 +33,19 @@ namespace TripAgency.Service.Implemetations
                                                      .FirstOrDefaultAsync();
             if (refund is null)
                 return Result.NotFound($"Not Found Refund by id : {confirmRefundDto.Id}");
-           
+            if(!confirmRefundDto.IsConfirm)
+            {
+
+                refund.Status = RefundStatus.Canceled;
+            }
+            else
+            {
+                refund.Status = RefundStatus.Completed;
+                refund.TransactionRefunded = confirmRefundDto.TransactionRefunded;
+            }
+
+          
             refund.RefundProcessedDate = DateTime.Now;
-            refund.Status = RefundStatus.Completed;
-            refund.TransactionRefunded = confirmRefundDto.TransactionRefunded;
             refund.AdminNotes = confirmRefundDto.AdminNotes;
 
             await _refundRepositoryAsync.UpdateAsync(refund);

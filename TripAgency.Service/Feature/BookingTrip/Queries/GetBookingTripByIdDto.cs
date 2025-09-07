@@ -20,4 +20,26 @@ namespace TripAgency.Service.Feature.BookingTrip.Queries
         public int UserId { get; set; }
 
     }
+    public class GetBookingTripForUserDto
+    {
+        public int Id { get; set; }
+        public int PassengerCount { get; set; }
+        public DateTime BookingDate { get; set; }
+        public BookingStatus BookingStatus { get; set; }
+        public decimal ActualPrice { get; set; }
+        public string Notes { get; set; }
+        public int TripDateId { get; set; }
+        public int UserId { get; set; }
+        public GetPaymentDto GetPaymentDto { get; set; }
+
+    }
+    public class GetPaymentDto
+    {
+        public int Id { get; set; }
+        public decimal Amount { get; set; }
+        public PaymentStatus PaymentStatus { get; set; }
+        public DateTime? PaymentDate { get; set; }
+        public string? TransactionRef { get; set; }
+        public string PaymentMethodName { get; set; }
+    }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
 using TripAgency.Service.Abstracts;
+using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
 using TripAgency.Service.Feature.Payment;
 using TripAgency.Service.Implementations;
 
@@ -94,6 +95,17 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult(MissingPaymentReportsResult);
             }
             return ApiResult<IEnumerable<MissingPaymentReportResponceDto>>.Ok(MissingPaymentReportsResult.Value!);
+        }
+
+        [HttpGet("paymentMethods")]
+        public async Task<ApiResult<IEnumerable<PaymentMethodDto>>> GetPaymentMethod()
+        {
+            var PaymentMethodDtoResult = await _paymentService.GetPaymentMethods();
+            if (!PaymentMethodDtoResult.IsSuccess)
+            {
+                return this.ToApiResult(PaymentMethodDtoResult);
+            }
+            return ApiResult<IEnumerable<PaymentMethodDto>>.Ok(PaymentMethodDtoResult.Value!);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using TripAgency.Data.Result.TripAgency.Core.Results;
+using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
 using TripAgency.Service.Feature.Payment;
 
 
@@ -15,6 +16,7 @@ namespace TripAgency.Service.Abstracts
         Task<Result> HandlePaymentTimeoutAsync(int bookingId); // تستدعى من خدمة المؤقت
 
         Task<Result<IEnumerable<ManualPaymentDetailsDto>>> GetPendingManualPaymentsForAdminAsync();
+        Task<Result<IEnumerable<PaymentMethodDto>>> GetPaymentMethods();
     }
 
 

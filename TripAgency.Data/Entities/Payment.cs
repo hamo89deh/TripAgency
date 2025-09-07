@@ -11,7 +11,7 @@ namespace TripAgency.Data.Entities
         public DateTime PaymentDate { get; set; }
 
         public int BookingTripId { get; set; }
-        public string TransactionId { get; set; }
+        public string? TransactionRef { get; set; }
         public BookingTrip BookingTrip { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
         public int PaymentMethodId { get; set; }

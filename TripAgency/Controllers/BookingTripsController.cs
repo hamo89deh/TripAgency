@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
+using TripAgency.Data.Enums;
 using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.BookingTrip.Commands;
 using TripAgency.Service.Feature.BookingTrip.Queries;
@@ -31,6 +32,22 @@ namespace TripAgency.Api.Controllers
             if (!bookingTripsResult.IsSuccess)
                 return this.ToApiResult(bookingTripsResult);
             return ApiResult<IEnumerable<GetBookingTripsDto>>.Ok(bookingTripsResult.Value!);
+        }
+        [HttpGet("ForUser")]
+        public async Task<ApiResult<IEnumerable<GetBookingTripForUserDto>>> GetBookingsPackageTripForUserAsync(BookingStatus bookingStatus)
+        {
+            var bookingTripsResult = await _bookingTripService.GetBookingsPackageTripForUserAsync(bookingStatus);
+            if (!bookingTripsResult.IsSuccess)
+                return this.ToApiResult(bookingTripsResult);
+            return ApiResult<IEnumerable<GetBookingTripForUserDto>>.Ok(bookingTripsResult.Value!);
+        }
+        [HttpGet("{bookingTripId}/ForUser")]
+        public async Task<ApiResult<GetBookingTripForUserDto>> GetBookingTrips(int bookingTripId , BookingStatus bookingStatus)
+        {
+            var bookingTripsResult = await _bookingTripService.GetBookingPackageTripForUserAsync(bookingTripId, bookingStatus);
+            if (!bookingTripsResult.IsSuccess)
+                return this.ToApiResult(bookingTripsResult);
+            return ApiResult<GetBookingTripForUserDto>.Ok(bookingTripsResult.Value!);
         }
         [HttpGet("{Id}")]
         public async Task<ApiResult<GetBookingTripByIdDto>> GetBookingTripById(int Id)

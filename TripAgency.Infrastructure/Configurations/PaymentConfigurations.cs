@@ -23,7 +23,12 @@ namespace TripAgency.Infrastructure.Configurations
                        .HasPrecision(18, 2)
                        .IsRequired(true);
 
-                builder.ToTable("Payments");
+            builder.Property(x => x.TransactionRef)
+                   .HasColumnType("nvarchar")
+                   .HasMaxLength(50)
+                   .IsRequired(false);
+
+            builder.ToTable("Payments");
 
                 builder.HasOne(x => x.BookingTrip)
                        .WithOne(x => x.Payment)

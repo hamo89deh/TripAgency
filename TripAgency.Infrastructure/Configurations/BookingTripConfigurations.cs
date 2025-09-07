@@ -19,6 +19,10 @@ namespace TripAgency.Infrastructure.Configurations
                    .HasColumnType("datetime2")
                    .IsRequired(true);
 
+            builder.Property(x => x.ExpireTime)
+                .HasColumnType("datetime2")
+                .IsRequired(true);
+
             builder.Property(x => x.PassengerCount)
                   .IsRequired(true);
 

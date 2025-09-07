@@ -190,6 +190,7 @@ namespace TripAgency.Service.Implementations
         }
         private async Task<Result> CancelPacakgeTripDateAsync(int packageTripDateId, string? cancellationReason="")
         {
+            var admin = await _currentUserService.GetUserAsync();
             using var transaction = await _packageTripRepositoryAsync.BeginTransactionAsync();
 
             // _logger.LogInformation("CancelTripDate: بدء إلغاء تاريخ الرحلة {TripDateId} بواسطة المسؤول {AdminUserId}.", tripDateId, adminUserId);
@@ -221,7 +222,7 @@ namespace TripAgency.Service.Implementations
                 packageTripDate.IsAvailable = false;
                 await _packageTripDateRepository.UpdateAsync(packageTripDate);
 
-                var admin = await _currentUserService.GetUserAsync();
+               
 
                 var affectedBookings = packageTripDate.BookingTrips.ToList(); // نسخ القائمة لتجنب التعديل أثناء المرور
 
@@ -232,7 +233,7 @@ namespace TripAgency.Service.Implementations
                         booking.BookingStatus = BookingStatus.Cancelled;
                         await _bookingTripRepositoryAsync.UpdateAsync(booking);
 
-                        if (string.IsNullOrEmpty(booking.Payment.TransactionId))
+                        if (string.IsNullOrEmpty(booking.Payment.TransactionRef))
                         {
 
                             // 3.3. إرسال إشعار للعميل المتأثر
@@ -255,7 +256,7 @@ namespace TripAgency.Service.Implementations
                                 Status = PaymentDiscrepancyStatusEnum.PendingReview,
                                 CustomerNotes = $"Package Tirp With Id : {packageTripDateId} Cancel By Admin",
                                 ReportedPaidAmount = booking.ActualPrice,
-                                ReportedTransactionRef = booking.Payment.TransactionId,
+                                ReportedTransactionRef = booking.Payment.TransactionRef,
                                 UserId = admin.Id,
                             };
                             await _paymentReportRepositoryAsync.AddAsync(report);
@@ -281,7 +282,7 @@ namespace TripAgency.Service.Implementations
                             PaymentId = booking.Payment.Id,
                             CreatedAt = DateTime.Now,
                             UpdatedAt = DateTime.Now,
-                            TransactionReference = booking.Payment.TransactionId,
+                            TransactionReference = booking.Payment.TransactionRef,
                             Status = RefundStatus.Pending,
                             Amount = booking.Payment.Amount,
                         };
