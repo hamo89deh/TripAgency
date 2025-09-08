@@ -12,7 +12,7 @@ using TripAgency.Service.Abstracts;
 using TripAgency.Service.Feature.Destination.Commands;
 using TripAgency.Service.Feature.Destination.Queries;
 using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
-using TripAgency.Service.Feature.PromotionDto;
+using TripAgency.Service.Feature.OfferDto;
 using TripAgency.Service.Feature.Trip.Commands;
 using TripAgency.Service.Feature.Trip.Queries;
 using TripAgency.Service.Generic;

@@ -1,4 +1,4 @@
-﻿namespace TripAgency.Service.Feature.PromotionDto
+﻿namespace TripAgency.Service.Feature.OfferDto
 {
     public class GetOfferByIdDto
     {

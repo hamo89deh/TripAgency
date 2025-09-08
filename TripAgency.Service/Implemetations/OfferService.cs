@@ -6,7 +6,7 @@ using TripAgency.Data.Entities;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Infrastructure.Abstracts;
 using TripAgency.Service.Abstracts;
-using TripAgency.Service.Feature.PromotionDto;
+using TripAgency.Service.Feature.OfferDto;
 using TripAgency.Service.Generic;
 
 namespace TripAgency.Service.Implementations

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TripAgency.Data.Entities;
-using TripAgency.Service.Feature.PromotionDto;
+using TripAgency.Service.Feature.OfferDto;
 using TripAgency.Service.Feature.TripReview;
 
 namespace TripAgency.Service.Mapping.TripReview_Entity

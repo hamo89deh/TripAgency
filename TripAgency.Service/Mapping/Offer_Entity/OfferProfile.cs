@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TripAgency.Service.Mapping.Promotioin_Entity
+namespace TripAgency.Service.Mapping.Offer_Entity
 {
     public partial class OfferProfile : Profile 
     {

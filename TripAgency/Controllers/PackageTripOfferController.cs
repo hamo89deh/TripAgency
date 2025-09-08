@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
 using TripAgency.Service.Abstracts;
-using TripAgency.Service.Feature.PromotionDto;
+using TripAgency.Service.Feature.OfferDto;
 
 namespace TripAgency.Api.Controllers
 {

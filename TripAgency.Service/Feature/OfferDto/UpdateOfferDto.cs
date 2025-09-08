@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TripAgency.Service.Feature.PromotionDto
+namespace TripAgency.Service.Feature.OfferDto
 {
     public class UpdateOfferDto
     {

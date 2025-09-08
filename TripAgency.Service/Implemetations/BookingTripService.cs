@@ -313,7 +313,7 @@ namespace TripAgency.Service.Implementations
                     var refunded = new Refund
                     {
                         Status = RefundStatus.Pending,
-                        TransactionReference = bookingTrip.Payment.TransactionRef,
+                        TransactionReference = bookingTrip.Payment.TransactionRef ?? string.Empty,
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now,
                         Amount = bookingTrip.Payment.Amount,
@@ -342,6 +342,8 @@ namespace TripAgency.Service.Implementations
                                                       .Where(x => x.UserId == user.Id && x.BookingStatus == bookingStatus)
                                                       .Include(x => x.Payment)
                                                       .ThenInclude(x=>x.PaymentMethod)
+                                                      .Include(x=>x.PackageTripDate)
+                                                      .ThenInclude(x=>x.PackageTrip)
                                                       .ToListAsync();
             if(bookingTrips.Count()==0)
                 return Result<IEnumerable<GetBookingTripForUserDto>>.NotFound($"Not Found any Booking {bookingStatus}");
@@ -349,28 +351,39 @@ namespace TripAgency.Service.Implementations
 
             var result = bookingTrips.Select(x => new GetBookingTripForUserDto()
             {
-                Id = x.Id,
+                BookingId = x.Id,
                 ActualPrice = x.ActualPrice,
                 BookingDate = x.BookingDate,
                 BookingStatus = bookingStatus,
                 Notes = x.Notes,
                 PassengerCount = x.PassengerCount,
-                TripDateId = x.PackageTripDateId,
+                GetPackageTripDateBookingDetailDto = new GetPackageTripDateBookingDetailDto
+                {
+                    StartTripDate = x.PackageTripDate.StartPackageTripDate,
+                    EndTripDate=x.PackageTripDate.EndPackageTripDate,
+                    PackageTripDateStatus =x.PackageTripDate.Status,
+                    PackageTripdateId =x.PackageTripDateId,
+                    ImageUrlPackageTrip=x.PackageTripDate.PackageTrip.ImageUrl,
+                    PackageTripName =x.PackageTripDate.PackageTrip.Name ,
+                    StartBookingTripDate = x.PackageTripDate.StartBookingDate,
+                    EndBookingTripDate=x.PackageTripDate.EndBookingDate   ,
+                    CanReviewTrip = x.PackageTripDate.Status == PackageTripDateStatus.Completed && x.BookingStatus == BookingStatus.Completed
+                } ,
                 UserId = user.Id,
                 ExpireTime = x.ExpireTime,
                 GetPaymentDto = new GetPaymentDto()
                 {
-                    Id = x.Id,
+                    PaymentId = x.Id,
                     Amount = x.Payment.Amount,
                     PaymentDate = x.Payment.PaymentDate,
                     PaymentMethodName = x.Payment.PaymentMethod.Name,
                     PaymentStatus = x.Payment.PaymentStatus,
-                    TransactionRef = x.Payment.TransactionRef,
-                    PaymentInstructions= x.Payment.PaymentInstructions ?? string.Empty
+                    TransactionRef = x.Payment.TransactionRef ?? string.Empty,
+                    PaymentInstructions= x.Payment.PaymentInstructions ?? string.Empty,
+                    CanCompletePayment =string.IsNullOrEmpty(x.Payment.TransactionRef) && x.Payment.PaymentStatus == PaymentStatus.Pending
+
                    
                 }
-
-
             });
             return Result<IEnumerable<GetBookingTripForUserDto>>.Success(result);
         }
@@ -382,29 +395,45 @@ namespace TripAgency.Service.Implementations
                                                       .Where(x => x.UserId == user.Id && x.BookingStatus == bookingStatus)
                                                       .Include(x => x.Payment)
                                                       .ThenInclude(x => x.PaymentMethod)
+                                                      .Include(x => x.PackageTripDate)
+                                                      .ThenInclude(x => x.PackageTrip)
                                                       .FirstOrDefaultAsync();
             if (bookingTrip is null)
                 return Result<GetBookingTripForUserDto>.NotFound($"Not Found any Booking {bookingStatus}");
             var result = new GetBookingTripForUserDto()
             {
-                Id = bookingTrip.Id,
+                BookingId = bookingTrip.Id,
                 ActualPrice = bookingTrip.ActualPrice,
                 BookingDate = bookingTrip.BookingDate,
                 BookingStatus = bookingStatus,
                 Notes = bookingTrip.Notes,
                 PassengerCount = bookingTrip.PassengerCount,
-                TripDateId = bookingTrip.PackageTripDateId,
+                GetPackageTripDateBookingDetailDto = new GetPackageTripDateBookingDetailDto
+                {
+                    StartTripDate = bookingTrip.PackageTripDate.StartPackageTripDate,
+                    EndTripDate = bookingTrip.PackageTripDate.EndPackageTripDate,
+                    PackageTripDateStatus = bookingTrip.PackageTripDate.Status,
+                    PackageTripdateId = bookingTrip.PackageTripDateId,
+                    ImageUrlPackageTrip = bookingTrip.PackageTripDate.PackageTrip.ImageUrl,
+                    PackageTripName = bookingTrip.PackageTripDate.PackageTrip.Name,
+                    StartBookingTripDate = bookingTrip.PackageTripDate.StartBookingDate,
+                    EndBookingTripDate = bookingTrip.PackageTripDate.EndBookingDate,
+                    CanReviewTrip = bookingTrip.PackageTripDate.Status == PackageTripDateStatus.Completed && bookingTrip.BookingStatus == BookingStatus.Completed
+
+                },
                 UserId = user.Id,
                 ExpireTime = bookingTrip.ExpireTime,
                 GetPaymentDto = new GetPaymentDto()
                 {
-                    Id = bookingTrip.Id,
+                    PaymentId = bookingTrip.Id,
                     Amount = bookingTrip.Payment.Amount,
                     PaymentDate = bookingTrip.Payment.PaymentDate,
                     PaymentMethodName = bookingTrip.Payment.PaymentMethod.Name,
                     PaymentStatus = bookingTrip.Payment.PaymentStatus,
                     TransactionRef = bookingTrip.Payment.TransactionRef,
-                    PaymentInstructions = bookingTrip.Payment.PaymentInstructions ?? string.Empty
+                    PaymentInstructions = bookingTrip.Payment.PaymentInstructions ?? string.Empty,
+                    CanCompletePayment = string.IsNullOrEmpty(bookingTrip.Payment.TransactionRef) && bookingTrip.Payment.PaymentStatus == PaymentStatus.Pending
+
 
                 }
 

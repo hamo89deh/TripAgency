@@ -5,7 +5,7 @@ using TripAgency.Bases;
 using TripAgency.Data.Entities;
 using TripAgency.Data.Result.TripAgency.Core.Results;
 using TripAgency.Service.Abstracts;
-using TripAgency.Service.Feature.PromotionDto;
+using TripAgency.Service.Feature.OfferDto;
 using TripAgency.Service.Implementations;
 
 namespace TripAgency.Api.Controllers

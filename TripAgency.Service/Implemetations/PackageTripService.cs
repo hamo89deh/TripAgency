@@ -14,7 +14,7 @@ using TripAgency.Service.Feature.PackageTripDestination.Queries;
 using TripAgency.Service.Feature.PackageTripDestinationActivity.Queries;
 using TripAgency.Service.Feature.PackageTripType.Commands;
 using TripAgency.Service.Feature.Payment;
-using TripAgency.Service.Feature.PromotionDto;
+using TripAgency.Service.Feature.OfferDto;
 using TripAgency.Service.Feature.TripDate.Queries;
 using TripAgency.Service.Generic;
 
