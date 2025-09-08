@@ -658,6 +658,7 @@ namespace TripAgency.Service.Implemetations.Payment
         {
             var paymnetsPending = await _paymentRepositoryAsync.GetTableNoTracking()
                                                                .Where(p => p.PaymentStatus == PaymentStatus.Pending)
+                                                               .Include(p => p.PaymentMethod)
                                                                .ToListAsync();
 
             paymnetsPending = paymnetsPending.Where(p => !string.IsNullOrEmpty(p.TransactionRef)).ToList();
@@ -675,7 +676,8 @@ namespace TripAgency.Service.Implemetations.Payment
                     PaidAmount = payment.Amount,
                     PaymentDateTime = payment.PaymentDate,
                     PaymentMethodId = payment.PaymentMethodId,
-                    TransactionReference = payment.TransactionRef
+                    PaymentMethodName = payment.PaymentMethod.Name,
+                    TransactionReference = payment.TransactionRef?? string.Empty
 
                 });
             }
