@@ -25,7 +25,7 @@ public class OfferAndRatingUpdateService : BackgroundService
 
             // حساب التأخير حتى منتصف الليل القادم
             var delay = CalculateDelayToNextMidnight();
-            _logger.LogInformation("Waiting until {NextRun} UTC to run OfferAndRatingUpdateService again", DateTime.UtcNow.Add(delay));
+            _logger.LogInformation("Waiting until {NextRun}  to run OfferAndRatingUpdateService again", DateTime.Now.Add(delay));
             await Task.Delay(delay, stoppingToken);
         }
     }
@@ -47,14 +47,14 @@ public class OfferAndRatingUpdateService : BackgroundService
 
             // تعطيل العروض المنتهية في Offers
             var updatedOffersCount = await offerRepository.GetTableNoTracking()
-                .Where(p => p.IsActive && p.EndDate < DateOnly.FromDateTime(DateTime.UtcNow))
+                .Where(p => p.IsActive && p.EndDate < DateOnly.FromDateTime(DateTime.Now))
                 .ExecuteUpdateAsync(p => p.SetProperty(x => x.IsActive, false), stoppingToken);
             _logger.LogInformation("DisabledExpiredOffers");
 
             // تعطيل العروض المنتهية في PackageTripOffers
             var updatedPackageOffersCount = await packageTripOffersRepository.GetTableNoTracking()
                 .Include(x => x.Offer)
-                .Where(x => x.IsApply && (x.Offer.EndDate < DateOnly.FromDateTime(DateTime.UtcNow) || !x.Offer.IsActive))
+                .Where(x => x.IsApply && (x.Offer.EndDate < DateOnly.FromDateTime(DateTime.Now) || !x.Offer.IsActive))
                 .ExecuteUpdateAsync(p => p.SetProperty(x => x.IsApply, false), stoppingToken);
             _logger.LogInformation("DisabledExpiredPackageTripOffers");
 
@@ -62,8 +62,8 @@ public class OfferAndRatingUpdateService : BackgroundService
             var packageTripsWithMultipleOffers = await packageTripOffersRepository.GetTableNoTracking()
                 .Include(x => x.Offer)
                 .Where(x => x.IsApply && x.Offer.IsActive &&
-                           x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.UtcNow) &&
-                           x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.UtcNow))
+                           x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) &&
+                           x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now))
                 .GroupBy(x => x.PackageTripId)
                 .Where(g => g.Count() > 1)
                 .Select(g => new
@@ -125,7 +125,7 @@ public class OfferAndRatingUpdateService : BackgroundService
     private static TimeSpan CalculateDelayToNextMidnight()
     {
         var now = DateTime.Now;
-        var nextMidnight = now.Date.AddDays(1); // منتصف الليل القادم بتوقيت UTC
+        var nextMidnight = now.Date.AddDays(1); // منتصف الليل القادم بتوقيت 
         return nextMidnight - now;
     }
 }

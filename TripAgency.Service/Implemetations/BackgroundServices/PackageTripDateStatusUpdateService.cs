@@ -30,7 +30,7 @@ public class PackageTripDateStatusUpdateService : BackgroundService
 
             // حساب التأخير حتى منتصف الليل القادم
             var delay = CalculateDelayToNextMidnight();
-            _logger.LogInformation("Waiting until {NextRun} UTC to run PackageTripDateStatusUpdateService again", DateTime.UtcNow.Add(delay));
+            _logger.LogInformation("Waiting until {NextRun}  to run PackageTripDateStatusUpdateService again", DateTime.Now.Add(delay));
             await Task.Delay(delay, stoppingToken);
         }
     }
@@ -39,7 +39,7 @@ public class PackageTripDateStatusUpdateService : BackgroundService
     {
         try
         {
-            _logger.LogInformation("Starting PackageTripDateStatusUpdateService at {Time} UTC", DateTime.UtcNow);
+            _logger.LogInformation("Starting PackageTripDateStatusUpdateService at {Time} ", DateTime.Now);
             using (var scope = _serviceProvider.CreateScope())
             {
                 var packageTripDateRepository = scope.ServiceProvider.GetRequiredService<IPackageTripDateRepositoryAsync>();
@@ -59,7 +59,7 @@ public class PackageTripDateStatusUpdateService : BackgroundService
                         continue;
                     }
 
-                    var today = DateTime.UtcNow.Date;
+                    var today = DateTime.Now.Date;
 
                     if (today >= packageTripDate.EndBookingDate.Date &&
                         (packageTripDate.Status == PackageTripDateStatus.Published ||
@@ -91,7 +91,7 @@ public class PackageTripDateStatusUpdateService : BackgroundService
                 }
             }
 
-            _logger.LogInformation("Completed PackageTripDateStatusUpdateService at {Time} UTC", DateTime.UtcNow);
+            _logger.LogInformation("Completed PackageTripDateStatusUpdateService at {Time} ", DateTime.Now);
         }
         catch (Exception ex)
         {
@@ -101,7 +101,7 @@ public class PackageTripDateStatusUpdateService : BackgroundService
 
     private static TimeSpan CalculateDelayToNextMidnight()
     {
-        var now = DateTime.UtcNow;
+        var now = DateTime.Now;
         var nextMidnight = now.Date.AddDays(1);
         return nextMidnight - now;
     }

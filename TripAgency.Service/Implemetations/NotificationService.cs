@@ -41,8 +41,8 @@ namespace TripAgency.Service.Implementations
                 Channel = NotificationChannelEnum.InApp,
                 Status = NotificationStatusEnum.Pending, // يمكن أن تصبح Pending ثم Sent بواسطة Background Job
                 RelatedEntityId = relatedEntityId,
-                CreatedAt = DateTime.UtcNow,
-                UpdateAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now,
+                UpdateAt = DateTime.Now
             };
             await _notificationRepositoryAsync.AddAsync(notification);
             _logger.LogInformation("NotificationService: تم إنشاء إشعار داخل التطبيق للحجز {RelatedEntityId} للمستخدم {UserId}.", relatedEntityId, userId);
@@ -70,8 +70,8 @@ namespace TripAgency.Service.Implementations
             if (notification.Status != NotificationStatusEnum.Read)
             {
                 notification.Status = NotificationStatusEnum.Read;
-                notification.ReadAt = DateTime.UtcNow;
-                notification.UpdateAt = DateTime.UtcNow;
+                notification.ReadAt = DateTime.Now;
+                notification.UpdateAt = DateTime.Now;
                 await _notificationRepositoryAsync.UpdateAsync(notification);
                 _logger.LogInformation("NotificationService: تم تعليم الإشعار {NotificationId} كمقروء للمستخدم {UserId}.", notificationId, userId);
             }

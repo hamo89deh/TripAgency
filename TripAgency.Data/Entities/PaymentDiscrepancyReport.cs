@@ -21,8 +21,8 @@ namespace TripAgency.Data.Entities
         public int? ReviewedByUserId { get; set; } // معرف المسؤول الذي راجع البلاغ (FK, nullable)
         public DateTime? ReviewDate { get; set; } // تاريخ مراجعة المسؤول (nullable)
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // تاريخ إنشاء السجل
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow; // تاريخ آخر تحديث للسجل
+        public DateTime CreatedAt { get; set; } = DateTime.Now; // تاريخ إنشاء السجل
+        public DateTime UpdatedAt { get; set; } = DateTime.Now; // تاريخ آخر تحديث للسجل
 
 
         // Navigation properties (علاقات EF Core)

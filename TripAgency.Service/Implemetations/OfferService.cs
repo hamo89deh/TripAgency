@@ -159,7 +159,7 @@ namespace TripAgency.Service.Implementations
 
             var offer = offerData.Offer;
 
-            if (dto.StartDate < DateOnly.FromDateTime(DateTime.UtcNow))
+            if (dto.StartDate < DateOnly.FromDateTime(DateTime.Now))
                 return Result.BadRequest("StartDate must be today or in the future.");
             if (dto.EndDate < dto.StartDate)
                 return Result.BadRequest("EndDate must be greater than or equal to StartDate.");
@@ -188,8 +188,8 @@ namespace TripAgency.Service.Implementations
             try
             {
                 bool isOfferValid = dto.IsActive &&
-                                   dto.EndDate >= DateOnly.FromDateTime(DateTime.UtcNow) &&
-                                   dto.StartDate <= DateOnly.FromDateTime(DateTime.UtcNow);
+                                   dto.EndDate >= DateOnly.FromDateTime(DateTime.Now) &&
+                                   dto.StartDate <= DateOnly.FromDateTime(DateTime.Now);
                 if (offerData.PackageTripOffers.Any() && !isOfferValid)
                 {
                     await _packageTripOffersRepo.GetTableNoTracking()
@@ -203,7 +203,7 @@ namespace TripAgency.Service.Implementations
                 offer.StartDate = dto.StartDate;
                 offer.EndDate = dto.EndDate;
                 offer.IsActive = dto.IsActive;
-                offer.UpdatedAt = DateTime.UtcNow;
+                offer.UpdatedAt = DateTime.Now;
 
                 await _offerRepository.UpdateAsync(offer);
                 await transaction.CommitAsync();

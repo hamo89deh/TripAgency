@@ -263,7 +263,7 @@ namespace TripAgency.Service.Implemetations.Payment
                             TransactionReference = bookingTrip.Payment.TransactionRef,
                             Amount = request.VerifiedAmount,
                             PaymentId = bookingTrip.Payment.Id,
-                            CreatedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.Now,
                             Status = RefundStatus.Pending
                         };
 
@@ -307,7 +307,7 @@ namespace TripAgency.Service.Implemetations.Payment
                         AdminNotes = request.AdminNotes,
                         Amount = request.VerifiedAmount - bookingTrip.ActualPrice,
                         PaymentId = bookingTrip.Payment.Id,
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now,
                         Status = RefundStatus.Pending
                     };
 
@@ -407,10 +407,10 @@ namespace TripAgency.Service.Implemetations.Payment
                 ReportedPaymentDateTime = reportDto.PaymentDateTime,
                 ReportedPaidAmount = reportDto.PaidAmount,
                 CustomerNotes = reportDto.CustomerNotes,
-                ReportDate = DateTime.UtcNow,
+                ReportDate = DateTime.Now,
                 Status = PaymentDiscrepancyStatusEnum.PendingReview,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
             };
 
             await _discrepancyReportRepositoryAsync.AddAsync(newDiscrepancyReport);
@@ -449,7 +449,7 @@ namespace TripAgency.Service.Implemetations.Payment
                 report.Status = discrepancyReport.Status;
                 report.AdminNotes = discrepancyReport.AdminNotes;
                 report.ReviewedByUserId = _currentUserService.GetUserId(); ;
-                report.ReviewDate = DateTime.UtcNow;
+                report.ReviewDate = DateTime.Now;
                 await _discrepancyReportRepositoryAsync.UpdateAsync(report);
 
 
@@ -472,8 +472,8 @@ namespace TripAgency.Service.Implemetations.Payment
                     {
                         AdminNotes = discrepancyReport.AdminNotes ?? "",
                         ProcessedByUserId = _currentUserService.GetUserId(),
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now,
                         Amount = discrepancyReport.VerifiedAmount,
                         TransactionReference = report.ReportedTransactionRef,
                         TransactionRefunded = string.Empty,

@@ -26,7 +26,7 @@ namespace TripAgency.Data.Entities
         public int? ProcessedByUserId { get; set; } // معرف المسؤول الذي قام بالعملية (FK)
         public User? ProcessedByUser { get; set; } // خاصية التنقل
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow; // تاريخ آخر تحديث للسجل
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.Now; // تاريخ آخر تحديث للسجل
     }
 }

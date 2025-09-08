@@ -137,7 +137,7 @@ namespace TripAgency.Service.Implementations
                 {
                     PackageTripDateId = packageTripDate.Id,
                     PassengerCount = bookPackageDto.PassengerCount,
-                    BookingDate = DateTime.UtcNow,
+                    BookingDate = DateTime.Now,
                     BookingStatus = BookingStatus.Pending,
                     AppliedOfferId = appliedPromotionId,
                     ActualPrice = finalPrice,
@@ -262,10 +262,10 @@ namespace TripAgency.Service.Implementations
                             ReportedPaymentDateTime = bookingTrip.Payment.PaymentDate,
                             ReportedPaidAmount = bookingTrip.Payment.Amount,
                             CustomerNotes = "تم انشاء هذا التقرير من قبل النظام عندما الغى المستخدم الحجز",
-                            ReportDate = DateTime.UtcNow,
+                            ReportDate = DateTime.Now,
                             Status = PaymentDiscrepancyStatusEnum.PendingReview,
-                            CreatedAt = DateTime.UtcNow,
-                            UpdatedAt = DateTime.UtcNow
+                            CreatedAt = DateTime.Now,
+                            UpdatedAt = DateTime.Now
                         };
 
                         await _discrepancyReportRepositoryAsync.AddAsync(newDiscrepancyReport);

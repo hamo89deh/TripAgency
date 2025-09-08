@@ -10,8 +10,8 @@ namespace TripAgency.Data.Entities
         public DateOnly StartDate { get; set; } // تاريخ بدء العرض
         public DateOnly EndDate { get; set; } // تاريخ انتهاء العرض
         public bool IsActive { get; set; } // حالة العرض (مفعل/غير مفعل)
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
         public IEnumerable<BookingTrip> BookingTrips { get; set; }
         public IEnumerable<PackageTripOffers> PackageTripOffers { get; set; }
     }

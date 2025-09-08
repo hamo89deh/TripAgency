@@ -410,7 +410,7 @@ namespace TripAgency.Service.Implemetations
             {
                 return "AlgorithmIsWrong";
             }
-            //if (jwtToken.ValidTo > DateTime.UtcNow)
+            //if (jwtToken.ValidTo > DateTime.Now)
             //{
             //    return "TokenIsNotExpired";
             //}
@@ -428,7 +428,7 @@ namespace TripAgency.Service.Implemetations
                 return "RefreshTokenIsNotFound";
             }
 
-            if (userRefreshToken.ExpiryDate < DateTime.UtcNow)
+            if (userRefreshToken.ExpiryDate < DateTime.Now)
             {
                 userRefreshToken.IsRevoked = true;
                 userRefreshToken.IsUsed = false;

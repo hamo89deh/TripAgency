@@ -23,8 +23,8 @@ namespace TripAgency.Data.Entities
         public NotificationStatusEnum Status { get; set; }  // حالة الإشعار (من Enum NotificationStatusEnum)
 
         public string? RelatedEntityId { get; set; }  // معرف الكيان المرتبط (مثلاً BookingId)
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // تاريخ إنشاء الإشعار
-        public DateTime UpdateAt { get; set; } = DateTime.UtcNow; // تاريخ تعديل الإشعار
+        public DateTime CreatedAt { get; set; } = DateTime.Now; // تاريخ إنشاء الإشعار
+        public DateTime UpdateAt { get; set; } = DateTime.Now; // تاريخ تعديل الإشعار
         public DateTime? SentAt { get; set; } // تاريخ الإرسال الفعلي (nullable)
         public DateTime? ReadAt { get; set; } // تاريخ قراءة الإشعار (nullable، خاص بـ In-App)
 

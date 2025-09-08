@@ -92,7 +92,7 @@ namespace TripAgency.Service.Implementations
                 AvailableSeats = packageTrip.MaxCapacity,
                 StartBookingDate = AddDto.StartBookingDate,
                 EndBookingDate = AddDto.EndBookingDate,
-                CreateDate = DateTime.UtcNow,
+                CreateDate = DateTime.Now,
                 IsAvailable = true,
                 StartPackageTripDate = AddDto.StartPackageTripDate,
                 EndPackageTripDate = AddDto.EndPackageTripDate,
