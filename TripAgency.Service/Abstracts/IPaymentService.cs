@@ -7,7 +7,7 @@ namespace TripAgency.Service.Abstracts
 {
     public interface IPaymentService 
     {
-        Task<Result> SubmitManualPaymentNotificationAsync(ManualPaymentDetailsDto details);
+        Task<Result> SubmitManualPaymentNotificationAsync(SubmitManualPaymentDetailsDto details);
         Task<Result> ProcessManualPaymentConfirmationAsync(ManualPaymentConfirmationRequestDto request);
         Task<Result> ReportMissingPaymentAsync(MissingPaymentReportDto reportDto);
         Task<Result> ResolveMissingPaymentReportAsync(DiscrepancyReportProcessRequestDto discrepancyReport);

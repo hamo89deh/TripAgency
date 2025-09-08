@@ -22,7 +22,7 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpPost("SubmitManualPaymentNotification")]
-        public async Task<ApiResult<string>> SubmitManualPaymentNotification(ManualPaymentDetailsDto ManualDto)
+        public async Task<ApiResult<string>> SubmitManualPaymentNotification(SubmitManualPaymentDetailsDto ManualDto)
         {
             var SubmitManualPaymentResult = await _paymentService.SubmitManualPaymentNotificationAsync(ManualDto);
             if (!SubmitManualPaymentResult.IsSuccess)

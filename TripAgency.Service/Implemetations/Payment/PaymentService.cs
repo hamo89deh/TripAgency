@@ -101,7 +101,7 @@ namespace TripAgency.Service.Implemetations.Payment
             return Result.Success("لا حاجة لعملية إلغاء، الحجز ليس في حالة Pending.");
         }
         // 4. تسجيل إشعار من العميل بالدفع اليدوي
-        public async Task<Result> SubmitManualPaymentNotificationAsync(ManualPaymentDetailsDto details)
+        public async Task<Result> SubmitManualPaymentNotificationAsync(SubmitManualPaymentDetailsDto details)
         {
             var bookingTrip = await _bookingTripRepository.GetTableNoTracking()
                                                           .Where(d => d.Id == details.BookingId)
