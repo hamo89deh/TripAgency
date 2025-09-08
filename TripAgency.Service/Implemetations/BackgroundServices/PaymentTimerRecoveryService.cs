@@ -38,7 +38,7 @@ public class PaymentTimerRecoveryService : BackgroundService
                 if (booking.ExpireTime < now)
                 {
                     // المؤقت انتهى، استدعاء HandlePaymentTimeoutAsync
-                    _logger.LogWarning("الحجز {BookingId} انتهت صلاحيته قبل إعادة التشغيل.", booking.Id);
+                    _logger.LogWarning("Booking {BookingId} has expired before restart.", booking.Id);
                     await paymentService.HandlePaymentTimeoutAsync(booking.Id);
                 }
                 else
@@ -47,7 +47,7 @@ public class PaymentTimerRecoveryService : BackgroundService
                     var remainingTime = booking.ExpireTime - now;
                     if (remainingTime > TimeSpan.Zero)
                     {
-                        _logger.LogInformation("إعادة تشغيل المؤقت للحجز {BookingId} لمدة {Seconds} ثانية.", booking.Id, remainingTime.TotalSeconds);
+                        _logger.LogInformation("Restarting timer for booking {BookingId} for {Seconds} seconds.", booking.Id, remainingTime.TotalSeconds);
                          paymentTimerService.StartPaymentTimer(booking.Id, remainingTime);
                     }
                 }
@@ -55,7 +55,7 @@ public class PaymentTimerRecoveryService : BackgroundService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "خطأ أثناء استعادة المؤقتات.");
+            _logger.LogError(ex, "Error during timer recovery.");
         }
     }
 }

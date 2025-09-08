@@ -24,7 +24,7 @@ namespace TripAgency.Service.Implemetations.Payment
             var cts = new CancellationTokenSource(); // مصدر إلغاء للمؤقت
             _activeTimers[bookingId] = cts; // بنخزن الـ CancellationTokenSource عشان نقدر نوقف المؤقت
 
-            _logger.LogInformation("بدء مؤقت دفع للحجز {BookingId} لمدة {Minutes} دقائق.", bookingId, timeoutDuration.TotalMinutes);
+            _logger.LogInformation("Starting payment timer for booking {BookingId} with duration {Minutes} minutes", bookingId, timeoutDuration.TotalMinutes);
 
             // تشغيل مهمة في الخلفية (Task)
             Task.Run(async () =>
@@ -34,7 +34,7 @@ namespace TripAgency.Service.Implemetations.Payment
                     await Task.Delay(timeoutDuration, cts.Token); // انتظار انتهاء المهلة أو الإلغاء
                     if (!cts.Token.IsCancellationRequested) // إذا لم يتم إلغاء المؤقت يدوياً
                     {
-                        _logger.LogWarning("المؤقت للحجز {BookingId} انتهت صلاحيته.", bookingId);
+                        _logger.LogWarning("Payment timer for booking {BookingId} has expired.", bookingId);
                         // نطلب من BookingService معالجة انتهاء المهلة
                         using (var scope = _scopeFactory.CreateScope()) // إنشاء Scope جديد لأننا خارج طلب HTTP
                         {
@@ -45,11 +45,11 @@ namespace TripAgency.Service.Implemetations.Payment
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.LogInformation("المؤقت للحجز {BookingId} تم إيقافه يدوياً.", bookingId);
+                    _logger.LogInformation("Payment timer for booking {BookingId} was manually stopped", bookingId);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "خطأ في خدمة المؤقت للحجز {BookingId}.", bookingId);
+                    _logger.LogError(ex, "Error in payment timer service for booking {BookingId}.", bookingId);
                 }
                 finally
                 {
@@ -64,7 +64,7 @@ namespace TripAgency.Service.Implemetations.Payment
             if (_activeTimers.TryRemove(bookingId, out var cts))
             {
                 cts.Cancel(); // إلغاء المؤقت
-                _logger.LogInformation("المؤقت للحجز {BookingId} تم إيقافه يدوياً.", bookingId);
+                _logger.LogInformation("Payment timer for booking {BookingId} was manually stopped", bookingId);
             }
         }
 
