@@ -141,7 +141,7 @@ namespace TripAgency.Service.Implementations
                     BookingStatus = BookingStatus.Pending,
                     AppliedOfferId = appliedPromotionId,
                     ActualPrice = finalPrice,
-                    Notes = $"Pending payment via {paymentMethod.Name}",
+                    Notes = bookPackageDto.Notes ?? string.Empty,
                     UserId = user.Id,
                     ExpireTime = DateTime.Now.AddMinutes(_configuration.GetValue<int>("ExpireBookingTime"))
 
@@ -171,6 +171,19 @@ namespace TripAgency.Service.Implementations
 
                 var initiationResult = await gatewayService.InitiatePaymentAsync(paymentRequest);
 
+              
+                if (!initiationResult.IsSuccess)
+                {
+                    // _logger.LogError("InitiatePayment: فشل تهيئة الدفع للحجز {BookingId} عبر البوابة {Gateway}: {Error}", booking.Id, selectedPaymentMethod.Name, initiationResult.Message);
+                    // نرجع المقاعد ونلغي الحجز المؤقت
+                    await Transaction.RollbackAsync();
+                    return Result<PaymentInitiationResponseDto>.Failure($"Failed Initiate payment: {initiationResult.Message}");
+                }
+                // 1.7. بدء المؤقت الزمني 15 دقيقة
+                var responseDto = initiationResult.Value!;
+                responseDto.BookingTripId = bookingTrip.Id; // نتأكد إن الـ BookingId موجود
+                responseDto.ExpireTime = DateTime.Now.AddMinutes(_configuration.GetValue<int>("ExpireBookingTime"));
+
                 // 1.9. إنشاء سجل Payment مبدئي (دفعة معلقة)
                 // هذا السجل يُنشأ دائمًا هنا، ويتم تحديثه لاحقًا بواسطة الـ callback أو التأكيد اليدوي
                 var payment = new Payment
@@ -180,24 +193,11 @@ namespace TripAgency.Service.Implementations
                     Amount = finalPrice, // المبلغ المراد دفعه
                     PaymentDate = DateTime.Now,
                     PaymentStatus = PaymentStatus.Pending, // الحالة الأولية للدفع
-                    TransactionRef = string.Empty
+                    TransactionRef = string.Empty,
+                    PaymentInstructions = responseDto.PaymentInstructions
                 };
-                await _paymentRepositoryAsync.AddAsync(payment);
-
-                if (!initiationResult.IsSuccess)
-                {
-                    // _logger.LogError("InitiatePayment: فشل تهيئة الدفع للحجز {BookingId} عبر البوابة {Gateway}: {Error}", booking.Id, selectedPaymentMethod.Name, initiationResult.Message);
-                    // نرجع المقاعد ونلغي الحجز المؤقت
-                    await Transaction.RollbackAsync();
-                    return Result<PaymentInitiationResponseDto>.Failure($"Failed Initiate payment: {initiationResult.Message}");
-                }
-
-                // 1.7. بدء المؤقت الزمني 15 دقيقة
-                var responseDto = initiationResult.Value!;
-                responseDto.BookingTripId = bookingTrip.Id; // نتأكد إن الـ BookingId موجود
-                responseDto.ExpireTime = DateTime.Now.AddMinutes(_configuration.GetValue<int>("ExpireBookingTime"));
+                await _paymentRepositoryAsync.AddAsync(payment);              
                 _paymentTimerService.StartPaymentTimer(bookingTrip.Id, TimeSpan.FromMinutes(_configuration.GetValue<int>("ExpireBookingTime")));
-
                 // 
                 await Transaction.CommitAsync();
                 return Result<PaymentInitiationResponseDto>.Success(responseDto);
@@ -345,6 +345,8 @@ namespace TripAgency.Service.Implementations
                                                       .ToListAsync();
             if(bookingTrips.Count()==0)
                 return Result<IEnumerable<GetBookingTripForUserDto>>.NotFound($"Not Found any Booking {bookingStatus}");
+
+
             var result = bookingTrips.Select(x => new GetBookingTripForUserDto()
             {
                 Id = x.Id,
@@ -355,6 +357,7 @@ namespace TripAgency.Service.Implementations
                 PassengerCount = x.PassengerCount,
                 TripDateId = x.PackageTripDateId,
                 UserId = user.Id,
+                ExpireTime = x.ExpireTime,
                 GetPaymentDto = new GetPaymentDto()
                 {
                     Id = x.Id,
@@ -362,7 +365,9 @@ namespace TripAgency.Service.Implementations
                     PaymentDate = x.Payment.PaymentDate,
                     PaymentMethodName = x.Payment.PaymentMethod.Name,
                     PaymentStatus = x.Payment.PaymentStatus,
-                    TransactionRef = x.Payment.TransactionRef
+                    TransactionRef = x.Payment.TransactionRef,
+                    PaymentInstructions= x.Payment.PaymentInstructions ?? string.Empty
+                   
                 }
 
 
@@ -390,6 +395,7 @@ namespace TripAgency.Service.Implementations
                 PassengerCount = bookingTrip.PassengerCount,
                 TripDateId = bookingTrip.PackageTripDateId,
                 UserId = user.Id,
+                ExpireTime = bookingTrip.ExpireTime,
                 GetPaymentDto = new GetPaymentDto()
                 {
                     Id = bookingTrip.Id,
@@ -397,7 +403,9 @@ namespace TripAgency.Service.Implementations
                     PaymentDate = bookingTrip.Payment.PaymentDate,
                     PaymentMethodName = bookingTrip.Payment.PaymentMethod.Name,
                     PaymentStatus = bookingTrip.Payment.PaymentStatus,
-                    TransactionRef = bookingTrip.Payment.TransactionRef
+                    TransactionRef = bookingTrip.Payment.TransactionRef,
+                    PaymentInstructions = bookingTrip.Payment.PaymentInstructions ?? string.Empty
+
                 }
 
 

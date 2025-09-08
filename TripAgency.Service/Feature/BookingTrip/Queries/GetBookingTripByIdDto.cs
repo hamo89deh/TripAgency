@@ -25,6 +25,7 @@ namespace TripAgency.Service.Feature.BookingTrip.Queries
         public int Id { get; set; }
         public int PassengerCount { get; set; }
         public DateTime BookingDate { get; set; }
+        public DateTime ExpireTime { get; set; }
         public BookingStatus BookingStatus { get; set; }
         public decimal ActualPrice { get; set; }
         public string Notes { get; set; }
@@ -41,5 +42,6 @@ namespace TripAgency.Service.Feature.BookingTrip.Queries
         public DateTime? PaymentDate { get; set; }
         public string? TransactionRef { get; set; }
         public string PaymentMethodName { get; set; }
+        public string PaymentInstructions { get; set; }
     }
 }

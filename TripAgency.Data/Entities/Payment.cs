@@ -9,6 +9,7 @@ namespace TripAgency.Data.Entities
         public decimal Amount { get; set; }
         public PaymentStatus PaymentStatus { get; set; }
         public DateTime PaymentDate { get; set; }
+        public string? PaymentInstructions { get; set; }
 
         public int BookingTripId { get; set; }
         public string? TransactionRef { get; set; }

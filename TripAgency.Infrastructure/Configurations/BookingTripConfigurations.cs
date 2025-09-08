@@ -13,12 +13,12 @@ namespace TripAgency.Infrastructure.Configurations
             builder.Property(x => x.Notes)
                    .HasColumnType("nvarchar")
                    .HasMaxLength(300)
-                   .IsRequired(true);
+                   .IsRequired(false);
 
             builder.Property(x => x.BookingDate)
                    .HasColumnType("datetime2")
                    .IsRequired(true);
-
+            
             builder.Property(x => x.ExpireTime)
                 .HasColumnType("datetime2")
                 .IsRequired(true);
@@ -27,7 +27,7 @@ namespace TripAgency.Infrastructure.Configurations
                   .IsRequired(true);
 
             builder.Property(x => x.BookingStatus)
-                    .HasConversion<int>()
+                   .HasConversion<int>()
                    .HasComment("Represents Booking status: 0 = Pending, 1 = Completed, 2 = Cancelled")
                    .IsRequired(true);
 
