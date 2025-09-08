@@ -43,6 +43,7 @@ namespace TripAgency.Service.Feature.BookingTrip.Queries
         public DateTime? PaymentDate { get; set; }
         public string? TransactionRef { get; set; }
         public string PaymentMethodName { get; set; }
+        public int PaymentMethodId { get; set; }
         public string PaymentInstructions { get; set; }
         public bool CanCompletePayment { get; set; }
     }
