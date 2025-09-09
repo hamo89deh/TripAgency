@@ -621,7 +621,7 @@ namespace TripAgency.Infrastructure.Migrations
                         .HasColumnType("decimal(5,2)");
 
                     b.Property<DateTime>("EndDate")
-                        .HasColumnType("date");
+                        .HasColumnType("dateTime2");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -632,7 +632,7 @@ namespace TripAgency.Infrastructure.Migrations
                         .HasColumnType("varchar");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("date");
+                        .HasColumnType("dateTime2");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");

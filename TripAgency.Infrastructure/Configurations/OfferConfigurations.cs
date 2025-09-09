@@ -21,11 +21,11 @@ namespace TripAgency.Infrastructure.Configurations
                    .HasMaxLength(100)
                    .IsRequired();
             builder.Property(x => x.StartDate)
-                   .HasColumnType("date")
+                   .HasColumnType("dateTime2")
                    .IsRequired();
 
             builder.Property(x => x.EndDate)
-                   .HasColumnType("date")
+                   .HasColumnType("dateTime2")
                    .IsRequired();
 
             builder.Property(x => x.IsActive)
