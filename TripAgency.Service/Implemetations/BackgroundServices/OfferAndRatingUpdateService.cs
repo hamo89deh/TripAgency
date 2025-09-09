@@ -45,6 +45,12 @@ public class OfferAndRatingUpdateService : BackgroundService
             var tripReviewRepository = scope.ServiceProvider.GetRequiredService<ITripReviewRepositoryAsync>();
             var packageTripRepository = scope.ServiceProvider.GetRequiredService<IPackageTripRepositoryAsync>();
 
+            // تفعيل العروض غير الفعالة التي بدأت ولم تنته
+            var activatedOffersCount = await offerRepository.GetTableNoTracking()
+                .Where(p => !p.IsActive && p.StartDate <= DateTime.Now && p.EndDate > DateTime.Now)
+                .ExecuteUpdateAsync(p => p.SetProperty(x => x.IsActive, true), stoppingToken);
+            _logger.LogInformation("Activated {Count} offers that have started and not expired", activatedOffersCount);
+
             // تعطيل العروض المنتهية في Offers
             var updatedOffersCount = await offerRepository.GetTableNoTracking()
                 .Where(p => p.IsActive && p.EndDate < DateTime.Now)
