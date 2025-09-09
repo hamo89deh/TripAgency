@@ -10,6 +10,6 @@ namespace TripAgency.Service.Feature.TripReview
     {
         public int PackageTripDateId { get; set; }
         public int Rating { get; set; }
-        public string Comment { get; set; }
+        public string? Comment { get; set; }
     }
 }

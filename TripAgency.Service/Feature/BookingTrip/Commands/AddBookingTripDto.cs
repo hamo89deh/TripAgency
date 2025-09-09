@@ -7,7 +7,7 @@ namespace TripAgency.Service.Feature.BookingTrip.Commands
         public int PassengerCount { get; set; }
         public decimal ActualPrice { get; set; }
         public string Notes { get; set; }
-        public int TripDateId { get; set; }
+        public int PackageTripDateId { get; set; }
         public int UserId { get; set; }
 
     }

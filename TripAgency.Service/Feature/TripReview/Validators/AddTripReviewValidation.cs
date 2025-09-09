@@ -20,9 +20,7 @@ namespace TripAgency.Service.Feature.TripReview.Validators
                 .WithMessage("Rating must be between 1 and 5.");
 
             RuleFor(dto => dto.Comment)
-                .MaximumLength(500)
-                .WithMessage("Comment must not exceed 500 characters.")
-                .When(dto => !string.IsNullOrEmpty(dto.Comment));
+                .MaximumLength(300).WithMessage("Comment must not exceed 300 characters.");
         }
     }
 }

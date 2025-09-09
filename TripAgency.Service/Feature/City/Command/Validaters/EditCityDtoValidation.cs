@@ -9,6 +9,7 @@ namespace TripAgency.Service.Feature.City.Command.Validaters
         {
             RuleFor(city => city.Name)
                 .NotEmpty().WithMessage("City name is required.")
+                .NotNull().WithMessage("City  cannot be null.")
                 .Length(2, 50).WithMessage("City name must be between 2 and 50 characters.");
         }
     }

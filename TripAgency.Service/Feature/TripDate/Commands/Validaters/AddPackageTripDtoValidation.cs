@@ -30,6 +30,9 @@ public class AddPackageTripDateDtoValidator : AbstractValidator<AddPackageTripDa
 
         RuleFor(dto => dto.EndBookingDate)
             .LessThan(dto => dto.StartPackageTripDate)
-            .WithMessage("EndBookingDate must be before StartPackageTripDate.");     
+            .WithMessage("EndBookingDate must be before StartPackageTripDate.");
+        RuleFor(dto => dto.PackageTripId)
+           .GreaterThan(0).WithMessage("Package trip ID must be a positive integer.");
+
     }
 }
