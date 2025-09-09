@@ -15,7 +15,7 @@ namespace TripAgency.Service.Feature.Payment.Validators
                 .GreaterThan(0).WithMessage("Payment method ID must be a positive integer.");
 
             RuleFor(dto => dto.VerifiedAmount)
-                .GreaterThan(0).WithMessage("Verified amount must be greater than 0.");
+                .GreaterThanOrEqualTo(0).WithMessage("Verified amount must be Greater Than Or Equal 0.");
 
             RuleFor(dto => dto.AdminNotes)
                 .MaximumLength(250).WithMessage("Admin notes cannot exceed 250 characters.");

@@ -211,24 +211,24 @@ namespace TripAgency.Service.Implemetations.Payment
                                                           .FirstOrDefaultAsync();
             if (bookingTrip == null)
             {
-                return Result.NotFound($"Not Found Booking Related With payment Have : {request.TransactionRef}");
+                return Result.NotFound($"No booking found for payment with transaction reference: {request.TransactionRef}");
             }
 
 
             if (bookingTrip.BookingStatus != BookingStatus.Pending)
             {
-                return Result.BadRequest("The Booking is not Pending");
+                return Result.BadRequest("The booking is not in a pending state");
             }
 
             var paymentMethod = await _paymentMethodRepositoryAsync.GetTableNoTracking()
                                                                    .FirstOrDefaultAsync(pm => pm.Id == request.PaymentMethodId);
             if (paymentMethod == null)
             {
-                return Result.NotFound($"Not Found Payment Method With id {request.PaymentMethodId}");
+                return Result.NotFound($"No payment method found with ID: {request.PaymentMethodId}");
             }
             if (bookingTrip.Payment.PaymentMethodId != paymentMethod.Id)
             {
-                return Result.BadRequest($"Payment Method For Booking With id {bookingTrip.Id} Does Not Match The Payment Method sent ");
+                return Result.BadRequest($"No payment method found with ID: {request.PaymentMethodId} Does Not Match The Payment Method sent ");
             }
             using var transaction = await _bookingTripRepository.BeginTransactionAsync();
             try
@@ -238,7 +238,7 @@ namespace TripAgency.Service.Implemetations.Payment
                     if (bookingTrip.ActualPrice < request.VerifiedAmount)
                     {
                         await transaction.RollbackAsync();
-                        return Result.BadRequest($"you are refuse the pay ,but The Amount Verified is Greater than the amount for booking ,check again");
+                        return Result.BadRequest($"The payment was refused because the verified amount exceeds the booking amount. Please review");
                     }
                     bookingTrip.BookingStatus = BookingStatus.Cancelled;
                     await _bookingTripRepository.UpdateAsync(bookingTrip);
@@ -260,7 +260,7 @@ namespace TripAgency.Service.Implemetations.Payment
                         var refunded = new Refund
                         {
                             AdminNotes = request.AdminNotes,
-                            TransactionReference = bookingTrip.Payment.TransactionRef,
+                            TransactionReference = bookingTrip.Payment.TransactionRef??string.Empty,
                             Amount = request.VerifiedAmount,
                             PaymentId = bookingTrip.Payment.Id,
                             CreatedAt = DateTime.Now,
@@ -271,10 +271,8 @@ namespace TripAgency.Service.Implemetations.Payment
                         //TODO send email
                         await _notificationService.CreateInAppNotificationAsync(
                             bookingTrip.UserId,
-                            "تم رفض طلب الدفع",
-                            $"نعتذر، تم رفض طلب الدفع الخاص بالحجز رقم {bookingTrip.Id} ({bookingTrip.Payment.TransactionRef}) ." +
-                            $"وتم الغاء الحجز" +
-                            $" السبب: المبلغ الدفوع {request.VerifiedAmount} اقل من المبلغ الخاص بالحجز  {bookingTrip.ActualPrice} سوف يتم استرداد المبلغ المدفوع خلال 3-5 ايام عمل  ",
+                            "Payment Request Rejected",
+                            $"We apologize, the payment request for booking ID {bookingTrip.Id} ({bookingTrip.Payment.TransactionRef}) has been rejected, and the booking has been cancelled. Reason: The paid amount {request.VerifiedAmount} is less than the booking amount {bookingTrip.ActualPrice}. The paid amount will be refunded within 3-5 business days.",
                             "BookingRejected"
                             );
                     }
@@ -284,20 +282,24 @@ namespace TripAgency.Service.Implemetations.Payment
                     await transaction.CommitAsync();
 
                     //logger.LogWarning("ManualConfirmation: الحجز {BookingId} تم رفض دفعه يدوياً. ملاحظات المسؤول: {Notes}", request.BookingId, request.AdminNotes);
-                    return Result.Success("تم رفض الدفع اليدوي. الحجز ملغي.");
+                    return Result.Success($"the payment request for booking ID {bookingTrip.Id} ({bookingTrip.Payment.TransactionRef}) has been rejected, and the booking has been cancelled");
                 }
-
+                if(request.VerifiedAmount < bookingTrip.ActualPrice)
+                {
+                    await transaction.RollbackAsync();
+                   return Result.BadRequest($"Cannot confirm the booking. The actual price is {bookingTrip.ActualPrice}, but the verified amount is {request.VerifiedAmount}.");
+                }
                 bookingTrip.BookingStatus = BookingStatus.Completed;
                 await _bookingTripRepository.UpdateAsync(bookingTrip);
 
                 bookingTrip.Payment.PaymentStatus = PaymentStatus.Completed;
+                bookingTrip.Payment.Amount = bookingTrip.ActualPrice;
                 await _paymentRepositoryAsync.UpdateAsync(bookingTrip.Payment);
                 await _notificationService.CreateInAppNotificationAsync(
 
                     bookingTrip.UserId,
-                        "تم تاكيد طلب الدفع",
-                        $" تم تاكيد طلب الدفع الخاص بالحجز رقم {bookingTrip.Id} ({bookingTrip.Payment.TransactionRef})." +
-                        $"وتم تاكيد الحجز",
+                        "Payment Request Confirmed",
+                        $"The payment request for booking ID {bookingTrip.Id} ({bookingTrip.Payment.TransactionRef}) has been confirmed, and the booking has been completed.",
                         "BookingCompleted"
                         );
                 if (request.VerifiedAmount > bookingTrip.ActualPrice)
@@ -308,25 +310,26 @@ namespace TripAgency.Service.Implemetations.Payment
                         Amount = request.VerifiedAmount - bookingTrip.ActualPrice,
                         PaymentId = bookingTrip.Payment.Id,
                         CreatedAt = DateTime.Now,
-                        Status = RefundStatus.Pending
+                        TransactionReference= bookingTrip.Payment.TransactionRef??string.Empty,
+                        Status = RefundStatus.Pending,
                     };
 
                     await _refundRepositoryAsync.AddAsync(refunded);
                     await _notificationService.CreateInAppNotificationAsync(
                        bookingTrip.UserId,
-                       "استرجاع مبلغ فائض ",
-                       $"سوف يتم استرجاع المبلغ {refunded.Amount}  خلال 3-5 ايام عمل" +
-                       $"استرجاع مبلغ فائض",
+                       "Excess Amount Refund",
+                       $"An amount of {refunded.Amount} will be refunded within 3-5 business days." +
+                       $"Excess Amount Refund",
                        "BookingCompleted"
                        );
                 }
                 await transaction.CommitAsync();
-                return Result.Success("تم تأكيد الدفع اليدوي بنجاح.");
+                return Result.Success("Manual payment confirmed successfully.");
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return Result.Failure("حدث خطا داخلي ");
+                return Result.Failure("An internal error occurred. ");
             }
 
         }
