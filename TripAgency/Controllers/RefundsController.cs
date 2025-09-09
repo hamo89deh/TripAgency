@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
@@ -10,6 +11,8 @@ namespace TripAgency.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
+
     public class RefundsController : ControllerBase
     {
         public IRefundService _refundService { get; }
@@ -18,6 +21,7 @@ namespace TripAgency.Api.Controllers
             _refundService = refundService;
         }
         [HttpGet("RefundsPending")]
+
         public async Task<ApiResult<IEnumerable<GetRefundsPendingDto>>> GetRefundsPending()
         {
             var ResultRefundsPendingDto = await _refundService.GetRefundsPendingDto();

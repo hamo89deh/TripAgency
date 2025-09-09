@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
@@ -10,6 +11,8 @@ namespace TripAgency.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "User")]
+
     public class UserPhobiasController : ControllerBase
     {
         public UserPhobiasController(IUserPhobiaService userPhobiaService, IMapper mapper)

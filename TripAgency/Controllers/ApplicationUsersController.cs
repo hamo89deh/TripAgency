@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
 using TripAgency.Data.Helping;
@@ -32,6 +33,7 @@ namespace TripAgency.Api.Controllers
             return ApiResult<string>.Created(AddNewUserResult.Message!);
         }
         [HttpPut()]
+        [Authorize(Roles = "User")]
         public async Task<ApiResult<string>> UpdateUser([FromForm]UpdateUserDto userDto)
         {
             var UpdateUserResult = await _applicationUserService.UpdateUser(userDto);
@@ -42,6 +44,7 @@ namespace TripAgency.Api.Controllers
             return ApiResult<string>.Ok(UpdateUserResult.Message!);
 
         }
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{Id}")]
         public async Task<ApiResult<string>> DeleteUser(int Id)
         {
@@ -54,6 +57,7 @@ namespace TripAgency.Api.Controllers
 
         }
         [HttpGet("UserInformation")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<ApiResult<GetUserByIdDto>> GetUserInformation()
         {
             var user = await CurrentUserService.GetUserAsync();
@@ -66,6 +70,7 @@ namespace TripAgency.Api.Controllers
 
         }
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ApiResult<IEnumerable<GetUsersDto>>> GetUsers()
         {
             var UsersResult = await _applicationUserService.GetUsers();
@@ -77,6 +82,7 @@ namespace TripAgency.Api.Controllers
 
         }
         [HttpGet("Pagination")]
+        [Authorize(Roles = "Admin")]
         public async Task<ApiResult<PaginatedResult<GetUsersDto>>> GetUsers(string? search , int pageNumber=1 , int pageSize =10)
         {
             var UsersResult = await _applicationUserService.GetUsersPagination(search,pageNumber , pageSize);

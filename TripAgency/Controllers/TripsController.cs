@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MimeKit.Tnef;
 using TripAgency.Api.Extention;
@@ -14,6 +15,7 @@ namespace TripAgency.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class TripsController : ControllerBase
     {
         public TripsController(ITripService tripService, IMapper mapper)
@@ -58,6 +60,8 @@ namespace TripAgency.Controllers
             return ApiResult<GetPackageTripsForTripDto>.Ok(packageTripsResult.Value!);
         }
         [HttpGet]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<IEnumerable<GetTripsDto>>> GetTrips()
         {
             var tripsResult = await _tripService.GetAllAsync();
@@ -74,6 +78,8 @@ namespace TripAgency.Controllers
             return ApiResult<GetTripByIdDto>.Ok(tripResult.Value!);
         }
         [HttpGet("{Id}/Destinations")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<GetTripDestinationsDto>> GetTripDestinationsById(int Id)
         {
             var tripResult = await _tripService.GetTripDestinationsById(Id);
@@ -91,6 +97,8 @@ namespace TripAgency.Controllers
             return ApiResult<GetTripByIdDto>.Ok(tripResult.Value!);
         }
         [HttpPost]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<GetTripByIdDto>> AddTrip([FromForm] AddTripDto trip)
         {
             var tripResult = await _tripService.CreateAsync(trip);
@@ -101,6 +109,8 @@ namespace TripAgency.Controllers
             return ApiResult<GetTripByIdDto>.Created(tripResult.Value!);
         }
         [HttpPost("Destination")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<GetTripDestinationsDto>> AddTripDestination(AddTripDestinationsDto addTripDestinationsDto)
         {
             var tripResult = await _tripService.AddTripDestinations(addTripDestinationsDto);
@@ -111,6 +121,8 @@ namespace TripAgency.Controllers
             return ApiResult<GetTripDestinationsDto>.Created(tripResult.Value!);
         }
         [HttpPut("{Id}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> UpdateTrip(int Id, [FromForm] UpdateTripDto updateTrip)
         {
             var tripResult = await _tripService.UpdateAsync(Id, updateTrip);
@@ -120,6 +132,8 @@ namespace TripAgency.Controllers
 
         }
         [HttpDelete("{Id}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> DeleteTrip(int Id)
         {
             var tripResult = await _tripService.DeleteAsync(Id);
@@ -128,6 +142,8 @@ namespace TripAgency.Controllers
             return ApiResult<string>.Ok("Success Delete");
         }
         [HttpDelete("{TripId}/Destination/{DestinationId}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> DeleteTripDestination(int TripId , int DestinationId)
         {
             var tripResult = await _tripService.DeleteTripDestination(TripId, DestinationId);

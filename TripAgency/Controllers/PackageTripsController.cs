@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
@@ -62,6 +63,8 @@ namespace TripAgency.Api.Controllers
             return ApiResult<GetPackageTripDetailsDto>.Ok(result.Value!);
         }
         [HttpPost]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<GetPackageTripByIdDto>> AddPackageTrip([FromForm] AddPackageTripDto packageTripdto)
         {
             var packageTripResult = await _packageTripService.CreateAsync(packageTripdto);
@@ -73,6 +76,8 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpPut("{Id}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> UpdatePackageTrip(int Id , [FromForm] UpdatePackageTripDto updatePackageTrip)
         {
             var packageTripResult = await _packageTripService.UpdateAsync(Id, updatePackageTrip);
@@ -83,6 +88,8 @@ namespace TripAgency.Api.Controllers
         }
       
         [HttpDelete("{Id}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> DeletePackageTrip(int Id)
         {
             var packageTripResult = await _packageTripService.DeleteAsync(Id);
@@ -92,6 +99,8 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpPost("Destination")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<GetPackageTripDestinationsDto>> AddPackageTripDestination(AddPackageTripDestinationDto packageTripDestination)
         {
             var packageTripDestinationResult = await _packageTripDestinationService.CreateAsync(packageTripDestination);
@@ -112,6 +121,8 @@ namespace TripAgency.Api.Controllers
         //}
       
         [HttpDelete("{packageTripId}/Destination/{destinationId}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> DeletePackageTripDestination(int packageTripId, int destinationId)
         {
             var packageTripDestinationResult = await _packageTripDestinationService.DeletePackageTripDestinationAsync(packageTripId, destinationId);
@@ -133,6 +144,8 @@ namespace TripAgency.Api.Controllers
         }
         
         [HttpPut("Destination/Activity")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> UpdatePackageTripDestinationActivity(UpdatePackageTripDestinationActivityDto updatePackageTripDestinationActivity)
         {
             var packageTripDestinationActivityResult = await _packageTripDestinationActivityService.UpdateAsync(0, updatePackageTripDestinationActivity);
@@ -143,6 +156,8 @@ namespace TripAgency.Api.Controllers
         }
         
         [HttpDelete("{packageTripId}/Destination/{destinationId}/Activity/{activityId}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> DeletePackageTripDestinationActivity(int packageTripId, int destinationId , int activityId)
         {
             var packageTripDestinationActivityResult = await _packageTripDestinationActivityService.DeletePackageTripDestinationActivity(packageTripId, destinationId, activityId);

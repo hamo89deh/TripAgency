@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
@@ -10,6 +11,7 @@ namespace TripAgency.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ActivityPhobiasController : ControllerBase
     {
         public ActivityPhobiasController(IActivityPhobiasService activityPhobiaService, IMapper mapper)
@@ -22,6 +24,7 @@ namespace TripAgency.Api.Controllers
         public IMapper _mapper { get; }
 
         [HttpGet("{ActivityId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ApiResult<GetActivityPhobiasDto>> GetActivityPhobiasDto(int ActivityId)
         {
             var ActivityPhobiasResult = await _activityPhobiaService.GetActivityPhobiasAsync(ActivityId);
@@ -30,6 +33,7 @@ namespace TripAgency.Api.Controllers
             return ApiResult<GetActivityPhobiasDto>.Ok(ActivityPhobiasResult.Value!);
         }
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ApiResult<string>> AddActivityPhobias(AddActivityPhobiasDto activityPhobiasDto)
         {
             var AddActivityPhobiasResult = await _activityPhobiaService.AddActivityPhobias(activityPhobiasDto);
@@ -41,6 +45,7 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpDelete("{PhobiaId}/Activity/{ActivityId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ApiResult<string>> DeleteActivityPhobia(int ActivityId, int PhobiaId)
         {
             var DeleteActivityPhobiaResult = await _activityPhobiaService.DeleteActivityPhobia(ActivityId, PhobiaId);

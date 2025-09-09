@@ -27,6 +27,7 @@ namespace TripAgency.Api.Controllers
         
       
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ApiResult<GetPackageTripDateByIdDto>> AddPackageTripDate(AddPackageTripDateDto tripDate)
         {
 
@@ -39,6 +40,7 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles = "Admin")]
         public async Task<ApiResult<string>> UpdateStatudPackageTripDate(int DatePackageTripId , enUpdatePackageTripDataStatusDto Status)
         {
             var packageTripDateResult = await _packageTripDateService.UpdateStatusTripDate(new UpdatePackageTripDateDto

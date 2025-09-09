@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
@@ -12,6 +13,8 @@ namespace TripAgency.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
+
     public class OfferController : ControllerBase
     {
         public OfferController(IOfferService OfferService, IMapper mapper)
@@ -33,7 +36,7 @@ namespace TripAgency.Api.Controllers
             return ApiResult<IEnumerable<GetOffersDto>>.Ok(OffersResult.Value!);
         }
         [HttpGet("{Id}")]
-        public async Task<ApiResult<GetOfferByIdDto>> GetPromotionById(int Id)
+        public async Task<ApiResult<GetOfferByIdDto>> GetOfferById(int Id)
         {
             var OffersResult = await _offerService.GetByIdAsync(Id);
             if (!OffersResult.IsSuccess)
@@ -42,7 +45,7 @@ namespace TripAgency.Api.Controllers
         }
    
         [HttpPost]
-        public async Task<ApiResult<GetOfferByIdDto >> AddPromotion(AddOfferDto offerDto)
+        public async Task<ApiResult<GetOfferByIdDto >> AddOffer(AddOfferDto offerDto)
         {
             var OfferResult = await _offerService.CreateAsync(offerDto);
             if (!OfferResult.IsSuccess)

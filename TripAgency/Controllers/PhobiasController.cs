@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
@@ -10,6 +11,8 @@ namespace TripAgency.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class PhobiasController : ControllerBase
     {
         public PhobiasController(IPhobiaService phobiaService, IMapper mapper)
@@ -39,6 +42,8 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<GetPhobiaByIdDto>> AddPhobia(AddPhobiaDto phobia)
         {
             var phobiaResult = await _phobiaService.CreateAsync(phobia);
@@ -49,6 +54,8 @@ namespace TripAgency.Api.Controllers
             return ApiResult<GetPhobiaByIdDto>.Created(phobiaResult.Value!);
         }
         [HttpPut("{Id}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> UpdatePhobia(int Id ,UpdatePhobiaDto updatePhobia)
         {
             var phobiaResult = await _phobiaService.UpdateAsync(Id, updatePhobia);
@@ -58,6 +65,8 @@ namespace TripAgency.Api.Controllers
 
         }
         [HttpDelete("{Id}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> DeletePhobia(int Id)
         {
             var phobiaResult = await _phobiaService.DeleteAsync(Id);

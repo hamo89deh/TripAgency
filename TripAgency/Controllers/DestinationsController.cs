@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
 using TripAgency.Api.Extention;
@@ -80,6 +81,8 @@ namespace TripAgency.Controllers
             return ApiResult<IEnumerable<GetDestinationsByCityNameDto>>.Ok(result.Value!);
         }
         [HttpPost]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<GetDestinationByIdDto>> AddDestination([FromForm]AddDestinationDto destinationDto)
         {
             var result = await _destinationService.CreateAsync(destinationDto);
@@ -90,6 +93,8 @@ namespace TripAgency.Controllers
             return ApiResult<GetDestinationByIdDto>.Created(result.Value!);
         }
         [HttpPut("{Id}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> UpdateDestination(int Id ,[FromForm]UpdateDestinationDto destinationDto)
         {
             var result = await _destinationService.UpdateAsync(Id,destinationDto);
@@ -100,6 +105,8 @@ namespace TripAgency.Controllers
             return ApiResult<string>.Ok("Success Updated");
         }
         [HttpDelete("{Id}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> DeleteDestination(int Id)
         {
             var result = await _destinationService.DeleteAsync(Id);
@@ -110,6 +117,8 @@ namespace TripAgency.Controllers
             return ApiResult<string>.Ok("Success Deleted");
         }
         [HttpPost("{DestinationId}/Activity/{ActivityId}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> AddDestinationActivity(int DestinationId , int ActivityId)
         {
             var result = await _destinationService.AddDestinationActivity(DestinationId,ActivityId);
@@ -131,6 +140,8 @@ namespace TripAgency.Controllers
         }
         
         [HttpDelete("{DestinationId}/Activity/{ActivityId}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> DeleteDestinationActivity(int DestinationId, int ActivityId)
         {
             var result = await _destinationService.DeleteDestinationActivity(DestinationId, ActivityId);

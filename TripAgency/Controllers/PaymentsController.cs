@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using TripAgency.Api.Extention;
@@ -22,6 +23,8 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpPost("SubmitManualPaymentNotification")]
+        [Authorize(Roles = "User")]
+
         public async Task<ApiResult<string>> SubmitManualPaymentNotification(SubmitManualPaymentDetailsDto ManualDto)
         {
             var SubmitManualPaymentResult = await _paymentService.SubmitManualPaymentNotificationAsync(ManualDto);
@@ -33,6 +36,8 @@ namespace TripAgency.Api.Controllers
         }
        
         [HttpPost("ProcessManualPaymentConfirmation")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> ProcessManualPaymentConfirmation(ManualPaymentConfirmationRequestDto ManualDto)
         {
             var ProcessManualPaymentResult = await _paymentService.ProcessManualPaymentConfirmationAsync(ManualDto);
@@ -42,7 +47,9 @@ namespace TripAgency.Api.Controllers
             }
             return ApiResult<string>.Created(ProcessManualPaymentResult.Message!);
         }
-       
+
+        [Authorize(Roles = "User")]
+
         [HttpPost("ReportMissingPayment")]
         public async Task<ApiResult<string>> ReportMissingPayment(MissingPaymentReportDto reportDto)
         {
@@ -55,6 +62,8 @@ namespace TripAgency.Api.Controllers
         }
       
         [HttpPost("ResolveMissingPaymentReport")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<string>> ResolveMissingPaymentReportAsync(DiscrepancyReportProcessRequestDto reportDto)
         {
             var ResolveMissingPaymentReportResult = await _paymentService.ResolveMissingPaymentReportAsync(reportDto);
@@ -66,6 +75,8 @@ namespace TripAgency.Api.Controllers
         }
       
         [HttpGet("VerifyPaymentTransaction")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<PaymentTransactionStatusDto>> VerifyPaymentTransactionAsync(string TransactionRef)
         {
             var DetailsTransactionResult = await _paymentService.GetDetailsTransactionAsync(TransactionRef);
@@ -76,6 +87,8 @@ namespace TripAgency.Api.Controllers
             return ApiResult<PaymentTransactionStatusDto>.Ok(DetailsTransactionResult.Value!);
         }
         [HttpGet("PaymentsPending")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<IEnumerable<ManualPaymentDetailsDto>>> GetPendingManualPaymentsForAdminAsync()
         {
             var PendingManualPayments = await _paymentService.GetPendingManualPaymentsForAdminAsync();
@@ -87,6 +100,8 @@ namespace TripAgency.Api.Controllers
         }
     
         [HttpGet("GetMissingPayment")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<IEnumerable<MissingPaymentReportResponceDto>>> GetMissingPaymentReportsForAdminAsync()
         {
             var MissingPaymentReportsResult = await _paymentService.GetMissingPaymentReportsForAdminAsync();
@@ -98,6 +113,8 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpGet("paymentMethods")]
+        [Authorize(Roles = "Admin,User")]
+
         public async Task<ApiResult<IEnumerable<PaymentMethodDto>>> GetPaymentMethod()
         {
             var PaymentMethodDtoResult = await _paymentService.GetPaymentMethods();

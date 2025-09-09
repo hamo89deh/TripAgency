@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TripAgency.Api.Extention;
 using TripAgency.Bases;
@@ -47,6 +48,8 @@ namespace TripAgency.Controllers
             return ApiResult<GetTypeTripByIdDto>.Ok(typetripResult.Value!);
         }
         [HttpPost]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ApiResult<GetTypeTripByIdDto>> AddTypeTrip(AddTypeTripDto typetrip)
         {
             var typetripResult = await _typeTripService.CreateAsync(typetrip);
@@ -56,6 +59,8 @@ namespace TripAgency.Controllers
             }
             return ApiResult<GetTypeTripByIdDto>.Created(typetripResult.Value!);
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpPut("{Id}")]
         public async Task<ApiResult<string>> UpdateTypeTrip(int Id, UpdateTypeTripDto updateTypeTrip)
         {

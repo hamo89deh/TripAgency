@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using TripAgency.Api.Extention;
@@ -14,6 +15,7 @@ namespace TripAgency.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BookingTripsController : ControllerBase
     {
         public BookingTripsController(IBookingTripService bookingTripService, IMapper mapper)
@@ -26,6 +28,7 @@ namespace TripAgency.Api.Controllers
         public IMapper _mapper { get; }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ApiResult<IEnumerable<GetBookingTripsDto>>> GetBookingTrips()
         {
             var bookingTripsResult = await _bookingTripService.GetAllAsync();
@@ -34,6 +37,7 @@ namespace TripAgency.Api.Controllers
             return ApiResult<IEnumerable<GetBookingTripsDto>>.Ok(bookingTripsResult.Value!);
         }
         [HttpGet("ForUser")]
+        [Authorize(Roles = "User")]
         public async Task<ApiResult<IEnumerable<GetBookingTripForUserDto>>> GetBookingsPackageTripForUserAsync(BookingStatus bookingStatus)
         {
             var bookingTripsResult = await _bookingTripService.GetBookingsPackageTripForUserAsync(bookingStatus);
@@ -42,6 +46,7 @@ namespace TripAgency.Api.Controllers
             return ApiResult<IEnumerable<GetBookingTripForUserDto>>.Ok(bookingTripsResult.Value!);
         }
         [HttpGet("{bookingTripId}/ForUser")]
+        [Authorize(Roles = "User")]
         public async Task<ApiResult<GetBookingTripForUserDto>> GetBookingTrips(int bookingTripId , BookingStatus bookingStatus)
         {
             var bookingTripsResult = await _bookingTripService.GetBookingPackageTripForUserAsync(bookingTripId, bookingStatus);
@@ -59,6 +64,7 @@ namespace TripAgency.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "User")]
         public async Task<ApiResult<PaymentInitiationResponseDto>> AddBookingTrip(AddBookingPackageTripDto bookingTrip)
         {
             var bookingTripResult = await _bookingTripService.InitiateBookingAndPaymentAsync(bookingTrip);
@@ -70,6 +76,8 @@ namespace TripAgency.Api.Controllers
         }
              
         [HttpPut("{Id}")]
+        [Authorize(Roles = "User")]
+
         public async Task<ApiResult<string>> UpdateBookingTrip(int Id , UpdateBookingTripDto updateBookingTrip)
         {
             var bookingTripResult = await _bookingTripService.UpdateAsync(Id, updateBookingTrip);
@@ -79,6 +87,8 @@ namespace TripAgency.Api.Controllers
 
         }
         [HttpPut("CancellingBookingTrip/{Id}")]
+        [Authorize(Roles = "User")]
+
         public async Task<ApiResult<string>> CansellingBookingTrip(int Id)
         {
             var bookingTripResult = await _bookingTripService.CancellingBookingAndRefundPayemntAsync(Id);
@@ -86,14 +96,6 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult<string>(bookingTripResult);
             return ApiResult<string>.Ok("Success Delete");
         } 
-        [HttpDelete("{Id}")]
-        public async Task<ApiResult<string>> DeleteBookingTrip(int Id)
-        {
-            var bookingTripResult = await _bookingTripService.DeleteAsync(Id);
-            if (!bookingTripResult.IsSuccess)
-                return this.ToApiResult<string>(bookingTripResult);
-            return ApiResult<string>.Ok("Success Delete");
-        }
     }
 
 }
