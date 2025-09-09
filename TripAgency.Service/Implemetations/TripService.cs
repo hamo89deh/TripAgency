@@ -258,7 +258,7 @@ namespace TripAgency.Service.Implementations
                                                     .ThenInclude(ptd => ptd.PackageTripDestinationActivities)
                                                         .ThenInclude(ptda => ptda.Activity)
                                                             .ThenInclude(a => a.ActivityPhobias)
-                                            .Where(t => t.PackageTrips.Any(pt => pt.PackageTripDates.Any(ptd => ptd.Status == PackageTripDateStatus.Published)));
+                                            .Where(t => t.PackageTrips.Any(pt => pt.PackageTripDates.Any(ptd => ptd.Status == PackageTripDateStatus.Published && DateTime.Now.Date >= ptd.StartBookingDate.Date)));
 
             // تصفية الرحلات بناءً على فوبيا المستخدم إذا كان موجودًا
             var trips = await tripsQuery
@@ -319,7 +319,7 @@ namespace TripAgency.Service.Implementations
                                                              .ThenInclude(x => x.PackageTripDestinationActivities)
                                                                 .ThenInclude(x => x.Activity)
                                                                     .ThenInclude(x=>x.ActivityPhobias)
-                                                          .Where(x => x.TripId == trip.Id && x.PackageTripDates.Any(x => x.Status == PackageTripDateStatus.Published) &&
+                                                          .Where(x => x.TripId == trip.Id && x.PackageTripDates.Any(x => x.Status == PackageTripDateStatus.Published && DateTime.Now.Date >= x.StartBookingDate.Date ) &&
                                                                  (user == null ||
                                                                   x.PackageTripDestinations.All(ptd =>
                                                                       ptd.PackageTripDestinationActivities.All(ptda =>
@@ -428,7 +428,7 @@ namespace TripAgency.Service.Implementations
             var tripsQuery = _tripRepository.GetTableNoTracking()
                                             .Include(t => t.PackageTrips)
                                                 .ThenInclude(pt => pt.PackageTripDates)
-                                            .Where(t => t.PackageTrips.Any(pt => pt.PackageTripDates.Any(ptd => ptd.Status == PackageTripDateStatus.Published)))
+                                            .Where(t => t.PackageTrips.Any(pt => pt.PackageTripDates.Any(ptd => ptd.Status == PackageTripDateStatus.Published && DateTime.Now.Date >= ptd.StartBookingDate.Date)))
                                             .Include(t => t.PackageTrips)
                                                 .ThenInclude(pt => pt.PackageTripDestinations)
                                                     .ThenInclude(ptd => ptd.PackageTripDestinationActivities)
@@ -500,7 +500,7 @@ namespace TripAgency.Service.Implementations
                             .ThenInclude(x => x.PackageTripDestinationActivities)
                                .ThenInclude(x => x.Activity)
                                   .ThenInclude(x => x.ActivityPhobias)
-                .Where(x => x.TripId == trip.Id && x.PackageTripDates.Any(x => x.Status == PackageTripDateStatus.Published) &&
+                .Where(x => x.TripId == trip.Id && x.PackageTripDates.Any(x => x.Status == PackageTripDateStatus.Published && DateTime.Now.Date >= x.StartBookingDate.Date) &&
                                      (user == null ||
                                       x.PackageTripDestinations.All(ptd =>
                                           ptd.PackageTripDestinationActivities.All(ptda =>

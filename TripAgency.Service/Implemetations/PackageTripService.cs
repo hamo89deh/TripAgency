@@ -239,7 +239,7 @@ namespace TripAgency.Service.Implementations
                         .ThenInclude(x => x.Activity)
                 .Include(x => x.PackageTripTypes)
                     .ThenInclude(x => x.TypeTrip)
-                .Where(x => x.Id == packageTripId)
+                .Where(x => x.Id == packageTripId )
                 .FirstOrDefaultAsync();
 
             if (packageTrip == null)
@@ -343,7 +343,7 @@ namespace TripAgency.Service.Implementations
                     })
                 }),
                 PackageTripDates = packageTrip.PackageTripDates
-                    .Where(ptd => ptd.Status == PackageTripDateStatus.Published)
+                    .Where(ptd => ptd.Status == PackageTripDateStatus.Published && DateTime.Now.Date >= ptd.StartBookingDate.Date )
                     .Select(ptd => new PackageTripDatesForTripDto
                     {
                         Id = ptd.Id,
