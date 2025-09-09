@@ -42,7 +42,7 @@ namespace TripAgency.Api.Controllers
         }
    
         [HttpPost]
-        public async Task<ApiResult<GetOfferByIdDto>> AddPromotion(AddOfferDto offerDto)
+        public async Task<ApiResult<GetOfferByIdDto >> AddPromotion(AddOfferDto offerDto)
         {
             var OfferResult = await _offerService.CreateAsync(offerDto);
             if (!OfferResult.IsSuccess)

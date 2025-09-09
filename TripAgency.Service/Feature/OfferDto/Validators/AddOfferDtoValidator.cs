@@ -21,7 +21,7 @@ namespace TripAgency.Service.Feature.OfferDto.Validators
 
             RuleFor(dto => dto.StartDate)
                 .NotEmpty().WithMessage("Start date is required.")
-                .Must(date => date >= DateOnly.FromDateTime(DateTime.Today))
+                .Must(date => date >= DateTime.Today)
                 .WithMessage("Start date must be today or in the future.");
 
             RuleFor(dto => dto.EndDate)

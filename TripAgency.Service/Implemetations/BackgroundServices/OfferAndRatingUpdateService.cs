@@ -47,14 +47,14 @@ public class OfferAndRatingUpdateService : BackgroundService
 
             // تعطيل العروض المنتهية في Offers
             var updatedOffersCount = await offerRepository.GetTableNoTracking()
-                .Where(p => p.IsActive && p.EndDate < DateOnly.FromDateTime(DateTime.Now))
+                .Where(p => p.IsActive && p.EndDate < DateTime.Now)
                 .ExecuteUpdateAsync(p => p.SetProperty(x => x.IsActive, false), stoppingToken);
             _logger.LogInformation("DisabledExpiredOffers");
 
             // تعطيل العروض المنتهية في PackageTripOffers
             var updatedPackageOffersCount = await packageTripOffersRepository.GetTableNoTracking()
                 .Include(x => x.Offer)
-                .Where(x => x.IsApply && (x.Offer.EndDate < DateOnly.FromDateTime(DateTime.Now) || !x.Offer.IsActive))
+                .Where(x => x.IsApply && (x.Offer.EndDate < DateTime.Now || !x.Offer.IsActive))
                 .ExecuteUpdateAsync(p => p.SetProperty(x => x.IsApply, false), stoppingToken);
             _logger.LogInformation("DisabledExpiredPackageTripOffers");
 
@@ -62,8 +62,8 @@ public class OfferAndRatingUpdateService : BackgroundService
             var packageTripsWithMultipleOffers = await packageTripOffersRepository.GetTableNoTracking()
                 .Include(x => x.Offer)
                 .Where(x => x.IsApply && x.Offer.IsActive &&
-                           x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) &&
-                           x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now))
+                           x.Offer.EndDate >= DateTime.Now &&
+                           x.Offer.StartDate <= DateTime.Now)
                 .GroupBy(x => x.PackageTripId)
                 .Where(g => g.Count() > 1)
                 .Select(g => new

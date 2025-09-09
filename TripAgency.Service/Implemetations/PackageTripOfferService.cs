@@ -60,7 +60,7 @@ namespace TripAgency.Service.Implementations
                 return Result.BadRequest($"Another offer with Id: {activePackageTripOffer.OfferId} is already applied to PackageTrip Id: {packageTripId}. Please cancel the existing offer first.");
 
 
-            bool isApply = activePackageTripOffer == null && offer.IsActive && offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && offer.StartDate <= DateOnly.FromDateTime(DateTime.Now);
+            bool isApply = activePackageTripOffer == null && offer.IsActive && offer.EndDate >= DateTime.Now && offer.StartDate <= DateTime.Now;
 
 
             await _packageTripOffersRepo.AddAsync(new PackageTripOffers
@@ -165,7 +165,7 @@ namespace TripAgency.Service.Implementations
                 return Result.BadRequest($"Another offer with Id: {activePackageTripOffer.OfferId} is already applied to PackageTrip Id: {packageTripId}. Please cancel the existing offer first.");
 
             // التحقق من صلاحية العرض
-            if (!offer.IsActive || offer.EndDate < DateOnly.FromDateTime(DateTime.Now) || offer.StartDate > DateOnly.FromDateTime(DateTime.Now))
+            if (!offer.IsActive || offer.EndDate < DateTime.Now || offer.StartDate > DateTime.Now)
                 return Result.BadRequest($"Offer with Id: {offerId} is not valid for reapplication (inactive or expired).");
 
             // إعادة تطبيق العرض
@@ -212,8 +212,8 @@ namespace TripAgency.Service.Implementations
                 .FirstOrDefaultAsync(p => p.PackageTripId == packageTripId &&
                                           p.IsApply &&
                                           p.Offer.IsActive &&
-                                          p.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) &&
-                                          p.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now)
+                                          p.Offer.EndDate >= DateTime.Now &&
+                                          p.Offer.StartDate <= DateTime.Now
                                           );
 
 

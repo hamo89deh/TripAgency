@@ -360,7 +360,7 @@ namespace TripAgency.Service.Implementations
 
              
                 // التحقق من العرض الترويجي
-                var offer = packageTrip.PackageTripOffers.Where(x => x.IsApply).Select(p => p.Offer).FirstOrDefault(x => x.IsActive && x.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.StartDate <= DateOnly.FromDateTime(DateTime.Now));
+                var offer = packageTrip.PackageTripOffers.Where(x => x.IsApply).Select(p => p.Offer).FirstOrDefault(x => x.IsActive && x.EndDate >= DateTime.Now && x.StartDate <= DateTime.Now);
                 // حساب السعر بعد الخصم
                 decimal? priceAfterOffer = null;
                 GetOfferByIdDto OfferDto = null;
@@ -518,17 +518,17 @@ namespace TripAgency.Service.Implementations
             {
                 PackageTripId = pt.Id,
                 ActulPrice = pt.Price + pt.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price)),
-                PriceAfterOffer = pt.PackageTripOffers.Any(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now))
+                PriceAfterOffer = pt.PackageTripOffers.Any(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.Now && x.Offer.StartDate <= DateTime.Now)
                 ? pt.Price + pt.PackageTripDestinations.Sum(ptd => ptd.PackageTripDestinationActivities.Sum(ptda => ptda.Price)) *
-                  (1 - (pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now)).Offer.DiscountPercentage / 100m))
+                  (1 - (pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.Now && x.Offer.StartDate <= DateTime.Now).Offer.DiscountPercentage / 100m))
                 : null,
-                GetOfferByIdDto = pt.PackageTripOffers.Any(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now))
+                GetOfferByIdDto = pt.PackageTripOffers.Any(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.Now && x.Offer.StartDate <= DateTime.Now)
                 ? new GetOfferByIdDto
                 {
-                    Id = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now)).Offer.Id,
-                    DiscountPercentage = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now)).Offer.DiscountPercentage,
-                    StartDate = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now)).Offer.StartDate,
-                    EndDate = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateOnly.FromDateTime(DateTime.Now) && x.Offer.StartDate <= DateOnly.FromDateTime(DateTime.Now)).Offer.EndDate
+                    Id = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.Now && x.Offer.StartDate <= DateTime.Now).Offer.Id,
+                    DiscountPercentage = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.Now && x.Offer.StartDate <= DateTime.Now).Offer.DiscountPercentage,
+                    StartDate = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.Now && x.Offer.StartDate <= DateTime.Now).Offer.StartDate,
+                    EndDate = pt.PackageTripOffers.First(x => x.IsApply && x.Offer.IsActive && x.Offer.EndDate >= DateTime.Now && x.Offer.StartDate <= DateTime.Now).Offer.EndDate
                 }
                 : null,
                 TripId = pt.TripId ,
