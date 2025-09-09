@@ -54,9 +54,9 @@ namespace TripAgency.Service.Implementations
             {
                 Name=dto.OfferName,
                 DiscountPercentage = dto.DiscountPercentage,
-                StartDate = dto.StartDate,
-                EndDate = dto.EndDate,
-                IsActive = dto.StartDate <= DateTime.Now && dto.EndDate >= DateTime.Now,
+                StartDate = new DateTime(dto.StartDate.Year, dto.StartDate.Month, dto.StartDate.Day,0,0,0) ,
+                EndDate =   new DateTime(dto.EndDate.Year, dto.EndDate.Month, dto.EndDate.Day, 23, 59, 59),
+                IsActive = dto.StartDate <=DateTime.Now && dto.EndDate >= DateTime.Now,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
             };
@@ -109,8 +109,8 @@ namespace TripAgency.Service.Implementations
             }
             offer.Name = dto.OfferName;
             offer.DiscountPercentage = dto.DiscountPercentage;
-            offer.StartDate = dto.StartDate;
-            offer.EndDate = dto.EndDate;
+            offer.StartDate = new DateTime(dto.StartDate.Year, dto.StartDate.Month, dto.StartDate.Day, 0, 0, 0);
+            offer.EndDate = new DateTime(dto.EndDate.Year, dto.EndDate.Month, dto.EndDate.Day, 23, 59, 59);
             offer.IsActive = dto.IsActive;
             offer.UpdatedAt = DateTime.Now;
 
