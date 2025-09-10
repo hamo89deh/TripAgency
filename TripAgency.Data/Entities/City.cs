@@ -11,7 +11,7 @@ namespace TripAgency.Data.Entities
         public int Id { get; set; }
         public string Name { get; set; }
 
-        public List <Destination>? Destinations { get; set; }
+        public List <Destination> Destinations { get; set; }
         public List<Hotel> Hotels { get; set; } = [];
 
     }

@@ -358,5 +358,45 @@ namespace TripAgency.Service.Implementations
             _logger.LogInformation("Successfully fetched PackageTrip details for PackageTripId: {PackageTripId}", packageTripId);
             return Result<GetPackageTripDetailsDto>.Success(resultDto);
         }
+        public override async Task<Result> DeleteAsync(int id)
+        {
+            var PackageTrip = await _packageTripRepositoryAsync.GetTableNoTracking()
+                                                           .Where(x => x.Id == id)
+                                                           .Include(x => x.PackageTripDestinations)
+                                                           .Include(x => x.PackageTripDates)
+                                                           .Include(x => x.PackageTripOffers)
+                                                           .Include(x=>x.PackageTripTypes)
+                                                           .FirstOrDefaultAsync();
+
+            if (PackageTrip is null)
+            {
+                return Result.NotFound($"Not Found PackageTrip With Id : {id}");
+            }
+
+            if (PackageTrip.PackageTripDestinations.Any())
+            {
+                return Result.BadRequest($"Cannot delete PackageTrip with associated package trip destinations.");
+            }
+
+            if (PackageTrip.PackageTripTypes.Any())
+            {
+                return Result.BadRequest($"Cannot delete PackageTrip with associated package trip types ");
+            }
+
+            if (PackageTrip.PackageTripDates.Any())
+            {
+                return Result.BadRequest($"Cannot delete PackageTrip with associated Package Trip Dates");
+            }
+            if (PackageTrip.PackageTripOffers.Any())
+            {
+                return Result.BadRequest($"Cannot delete PackageTrip with associated Package Trip Offers");
+            }
+            //if (PackageTrip.FavoritePackageTrips.Any())
+            //{
+            //    return Result.NotFound($"Cannot delete PackageTrip with associated FavoritePackageTrips");
+            //}
+
+            return await base.DeleteAsync(id);
+        }
     }
 }

@@ -56,11 +56,11 @@ namespace TripAgency.Service.Implementations
                 .Include(x => x.Offer)
                 .Where(x => x.PackageTripId == packageTripId && x.IsApply)
                 .FirstOrDefaultAsync();
-            if (activePackageTripOffer != null)
-                return Result.BadRequest($"Another offer with Id: {activePackageTripOffer.OfferId} is already applied to PackageTrip Id: {packageTripId}. Please cancel the existing offer first.");
+            //if (activePackageTripOffer != null)
+            //    return Result.BadRequest($"Another offer with Id: {activePackageTripOffer.OfferId} is already applied to PackageTrip Id: {packageTripId}. Please cancel the existing offer first.");
 
 
-            bool isApply = activePackageTripOffer == null && offer.IsActive && offer.EndDate >= DateTime.Now && offer.StartDate <= DateTime.Now;
+            bool isApply = activePackageTripOffer is null && offer.IsActive && offer.EndDate >= DateTime.Now && offer.StartDate <= DateTime.Now;
 
 
             await _packageTripOffersRepo.AddAsync(new PackageTripOffers

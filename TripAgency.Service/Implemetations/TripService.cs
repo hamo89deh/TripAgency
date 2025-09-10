@@ -560,5 +560,25 @@ namespace TripAgency.Service.Implementations
 
             return Result<PaginatedResult<PackageTripForTripDto>>.Success(paginatedResult);
         }
+        public override async Task<Result> DeleteAsync(int id)
+        {
+            var trip = await _tripRepository.GetTableNoTracking()
+                                                 .Where(x => x.Id == id)
+                                                 .Include(x=>x.PackageTrips)
+                                                 .Include(x=>x.TripDestinations)
+                                                 .FirstOrDefaultAsync();
+
+            if (trip is null)
+                return Result.NotFound($"Not Found Trip By Id : {id}");
+
+            if (trip.PackageTrips.Any())
+                return Result.BadRequest($"Cannot delete Trip with associated PackageTrips.");
+
+            if (trip.TripDestinations.Any())
+                return Result.BadRequest($"Cannot delete Trip with associated Trip Destinations.");
+
+            return await base.DeleteAsync(id);        
+                
+        }
     }
 }

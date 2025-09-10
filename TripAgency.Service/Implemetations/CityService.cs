@@ -37,6 +37,29 @@ namespace TripAgency.Service.Implementations
             return Result<GetCityByIdDto>.Success(cityResult);
 
         }
+        public override async Task<Result> DeleteAsync(int id)
+        {
+            var city = await _cityRepository.GetTableNoTracking()
+                                                    .Where(x => x.Id == id)
+                                                    .Include(x => x.Hotels)
+                                                    .Include(x => x.Destinations)
+                                                    .FirstOrDefaultAsync();
+            if (city is null)
+                return Result.NotFound($"Not Found City with Id : {id}");
+
+            if (city.Hotels.Count() != 0)
+            {
+                return Result.BadRequest("Cannot delete City with associated hotels.");
+
+            }
+            if (city.Destinations.Count() != 0)
+            {
+                return Result.BadRequest("Cannot delete city with associated Destination.");
+
+            }
+
+            return await base.DeleteAsync(id);    
+        }
 
     }
 }

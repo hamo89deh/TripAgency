@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using TripAgency.Data.Entities;
 using TripAgency.Data.Helping;
@@ -54,6 +55,34 @@ namespace TripAgency.Service.Implementations
             if (activityResult.Data.Count() == 0)
                 return Result<PaginatedResult<GetActivitiesDto>>.Success(PaginatedResult<GetActivitiesDto>.Success(new(), 0, PageNumber, pageSize));
             return Result<PaginatedResult<GetActivitiesDto>>.Success(activityResult);
+        }
+        public override async Task<Result> DeleteAsync(int id)
+        {
+            var activity = await _activityRepository.GetTableNoTracking()
+                                                    .Where(x=>x.Id == id)
+                                                    .Include(x=>x.PackageTripDestinationActivities)
+                                                    .Include(x=>x.DestinationActivities)
+                                                    .Include(x=>x.ActivityPhobias)
+                                                    .FirstOrDefaultAsync();
+           
+            if (activity is null)
+                return Result.NotFound($"Not Found Activity with Id : {id}");
+
+            if (activity.ActivityPhobias.Count() != 0)
+            {
+                return Result.BadRequest("Cannot delete activity with associated phobias.");
+            }
+            if (activity.DestinationActivities.Count() != 0)
+            {
+                return Result.BadRequest("Cannot delete activity with associated destination activities.");
+
+            }
+            if (activity.PackageTripDestinationActivities.Count() != 0)
+            {
+                return Result.BadRequest("Cannot delete activity with associated package trip destination activities.");
+
+            }
+            return await base.DeleteAsync(id);
         }
     }
 

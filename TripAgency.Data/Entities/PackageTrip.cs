@@ -18,7 +18,7 @@ namespace TripAgency.Data.Entities
         public IEnumerable<PackageTripType> PackageTripTypes { get; set; }
         public IEnumerable<PackageTripDestination> PackageTripDestinations { get; set; }
         public IEnumerable<PackageTripDate> PackageTripDates { get; set; }
-        public IEnumerable<FavoritePackageTrip>? FavoritePackageTrips { get; set; }
+        public IEnumerable<FavoritePackageTrip> FavoritePackageTrips { get; set; }
         public IEnumerable<PackageTripOffers> PackageTripOffers { get; set; }
 
 

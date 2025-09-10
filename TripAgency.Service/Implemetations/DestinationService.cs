@@ -244,5 +244,24 @@ namespace TripAgency.Service.Implementations
           
             return Result<PaginatedResult<GetDestinationsDetailsDto>>.Success(resultData);
         }
+        public override async Task<Result> DeleteAsync(int id)
+        {
+            var destination = await _destinationRepository.GetTableNoTracking()
+                                                          .Include(d=>d.TripDestinations)
+                                                          .Include(d=>d.PackageTripDestinations)
+                                                          .Include(d=>d.DestinationActivities)
+                                                          .FirstOrDefaultAsync(d => d.Id == id);
+            if (destination is null)
+                return Result.NotFound($"Not Found Destination with Id : {id}");
+            if(destination.TripDestinations.Count() !=0)
+                return Result.BadRequest("Cannot delete Destination with associated Trip Destinations.");
+
+            if (destination.PackageTripDestinations.Count() != 0)
+                return Result.BadRequest("Cannot delete Destination with associated Packgage Trip Destinations.");
+            if (destination.DestinationActivities.Count() != 0)
+                return Result.BadRequest("Cannot delete Destination with associated Packgage Trip Destinations.");
+
+            return await base.DeleteAsync(id);
+        }
     }
 }
