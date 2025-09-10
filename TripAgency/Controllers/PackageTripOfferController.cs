@@ -31,6 +31,14 @@ namespace TripAgency.Api.Controllers
                 return this.ToApiResult<string>(OffersResult);
             return ApiResult<string>.Ok(OffersResult.Message);
         }
+        [HttpPost("Reapplyoffer")]
+        public async Task<ApiResult<string>> ReapplyPackageTripOffer(int packageTripId, int offerId)
+        {
+            var OffersResult = await _packageTripOfferService.ReapplyOfferAsync(packageTripId, offerId);
+            if (!OffersResult.IsSuccess)
+                return this.ToApiResult<string>(OffersResult);
+            return ApiResult<string>.Ok(OffersResult.Message);
+        }
 
         [HttpDelete("PackageTrip/{packageTripId}/Offer/{offerId}")]
         public async Task<ApiResult<string>> DeletePackageTripOffer(int packageTripId, int offerId)

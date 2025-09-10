@@ -21,7 +21,6 @@ namespace TripAgency.Service.Feature.Destionation.Commands.Validators
                 .NotEmpty().WithMessage("Location is required.")
                 .NotNull().WithMessage("Location is required.")
                 .MaximumLength(250).WithMessage("Location cannot exceed 250 characters.");
-
             RuleFor(d => d.CityId)
                   .NotEmpty().WithMessage("City Id is required.")
                   .NotNull().WithMessage("City Id cannot be null.")

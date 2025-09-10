@@ -114,7 +114,7 @@ namespace TripAgency.Service.Implementations
             {
                 var promotion = promotionResult.Value;
                 appliedPromotionId = promotion.Id;
-                finalPrice = calculatedTotalPrice * (1 - promotion.DiscountPercentage / 100);
+                finalPrice = finalPrice * (1 - promotion.DiscountPercentage / 100);
                 _logger.LogInformation("Applied promotion with Id: {PromotionId} with DiscountPercentage: {DiscountPercentage}% for PackageTripId: {PackageTripId}. FinalPrice: {FinalPrice}",
                     promotion.Id, promotion.DiscountPercentage, packageTripDate.PackageTripId, finalPrice);
             }

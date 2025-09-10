@@ -23,8 +23,8 @@ namespace TripAgency.Service.Feature.Trip.Commands.Validators
 
             RuleFor(dto => dto.Image)
                 .NotNull().WithMessage("Image is required.")
-                .Must(image => image.Length <= 5 * 1024 * 1024).WithMessage("Image size cannot exceed 5 MB.")
-                .Must(image => new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(image.FileName).ToLower()))
+                .Must(image => image is null ? false: image.Length <= 5 * 1024 * 1024).WithMessage("Image size cannot exceed 5 MB.")
+                .Must(image => image is null ? false: new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(image.FileName).ToLower()))
                 .WithMessage("Image must be in JPG or PNG format.");
         }
     }

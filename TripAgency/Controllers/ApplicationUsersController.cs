@@ -33,7 +33,7 @@ namespace TripAgency.Api.Controllers
             return ApiResult<string>.Created(AddNewUserResult.Message!);
         }
         [HttpPut()]
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "User,Admin")]
         public async Task<ApiResult<string>> UpdateUser([FromForm]UpdateUserDto userDto)
         {
             var UpdateUserResult = await _applicationUserService.UpdateUser(userDto);

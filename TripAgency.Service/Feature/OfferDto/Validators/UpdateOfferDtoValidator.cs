@@ -15,9 +15,9 @@ namespace TripAgency.Service.Feature.OfferDto.Validators
                 .InclusiveBetween(0, 100).WithMessage("Discount percentage must be between 0 and 100.");
 
             RuleFor(dto => dto.StartDate)
-                .NotEmpty().WithMessage("Start date is required.")
-                .Must(date => date >= DateTime.Today)
-                .WithMessage("Start date must be today or in the future.");
+                .NotEmpty().WithMessage("Start date is required.");
+                //.Must(date => date >= DateTime.Today)
+                //.WithMessage("Start date must be today or in the future.");
 
             RuleFor(dto => dto.EndDate)
                 .NotEmpty().WithMessage("End date is required.")

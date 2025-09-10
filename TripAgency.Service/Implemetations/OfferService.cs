@@ -43,9 +43,9 @@ namespace TripAgency.Service.Implementations
         public override async Task<Result<GetOfferByIdDto>> CreateAsync(AddOfferDto dto)
         {
             // التحقق من صحة التواريخ
-            if (dto.StartDate < DateTime.Now)
+            if (dto.StartDate.AddHours(6).Date < DateTime.Now.Date)
                 return Result<GetOfferByIdDto>.BadRequest("StartDate must be today or in the future.");
-            if (dto.EndDate < dto.StartDate)
+            if (dto.EndDate.Date < dto.StartDate.Date)
                 return Result<GetOfferByIdDto>.BadRequest("EndDate must be greater than or equal to StartDate.");
             if (dto.DiscountPercentage <= 0 || dto.DiscountPercentage > 100)
                 return Result<GetOfferByIdDto>.BadRequest("DiscountPercentage must be between 1 and 100.");
@@ -88,9 +88,9 @@ namespace TripAgency.Service.Implementations
             if (offer == null)
                 return Result.NotFound($"Offer with Id {id} not found.");
 
-            if (dto.StartDate < DateTime.Now)   
+            if (dto.StartDate.AddHours(6).Date < DateTime.Now.Date)   
                 return Result.BadRequest("StartDate must be today or in the future.");
-            if (dto.EndDate < dto.StartDate)
+            if (dto.EndDate.Date < dto.StartDate.Date)
                 return Result.BadRequest("EndDate must be greater than or equal to StartDate.");
             if (dto.DiscountPercentage <= 0 || dto.DiscountPercentage > 100)
                 return Result.BadRequest("DiscountPercentage must be between 1 and 100.");
@@ -141,80 +141,6 @@ namespace TripAgency.Service.Implementations
             await _offerRepository.DeleteAsync(offer);
             _logger.LogInformation(" deleted promotion with Id: {Id}", id);
             return Result.Success("Offer deleted successfully.");
-        }
-        public  async Task<Result> UpdateAsyncw(int id, UpdateOfferDto dto)
-        {
-            _logger.LogInformation("Attempting to update Offer with Id: {Id}", id);
-
-            var offerData = await _offerRepository.GetTableNoTracking()
-                .Where(x => x.Id == id)
-                .Select(x => new
-                {
-                    Offer = x,
-                    PackageTripOffers = x.PackageTripOffers.ToList()
-                })
-                .FirstOrDefaultAsync();
-            if (offerData == null)
-                return Result.NotFound($"Offer with Id {id} not found.");
-
-            var offer = offerData.Offer;
-
-            if (dto.StartDate < DateTime.Now)
-                return Result.BadRequest("StartDate must be today or in the future.");
-            if (dto.EndDate < dto.StartDate)
-                return Result.BadRequest("EndDate must be greater than or equal to StartDate.");
-            if (dto.DiscountPercentage <= 0 || dto.DiscountPercentage > 100)
-                return Result.BadRequest("DiscountPercentage must be between 1 and 100.");
-
-            var hasBookings = await _bookingTripRepository.GetTableNoTracking()
-                .AnyAsync(b => b.AppliedOfferId == offer.Id);
-            if (hasBookings)
-            {
-                _logger.LogWarning("Cannot update Offer with Id: {OfferId} due to active bookings.", id);
-                return Result.BadRequest("Cannot Update Offer due to active bookings.");
-            }
-
-            if (offerData.PackageTripOffers.Any())
-            {
-                if (dto.DiscountPercentage != offer.DiscountPercentage ||
-                    dto.StartDate != offer.StartDate ||
-                    dto.EndDate != offer.EndDate)
-                {
-                    return Result.BadRequest($"Cannot modify DiscountPercentage, StartDate, or EndDate for Offer Id: {id} as it is related to PackageTrip ids {string.Join(',', offerData.PackageTripOffers.Select(x => x.PackageTripId))}.");
-                }
-            }
-
-            using var transaction = await _offerRepository.BeginTransactionAsync();
-            try
-            {
-                bool isOfferValid = dto.IsActive &&
-                                   dto.EndDate >= DateTime.Now &&
-                                   dto.StartDate <= DateTime.Now;
-                if (offerData.PackageTripOffers.Any() && !isOfferValid)
-                {
-                    await _packageTripOffersRepo.GetTableNoTracking()
-                        .Where(x => x.OfferId == id && x.IsApply)
-                        .ExecuteUpdateAsync(p => p.SetProperty(x => x.IsApply, false));
-                    _logger.LogInformation("Disabled IsApply for PackageTripOffers related to Offer Id: {OfferId} due to invalid status or dates.", id);
-                }
-
-                offer.Name = dto.OfferName;
-                offer.DiscountPercentage = dto.DiscountPercentage;
-                offer.StartDate = dto.StartDate;
-                offer.EndDate = dto.EndDate;
-                offer.IsActive = dto.IsActive;
-                offer.UpdatedAt = DateTime.Now;
-
-                await _offerRepository.UpdateAsync(offer);
-                await transaction.CommitAsync();
-                return Result.Success("Success update");
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Error updating Offer with Id: {OfferId}", id);
-                return Result.BadRequest("Failed to update offer.");
-            }
         }
     }
 }
