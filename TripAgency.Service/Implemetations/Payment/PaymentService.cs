@@ -662,6 +662,7 @@ namespace TripAgency.Service.Implemetations.Payment
             var paymnetsPending = await _paymentRepositoryAsync.GetTableNoTracking()
                                                                .Where(p => p.PaymentStatus == PaymentStatus.Pending)
                                                                .Include(p => p.PaymentMethod)
+                                                               .Include(p=>p.BookingTrip)
                                                                .ToListAsync();
 
             paymnetsPending = paymnetsPending.Where(p => !string.IsNullOrEmpty(p.TransactionRef)).ToList();
@@ -676,7 +677,7 @@ namespace TripAgency.Service.Implemetations.Payment
                 manualPaymentDetailsDtos.Add(new ManualPaymentDetailsDto
                 {
                     BookingId = payment.BookingTripId,
-                    PaidAmount = payment.Amount,
+                    PaidAmount = payment.BookingTrip.ActualPrice,
                     PaymentDateTime = payment.PaymentDate,
                     PaymentMethodId = payment.PaymentMethodId,
                     PaymentMethodName = payment.PaymentMethod.Name,
