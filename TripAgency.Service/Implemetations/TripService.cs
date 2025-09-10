@@ -266,7 +266,7 @@ namespace TripAgency.Service.Implementations
                 {
                     Trip = t,
                     ValidPackageTrips = t.PackageTrips
-                        .Where(pt => pt.PackageTripDates.Any(ptd => ptd.Status == PackageTripDateStatus.Published) &&
+                        .Where(pt => pt.PackageTripDates.Any(ptd => ptd.Status == PackageTripDateStatus.Published && DateTime.Now.Date >= ptd.StartBookingDate.Date) &&
                                      (user == null ||
                                       pt.PackageTripDestinations.All(ptd =>
                                           ptd.PackageTripDestinationActivities.All(ptda =>
