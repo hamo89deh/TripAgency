@@ -14,13 +14,11 @@ namespace TripAgency.Api.Controllers
     public class ApplicationUsersController : ControllerBase
     {
         public IApplicationUserService _applicationUserService { get; }
-        public IEmailService _emailService { get; }
         public ICurrentUserService CurrentUserService { get; }
 
-        public ApplicationUsersController(IApplicationUserService applicationUser, IEmailService emailService, ICurrentUserService currentUserService)
+        public ApplicationUsersController(IApplicationUserService applicationUser, ICurrentUserService currentUserService)
         {
             _applicationUserService = applicationUser;
-            _emailService = emailService;
             CurrentUserService = currentUserService;
         }
 
@@ -95,17 +93,5 @@ namespace TripAgency.Api.Controllers
             return ApiResult<PaginatedResult<GetUsersDto>>.Ok(UsersResult.Value!);
 
         }
-        [HttpGet("SendEmail")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ApiResult<string>> SendEmail(string? search, int pageNumber = 1, int pageSize = 10)
-        {
-            var UsersResult = await _emailService.SendEmailAsync(search, pageNumber, pageSize);
-            if (!UsersResult.IsSuccess)
-            {
-                return this.ToApiResult<string>>(UsersResult);
-            }
-            return ApiResult<PaginatedResult<GetUsersDto>>.Ok(UsersResult.Value!);
-
-        }
-    }
+       }
 }
