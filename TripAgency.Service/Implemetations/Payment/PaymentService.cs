@@ -98,7 +98,7 @@ namespace TripAgency.Service.Implemetations.Payment
             }
 
             // _logger.LogInformation("Timeout: مهلة دفع انتهت لحجز {BookingId} ليس في حالة Pending (الحالة الحالية: {Status}). لا حاجة لإلغاء إضافي.", bookingId, bookingTrip.BookingStatus);
-            return Result.Success("لا حاجة لعملية إلغاء، الحجز ليس في حالة Pending.");
+            return Result.Success("No Need To Cancel Booking is not Waiting");
         }
         // 4. تسجيل إشعار من العميل بالدفع اليدوي
         public async Task<Result> SubmitManualPaymentNotificationAsync(SubmitManualPaymentDetailsDto details)
@@ -198,7 +198,7 @@ namespace TripAgency.Service.Implemetations.Payment
                 );
 
             //_logger.LogInformation("SubmitManualPaymentNotification: تم تسجيل إشعار الدفع اليدوي بنجاح للحجز {BookingId}.", details.BookingId);
-            return Result.Success("تم استلام إشعار الدفع اليدوي الخاص بك بنجاح. سيتم مراجعته قريباً.");
+            return Result.Success("your payment Notification has been Successfully received and will be reviewed soon");
 
         }
 

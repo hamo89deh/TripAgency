@@ -79,11 +79,11 @@ namespace TripAgency.Data.Result
 
             public static Result NotFound(string message)
             {
-                return new Result(false, message, new List<string> { message }, ResultFailureType.NotFound);
+                return new Result(false, message, new List<string> { }, ResultFailureType.NotFound);
             }
             public static Result BadRequest(string message)
             {
-                return new Result(false, message, new List<string> { message }, ResultFailureType.BadRequest);
+                return new Result(false, message, new List<string> { }, ResultFailureType.BadRequest);
             }
         }
     }
