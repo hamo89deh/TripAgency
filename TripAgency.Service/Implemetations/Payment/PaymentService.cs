@@ -249,6 +249,15 @@ namespace TripAgency.Service.Implemetations.Payment
                     if (tripDate != null)
                     {
                         tripDate.AvailableSeats += bookingTrip.PassengerCount;
+                        if(DateTime.Now.Date > tripDate.EndBookingDate)
+                        {
+                            tripDate.Status = PackageTripDateStatus.BookingClosed;
+                        }
+                        else
+                        {
+                             tripDate.Status = PackageTripDateStatus.Published;
+                        }
+
                         await _packageTripDateRepository.UpdateAsync(tripDate);
                     }
 
